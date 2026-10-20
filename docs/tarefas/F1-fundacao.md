@@ -1,8 +1,8 @@
 ---
 trilha: F1
 titulo: Fundação das telas
-status: pendente        # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: em andamento    # pendente | em andamento | em revisão | concluída
+responsavel: Felipe Drehmer (Claude Code)
 branch: feat/f1-fundacao-telas
 depende_de: —
 ---
