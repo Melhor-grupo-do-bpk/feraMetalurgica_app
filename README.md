@@ -68,6 +68,12 @@ O projeto usa [`very_good_analysis`](https://pub.dev/packages/very_good_analysis
 O CI (`.github/workflows/analyze.yml`) roda `flutter analyze --fatal-infos`
 em todo Pull Request — nenhum erro ou aviso de lint pode ficar sem correção.
 
+## Planejamento
+
+Requisitos, decisões, padrões e o plano de desenvolvimento em trilhas
+paralelas ficam em [`docs/`](docs/README.md). Leia antes de começar uma
+tarefa.
+
 ## Estrutura de pastas
 
 ```
@@ -75,15 +81,17 @@ fera_metalurgica_app/
   lib/
     core/            # infraestrutura compartilhada
       di/            # providers riverpod compartilhados (ex: LocalJsonStorage)
-      router/        # AppRouter (go_router) — rota central do app
-      theme/         # AppTheme
-      utils/         # utilitários genéricos
+      router/        # AppRoutes (mapa de rotas) + appRouter (go_router)
+      theme/         # AppTheme + tokens (cores, textos, espaçamentos)
+      utils/         # utilitários genéricos (storage, datas, máscaras...)
+      widgets/       # componentes visuais compartilhados
       constants/     # constantes globais
     features/
       dashboard/     # tela inicial com indicadores e recentes
       orcamentos/     # CRUD + wizard de orçamentos
       catalogo/       # catálogo de produtos/estruturas
       cronograma/     # calendário e tarefas
+      mais/           # menu da aba "Mais"
   test/
     unit/    widget/    mocks/
 ```
@@ -95,7 +103,8 @@ barrel `<feature>.dart` com a API pública da feature.
 ## Features
 
 - **dashboard** — tela inicial com indicadores (orçamentos em andamento,
-  aguardando resposta, aprovados, pendentes) e lista de orçamentos recentes.
+  aguardando aprovação, aprovados, pedidos em produção) e lista de
+  orçamentos recentes.
 - **orcamentos** — CRUD de orçamentos e wizard de criação em 4 etapas
   (1. dados do cliente, 2. itens/medidas/material, 3. custos operacionais,
   4. resumo com valor final calculado), detalhes do orçamento, geração/prévia
@@ -103,9 +112,9 @@ barrel `<feature>.dart` com a API pública da feature.
 - **catalogo** — catálogo de produtos/estruturas (foto, categoria, descrição
   técnica).
 - **cronograma** — calendário e lista de tarefas do dia, filtráveis por tipo
-  (orçamentos/visitas).
+  (orçamentos/produção/visitas).
+- **mais** — menu da aba "Mais" (hoje: Cronograma).
 
-> Este commit contém apenas a estrutura base do projeto (pastas, stack,
-> lint, CI, modelos de domínio e uma tela Home mínima) — a lógica de negócio
-> completa de cada feature (wizard, PDF, WhatsApp, etc.) ainda será
-> implementada.
+> Estado atual: fundação das telas (F1) pronta — rotas, estado compartilhado,
+> utilitários e dados de exemplo; as telas ainda são stubs e são
+> implementadas nas trilhas T2–T8 de [`docs/04-plano.md`](docs/04-plano.md).

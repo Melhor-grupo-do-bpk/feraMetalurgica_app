@@ -4,3 +4,4 @@
 library;
 
 export 'presentation/dashboard_page.dart';
+export 'presentation/dashboard_routes.dart';

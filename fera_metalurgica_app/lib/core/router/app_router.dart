@@ -1,24 +1,13 @@
+import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_bottom_nav_bar.dart';
-import 'package:fera_metalurgica_app/core/widgets/placeholder_page.dart';
+import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
 import 'package:fera_metalurgica_app/features/dashboard/dashboard.dart';
+import 'package:fera_metalurgica_app/features/mais/mais.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Rotas nomeadas do app. Toda tela nova adiciona sua rota aqui — nunca use
-/// `Navigator.push` direto nas features.
-abstract final class AppRoutes {
-  /// Aba "Início" (dashboard).
-  static const String dashboard = '/';
-
-  /// Aba "Orçamentos".
-  static const String orcamentos = '/orcamentos';
-
-  /// Aba "Catálogo".
-  static const String catalogo = '/catalogo';
-
-  /// Aba "Mais".
-  static const String mais = '/mais';
-}
+export 'app_routes.dart';
 
 /// Abas da navegação inferior, na mesma ordem dos branches do shell.
 const List<AppNavItem> _abas = [
@@ -29,48 +18,21 @@ const List<AppNavItem> _abas = [
 ];
 
 /// Instância única de roteamento do app, usada por `MaterialApp.router`.
+///
+/// Só compõe as rotas que cada feature declara em
+/// `presentation/<feature>_routes.dart` (D-12). Congelado após a F1.
 final GoRouter appRouter = GoRouter(
+  navigatorKey: rootNavigatorKey,
   initialLocation: AppRoutes.dashboard,
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           AppShell(navigationShell: navigationShell),
       branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.dashboard,
-              builder: (context, state) => const DashboardPage(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.orcamentos,
-              builder: (context, state) =>
-                  const PlaceholderPage(titulo: 'Orçamentos'),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.catalogo,
-              builder: (context, state) =>
-                  const PlaceholderPage(titulo: 'Catálogo'),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.mais,
-              builder: (context, state) =>
-                  const PlaceholderPage(titulo: 'Mais'),
-            ),
-          ],
-        ),
+        StatefulShellBranch(routes: [dashboardRoute]),
+        StatefulShellBranch(routes: [orcamentosRoute]),
+        StatefulShellBranch(routes: [catalogoRoute]),
+        StatefulShellBranch(routes: [maisRoute]),
       ],
     ),
   ],

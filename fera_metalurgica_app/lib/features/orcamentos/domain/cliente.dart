@@ -1,3 +1,4 @@
+import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'cliente.freezed.dart';
@@ -27,7 +28,13 @@ abstract class Cliente with _$Cliente {
     String? observacoes,
   }) = _Cliente;
 
+  const Cliente._();
+
   /// Cria um [Cliente] a partir de um mapa JSON.
   factory Cliente.fromJson(Map<String, dynamic> json) =>
       _$ClienteFromJson(json);
+
+  /// Se o cliente é pessoa jurídica: [cpfCnpj] com 14 dígitos (CNPJ).
+  /// Qualquer outro valor conta como pessoa física (D-23).
+  bool get ehPessoaJuridica => somenteDigitos(cpfCnpj).length == 14;
 }

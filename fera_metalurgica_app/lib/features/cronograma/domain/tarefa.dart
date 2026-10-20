@@ -23,6 +23,13 @@ abstract class Tarefa with _$Tarefa {
 
     /// Se a tarefa já foi concluída.
     @Default(false) bool concluida,
+
+    /// Texto livre exibido abaixo do título (ex: "Cliente: João da Silva").
+    String? descricao,
+
+    /// Identificador do `Orcamento` relacionado, quando houver; habilita o
+    /// atalho "Ver Detalhes" na agenda (D-05).
+    String? orcamentoId,
   }) = _Tarefa;
 
   /// Cria uma [Tarefa] a partir de um mapa JSON.
