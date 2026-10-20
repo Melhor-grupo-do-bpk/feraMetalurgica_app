@@ -8,6 +8,23 @@ Baseado nas diretrizes oficiais de estilo Dart/Flutter (Effective Dart,
 `docs.flutter.dev/ai`) somadas às regras específicas deste projeto abaixo, que
 têm prioridade em caso de conflito.
 
+## Planejamento (leia antes de qualquer tarefa)
+
+O **o quê** e o **quando** do desenvolvimento ficam em [`docs/`](docs/):
+requisitos por tela, decisões que resolvem as divergências entre o Figma
+(`Teste/`) e o modelo, padrões de telas, controllers, testes e git, o plano
+de fases com trilhas paralelas e uma tarefa por trilha. Comece por
+[`docs/README.md`](docs/README.md). Regras resumidas:
+
+- **Uma decisão em `docs/02-decisoes.md` vale mais que a imagem do Figma.**
+  Não há decisão para o caso? Pare e pergunte, depois registre um `D-xx`.
+- Trabalhe em uma única trilha (`docs/tarefas/`) e só nos arquivos que ela
+  possui (tabela em `docs/04-plano.md`). Após a F1, `core/`, `domain/`,
+  `data/`, barrels, `*_routes.dart`, `*_controller.dart`, `main.dart` e
+  `pubspec.yaml` estão congelados: mudanças neles vão em PR separado.
+- Siga `docs/03-padroes.md` (estrutura de `presentation/`, Riverpod,
+  navegação, testes, commits e Definition of Done).
+
 ## Sobre o app
 
 FERA é um app de gestão de orçamentos para uma empresa de estruturas
@@ -32,6 +49,7 @@ lib/
     orcamentos/
     catalogo/
     cronograma/
+    mais/        # só presentation: menu da aba "Mais" (D-13)
 ```
 
 Cada feature em `features/<nome>/` tem exatamente:
@@ -65,10 +83,12 @@ uma feature existente, pare e pergunte antes de criar uma categoria nova.
    `sort_unnamed_constructors_first`: o construtor default/factory sem nome
    vem primeiro no arquivo gerado; siga o padrão dos arquivos existentes em
    `lib/features/orcamentos/domain/`).
-3. **Toda tela nova registra sua rota em `lib/core/router/app_router.dart`.**
-   Nunca use `Navigator.push`/`Navigator.of(context).push` diretamente nas
-   features — isso quebra deep linking e a navegação centralizada do
-   `go_router`.
+3. **Toda tela tem rota no `go_router`.** O mapa de rotas e os helpers ficam
+   em `AppRoutes` (`lib/core/router/app_router.dart`, D-11). Cada feature
+   declara suas rotas em `presentation/<feature>_routes.dart`, e o
+   `app_router.dart` só as compõe (D-12). Nunca use
+   `Navigator.push`/`Navigator.of(context).push` diretamente nas features:
+   isso quebra o deep linking e a navegação centralizada do `go_router`.
 4. **Gerência de estado é riverpod (`@riverpod`/`riverpod_annotation`) com
    `build_runner`.** Não introduza outro gerenciador de estado (Bloc,
    Provider clássico, GetX, `setState` para estado compartilhado entre
@@ -104,7 +124,8 @@ operacionais, que são as etapas 1 a 3 do wizard; a etapa 4 é o resumo.
   (`StatusOrcamento`), `criadoEm` (`DateTime`), `prazoDiasUteis` (`int = 15`;
   provisório, nenhuma etapa do wizard pede esse dado).
 - **`Cliente`** (etapa 1) — `id`, `nome`, `numero` (telefone/WhatsApp),
-  `cpfCnpj`, `email?`, `observacoes?`.
+  `cpfCnpj`, `email?`, `observacoes?`. Getter `ehPessoaJuridica` (14
+  dígitos no `cpfCnpj`; entra na F1, D-23). Sem endereço (D-04).
 - **`ItemOrcamento`** (etapa 2) — `id`, `tipoServico`, `medidas`
   (`Medidas = Medidas()`), `materialPrincipal?`, `especificacoes?`,
   `quantidade` (`int = 1`), `produtoId?` (referência a um
@@ -119,7 +140,8 @@ operacionais, que são as etapas 1 a 3 do wizard; a etapa 4 é o resumo.
   `recusado`. Não adicione outros status sem alinhar com o time. É
   serializado pelo **nome** (`"emAnalise"`), nunca pelo índice — não renomeie
   valores existentes sem migrar os dados salvos. Regras do `rascunho`:
-  - os cards (indicadores) do dashboard **ignoram** orçamentos em rascunho;
+  - os cards (indicadores) e os "recentes" do dashboard **ignoram**
+    orçamentos em rascunho (regras de cada card em D-03);
   - a lista de orçamentos mostra o chip "Rascunho";
   - por enquanto o wizard só grava `emAnalise` ao concluir; salvar como
     rascunho fica para quando o cliente confirmar (`// TODO(cliente)` em
@@ -145,8 +167,9 @@ campo `valorFinal` gravável no freezed.
 
 ### Cronograma (`lib/features/cronograma/domain/`)
 
-- **`Tarefa`** — `id`, `titulo`, `data` (`DateTime`), `tipo` (`TipoTarefa`),
-  `concluida` (`bool = false`).
+- **`Tarefa`** — `id`, `titulo`, `data` (`DateTime`, inclui a hora), `tipo`
+  (`TipoTarefa`), `concluida` (`bool = false`), `descricao?`,
+  `orcamentoId?` (id de um `Orcamento`; os dois últimos entram na F1, D-05).
 - **`TipoTarefa`** — `orcamento`, `producao`, `visita`.
 
 Não invente campos, entidades ou relações fora do que está descrito aqui sem
