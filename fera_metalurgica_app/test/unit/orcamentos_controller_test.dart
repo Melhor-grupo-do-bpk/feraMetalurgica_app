@@ -43,10 +43,7 @@ void main() {
 
     expect(container.read(orcamentosProvider).value!.first, novo);
     expect(await repository.getAll(), contains(novo));
-    expect(
-      await container.read(orcamentoPorIdProvider('00483').future),
-      novo,
-    );
+    expect(await container.read(orcamentoPorIdProvider('00483').future), novo);
   });
 
   test('excluir remove do repositório e do estado', () async {

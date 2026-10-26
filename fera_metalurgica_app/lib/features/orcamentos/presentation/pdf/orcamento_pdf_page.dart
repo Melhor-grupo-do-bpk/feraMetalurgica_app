@@ -13,8 +13,6 @@ class OrcamentoPdfPage extends StatelessWidget {
   final String orcamentoId;
 
   @override
-  Widget build(BuildContext context) => PlaceholderPage(
-    titulo: 'PDF do orçamento',
-    onBack: () => context.pop(),
-  );
+  Widget build(BuildContext context) =>
+      PlaceholderPage(titulo: 'PDF do orçamento', onBack: () => context.pop());
 }

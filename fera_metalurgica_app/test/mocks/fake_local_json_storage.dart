@@ -9,8 +9,7 @@ class InMemoryJsonStorage extends LocalJsonStorage {
   final Map<String, String> _arquivos = {};
 
   @override
-  Future<bool> exists(String fileName) async =>
-      _arquivos.containsKey(fileName);
+  Future<bool> exists(String fileName) async => _arquivos.containsKey(fileName);
 
   @override
   Future<List<Map<String, dynamic>>> readList(String fileName) async {
