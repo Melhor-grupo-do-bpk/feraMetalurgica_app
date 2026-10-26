@@ -1,8 +1,8 @@
 ---
 trilha: T2
 titulo: Lista e detalhes de orçamentos
-status: pendente        # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: em revisão      # pendente | em andamento | em revisão | concluída
+responsavel: agente T2 (Claude Code)
 branch: feat/t2-orcamentos-lista-detalhes
 depende_de: F1
 ---
@@ -18,34 +18,34 @@ depende_de: F1
 ## Checklist
 
 ### Lista (`OrcamentosListaPage`, Tela 8)
-- [ ] Cabeçalho "Orçamentos" + `DarkButton` "Novo", que abre
+- [x] Cabeçalho "Orçamentos" + `DarkButton` "Novo", que abre
       `AppRoutes.novoOrcamento()`.
-- [ ] Campo de busca "Buscar por cliente ou número..." (sem diferenciar
+- [x] Campo de busca "Buscar por cliente ou número..." (sem diferenciar
       maiúsculas nem acentos; números comparados só pelos dígitos).
-- [ ] `FilterChipsBar` com os chips de D-22.
-- [ ] Provider da tela (`OrcamentosListaFiltro`) com busca + status, e um
+- [x] `FilterChipsBar` com os chips de D-22.
+- [x] Provider da tela (`OrcamentosListaFiltro`) com busca + status, e um
       provider derivado com a lista filtrada a partir de `orcamentosProvider`.
-- [ ] Cartão (Tela 8): `#id`, cliente, `StatusChip`, data e "Valor Total"
+- [x] Cartão (Tela 8): `#id`, cliente, `StatusChip`, data e "Valor Total"
       (ou "Valor Estimado" em rascunho). Tocar abre os detalhes.
-- [ ] Estados carregando, vazio ("Nenhum orçamento encontrado") e erro.
+- [x] Estados carregando, vazio ("Nenhum orçamento encontrado") e erro.
 
 ### Detalhes (`OrcamentoDetalhesPage`, Tela 6)
-- [ ] Lê `orcamentoPorIdProvider(id)`. Se o id não existir, mostra "Orçamento
+- [x] Lê `orcamentoPorIdProvider(id)`. Se o id não existir, mostra "Orçamento
       não encontrado" com voltar.
-- [ ] Card do cliente: nome, "Cliente PF/PJ", `#id`, data, prazo ("15 dias
+- [x] Card do cliente: nome, "Cliente PF/PJ", `#id`, data, prazo ("15 dias
       úteis") e validade ("15 dias"), mais o menu ⋮ "Alterar status" (D-06),
       que salva via `orcamentosProvider.notifier.salvar`.
-- [ ] "Itens do Orçamento" descritivos (D-01): sem preço.
-- [ ] Card escuro "Valor Final" com 3 botões. **Editar** abre
+- [x] "Itens do Orçamento" descritivos (D-01): sem preço.
+- [x] Card escuro "Valor Final" com 3 botões. **Editar** abre
       `AppRoutes.editarOrcamento(id)`. **Gerar PDF** abre
       `AppRoutes.pdfOrcamento(id)`. **Enviar WhatsApp** fica com
       `onPressed` chamando um método `_enviarWhatsApp` vazio, com
       `// TODO(T5)`: a T5 implementa.
 
 ### Testes
-- [ ] Lista: renderiza o seed, filtra por status, busca por nome e por
+- [x] Lista: renderiza o seed, filtra por status, busca por nome e por
       número, mostra o estado vazio, e o toque navega.
-- [ ] Detalhes: renderiza o seed #00482, não mostra custos internos, e a
+- [x] Detalhes: renderiza o seed #00482, não mostra custos internos, e a
       troca de status chama `salvar`.
 
 ## Critério de aceite
