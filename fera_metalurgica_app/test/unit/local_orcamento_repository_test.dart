@@ -40,6 +40,6 @@ void main() {
     await repository.delete('00482');
 
     final ids = (await repository.getAll()).map((o) => o.id);
-    expect(ids, ['00481']);
+    expect(ids, orcamentosSeed.skip(1).map((o) => o.id));
   });
 }

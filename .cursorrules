@@ -84,7 +84,7 @@ uma feature existente, pare e pergunte antes de criar uma categoria nova.
    vem primeiro no arquivo gerado; siga o padrão dos arquivos existentes em
    `lib/features/orcamentos/domain/`).
 3. **Toda tela tem rota no `go_router`.** O mapa de rotas e os helpers ficam
-   em `AppRoutes` (`lib/core/router/app_router.dart`, D-11). Cada feature
+   em `AppRoutes` (`lib/core/router/app_routes.dart`, D-11). Cada feature
    declara suas rotas em `presentation/<feature>_routes.dart`, e o
    `app_router.dart` só as compõe (D-12). Nunca use
    `Navigator.push`/`Navigator.of(context).push` diretamente nas features:
@@ -125,7 +125,7 @@ operacionais, que são as etapas 1 a 3 do wizard; a etapa 4 é o resumo.
   provisório, nenhuma etapa do wizard pede esse dado).
 - **`Cliente`** (etapa 1) — `id`, `nome`, `numero` (telefone/WhatsApp),
   `cpfCnpj`, `email?`, `observacoes?`. Getter `ehPessoaJuridica` (14
-  dígitos no `cpfCnpj`; entra na F1, D-23). Sem endereço (D-04).
+  dígitos no `cpfCnpj`, D-23). Sem endereço (D-04).
 - **`ItemOrcamento`** (etapa 2) — `id`, `tipoServico`, `medidas`
   (`Medidas = Medidas()`), `materialPrincipal?`, `especificacoes?`,
   `quantidade` (`int = 1`), `produtoId?` (referência a um
@@ -169,7 +169,7 @@ campo `valorFinal` gravável no freezed.
 
 - **`Tarefa`** — `id`, `titulo`, `data` (`DateTime`, inclui a hora), `tipo`
   (`TipoTarefa`), `concluida` (`bool = false`), `descricao?`,
-  `orcamentoId?` (id de um `Orcamento`; os dois últimos entram na F1, D-05).
+  `orcamentoId?` (id de um `Orcamento`, D-05).
 - **`TipoTarefa`** — `orcamento`, `producao`, `visita`.
 
 Não invente campos, entidades ou relações fora do que está descrito aqui sem

@@ -52,5 +52,35 @@ void main() {
 
       expect(formatarMoeda(orcamento.valorFinal), r'R$ 12.300,00');
     });
+
+    test('seeds #00480 e #00479 exibem os valores do Figma', () {
+      String valor(String id) => formatarMoeda(
+        orcamentosSeed.firstWhere((o) => o.id == id).valorFinal,
+      );
+
+      expect(valor('00480'), r'R$ 4.200,00');
+      expect(valor('00479'), r'R$ 15.200,00');
+    });
+  });
+
+  group('proximoIdOrcamento', () {
+    test('é o maior id + 1, com 5 dígitos', () {
+      expect(proximoIdOrcamento(orcamentosSeed), '00483');
+    });
+
+    test('começa em 00001 sem orçamentos', () {
+      expect(proximoIdOrcamento(const []), '00001');
+    });
+
+    test('ignora ids não numéricos', () {
+      final orcamento = orcamentosSeed.first;
+      expect(
+        proximoIdOrcamento([
+          orcamento.copyWith(id: 'abc'),
+          orcamento.copyWith(id: '00009'),
+        ]),
+        '00010',
+      );
+    });
   });
 }

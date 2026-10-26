@@ -18,6 +18,11 @@ class LocalJsonStorage {
     return File('${directory.path}/$fileName.json');
   }
 
+  /// Whether anything was ever written under `fileName` (an empty list
+  /// still counts). Used to seed data only on first launch (D-17).
+  Future<bool> exists(String fileName) async =>
+      (await _fileFor(fileName)).existsSync();
+
   /// Reads the JSON array stored under `fileName`, or an empty list.
   Future<List<Map<String, dynamic>>> readList(String fileName) async {
     final file = await _fileFor(fileName);

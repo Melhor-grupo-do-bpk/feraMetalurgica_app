@@ -86,11 +86,11 @@ features/orcamentos/presentation/
 - Strings em pt-BR direto no código (sem i18n por enquanto).
 - Dinheiro: `formatarMoeda`. Datas: `formatarData` (`dd/MM/yyyy`) e
   `formatarHora` (`HH:mm`), de `core/utils/date_format.dart` (F1). Número do
-  orçamento: `'#${orcamento.id}'`.
+  orçamento: `orcamento.numeroFormatado` (`#00482`).
 - Rótulos de enum (status, tipo de tarefa) ficam em **extensões** na
   `presentation/` da feature (ex: `extension StatusOrcamentoUi on
-  StatusOrcamento { String get label; ... }`), criadas na F1. Nunca em
-  `domain/`.
+  StatusOrcamento { String get label; StatusTone get tone; ... }`), criadas
+  na F1. Nunca em `domain/`.
 
 ## 5. Testes
 

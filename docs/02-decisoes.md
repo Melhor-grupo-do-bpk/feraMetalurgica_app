@@ -156,7 +156,7 @@ O wizard só grava no fim. Sair dele com dados preenchidos pede confirmação
 
 Cada feature expõe suas rotas em `presentation/<feature>_routes.dart`,
 exportado pelo barrel, e `core/router/app_router.dart` apenas as compõe.
-Depois da F1, **`app_router.dart` e `AppRoutes` estão congelados**: as
+Depois da F1, **`app_router.dart` e `AppRoutes` (`app_routes.dart`) estão congelados**: as
 trilhas só trocam o `builder` das rotas da própria feature (que nascem
 apontando para `PlaceholderPage`).
 
