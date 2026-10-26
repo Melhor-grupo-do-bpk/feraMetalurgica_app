@@ -49,7 +49,10 @@ os testes correspondentes e, **em `detalhes/`, apenas** o método
       prazo e validade); `gerarOrcamentoPdf` retorna bytes não vazios para o
       seed.
 - [ ] Widget: o botão WhatsApp com launcher mockado (sucesso muda o status;
-      falha mostra o SnackBar).
+      falha mostra o SnackBar), em
+      `test/widget/orcamentos/detalhes/enviar_whatsapp_test.dart` (os demais
+      testes de `detalhes/` são da T2), e a prévia em
+      `test/widget/orcamentos/pdf/`.
 
 ## Critério de aceite
 Nos detalhes do #00482: "Gerar PDF" mostra a prévia e "Baixar" abre o

@@ -173,6 +173,8 @@ aqui no futuro.
 - A F1 adiciona `uuid` (D-09), `url_launcher` (D-15) e
   `flutter_localizations` (SDK), para que `showDatePicker`, `showTimePicker`
   e os textos do Material fiquem em pt-BR.
+- `pdf` e `printing` (usados pela T5, D-15) já estavam no projeto antes da
+  F1.
 - Calendário e máscaras são feitos à mão, sem pacote: calendário em
   `cronograma/presentation/`, máscaras e validadores em `core/utils/`.
 - Qualquer outra dependência exige uma nova decisão aqui.

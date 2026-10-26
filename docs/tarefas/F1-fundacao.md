@@ -1,7 +1,7 @@
 ---
 trilha: F1
 titulo: Fundação das telas
-status: em revisão      # pendente | em andamento | em revisão | concluída
+status: concluída       # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code)
 branch: feat/f1-fundacao-telas
 depende_de: —
@@ -97,8 +97,12 @@ Esta é a única trilha que mexe em `core/`, `domain/`, `data/`, barrels,
 - [x] `README.md` raiz e `CLAUDE.md`/`.cursorrules` atualizados.
 
 ## Observações para as trilhas
-- O `build_runner` instalado ignora `--delete-conflicting-outputs` (só
-  emite um aviso). Rode `dart run build_runner build`.
+- Use o Flutter 3.47.1 do FVM (ver `docs/orquestracao.md` §2); com ele,
+  `dart run build_runner build --delete-conflicting-outputs` funciona. Se
+  o `build_runner` avisar que ignora a flag, rode sem ela.
+- Para testar a navegação com as telas reais, use `feraAppDeTeste()`
+  (`test/widget/fera_app_de_teste.dart`): o app inteiro com armazenamento
+  em memória e os dados de exemplo.
 - Os testes de widget que abrem uma tela que lê providers devem sobrescrever
   o provider do repositório (`orcamentoRepositoryProvider.overrideWithValue`)
   com `InMemoryJsonStorage` ou mock, porque `path_provider` não existe em

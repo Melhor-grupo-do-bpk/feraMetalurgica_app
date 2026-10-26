@@ -24,6 +24,11 @@ de fases com trilhas paralelas e uma tarefa por trilha. Comece por
   `pubspec.yaml` estão congelados: mudanças neles vão em PR separado.
 - Siga `docs/03-padroes.md` (estrutura de `presentation/`, Riverpod,
   navegação, testes, commits e Definition of Done).
+- **Desenvolvimento paralelo por agentes**: branches, worktrees, posse de
+  arquivos, contratos, handoffs e integração estão em
+  [`docs/orquestracao.md`](docs/orquestracao.md). Nesta rodada ele vale
+  sobre a seção 6 (Git e PR) de `docs/03-padroes.md`, e mudanças em
+  arquivos congelados são pedidas por handoff, não por PR separado.
 
 ## Sobre o app
 

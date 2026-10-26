@@ -24,8 +24,8 @@ de todas as outras.
 - [ ] Ícone do app e splash com o logo FERA (Android e iOS), nome do app
       "FERA".
 - [ ] `pubspec.yaml`: trocar `description` ("A new Flutter project.").
-- [ ] `README.md` raiz: remover o aviso "Este commit contém apenas a
-      estrutura base…" e descrever o que o app faz hoje.
+- [ ] `README.md` raiz: trocar o aviso "Estado atual: fundação das telas
+      (F1) pronta…" por uma descrição do que o app faz hoje.
 - [ ] Levantar os `TODO(cliente)` restantes numa lista para levar ao
       cliente (D-04, D-07, D-08).
 

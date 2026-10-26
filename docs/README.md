@@ -21,6 +21,13 @@ app lê, nesta ordem:
 [`01-requisitos.md`](01-requisitos.md) lista os requisitos de cada tela
 (RF-xx). As telas originais estão em [`../Teste/`](../Teste/) (Tela 1 a 10).
 
+> **Rodada atual (telas-v1):** as trilhas T2 a T8 são feitas por agentes em
+> paralelo, cada um na sua worktree. Branches, posse de arquivos, contratos,
+> handoffs e integração estão em [`orquestracao.md`](orquestracao.md), que
+> substitui, nesta rodada, o fluxo de PR descrito abaixo e em
+> `03-padroes.md` §6. Os prompts dos agentes ficam em [`prompts/`](prompts/)
+> e os pedidos de cada trilha em [`handoffs/`](handoffs/).
+
 ## Como pegar uma tarefa
 
 1. Abra [`04-plano.md`](04-plano.md) e escolha uma trilha com `status:
