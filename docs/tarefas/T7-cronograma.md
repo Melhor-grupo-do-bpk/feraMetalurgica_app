@@ -18,8 +18,9 @@ e `test/widget/cronograma/**`.
 ## Checklist
 
 ### `CronogramaPage` (Tela 10)
-- [ ] Provider da tela: dia selecionado (padrão: hoje, vindo de um provider
-      `hoje` que os testes possam sobrescrever), mês exibido e tipos
+- [ ] Provider da tela: dia selecionado (padrão: hoje, derivado de
+      `agoraProvider` em `core/di/relogio_provider.dart`, que os testes
+      sobrescrevem), mês exibido e tipos
       marcados (os 3 por padrão).
 - [ ] `CalendarioMensal` feito à mão (D-14): cabeçalho "Outubro 2023" com
       ‹ ›, linha D S T Q Q S S, dias de outros meses esmaecidos, dia

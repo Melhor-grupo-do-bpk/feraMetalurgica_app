@@ -87,7 +87,7 @@ assinaturas.** Os nomes abaixo são os importados pelos barrels
 | T4 | `DashboardPage()`; provider `indicadoresDashboard` interno a `dashboard/presentation/` |
 | T5 | `gerarOrcamentoPdf(Orcamento) → Future<Uint8List>`, `montarMensagemWhatsApp(Orcamento) → String`, `abrirWhatsApp(String numero, String mensagem) → Future<bool>` exposto por provider `@riverpod`, `OrcamentoPdfPage({required String orcamentoId})`. Não entram no barrel (são usados dentro da feature por caminho relativo) |
 | T6 | `CatalogoPage()` |
-| T7 | `CronogramaPage()`, `TarefaFormPage({String? tarefaId})`; provider `hoje` interno |
+| T7 | `CronogramaPage()`, `TarefaFormPage({String? tarefaId})`; "hoje" derivado de `agoraProvider` |
 
 ### Consumidos (da F1, congelados)
 
@@ -103,6 +103,7 @@ assinaturas.** Os nomes abaixo são os importados pelos barrels
 | `gerarId`, `date_format`, `input_formatters`, `validators`, `formatarMoeda` (`core/utils/`) | T2, T3, T4, T7 |
 | `AppConstants` (`validadeOrcamentoDias`, `emissor*`, `margemPadraoPercentual`) | T2, T5 |
 | Widgets de `core/widgets/` | todas |
+| `agoraProvider` (`core/di/relogio_provider.dart`): data e hora atuais, sobrescrevível nos testes. Nunca chame `DateTime.now()` direto | T3, T7 (e quem precisar de "agora") |
 | Testes: `pumpThemed` (`test/widget/core/pump_themed.dart`), `InMemoryJsonStorage` (`test/mocks/fake_local_json_storage.dart`), mocks `mock_*_repository.dart`, `feraAppDeTeste()` (`test/widget/fera_app_de_teste.dart`: o app inteiro com armazenamento em memória e seed) | todas |
 
 ## 5. Arquivos compartilhados
@@ -229,3 +230,4 @@ explícito.
 | HO-T2-01 (tokens `whatsapp`/`onWhatsapp`) | Adiado para a T8 (sugestão de acabamento). Por enquanto, o card usa tokens existentes. | — |
 | HO-T2-02 (normalização de acentos em `core/utils`) | Adiado para a T8, ou antes, se outra trilha precisar de busca (aí vira pedido no handoff dela). | — |
 | HO-T2-03 (`dart format` em 3 arquivos da F1) | Aceito e aplicado antes do merge da T2. | `6bfef6e` |
+| Revisão do plano da T3 (relógio) | T3 e T7 precisavam de um relógio sobrescrevível. Criei `agoraProvider` compartilhado em `core/di`, para evitar duas versões. | ver log |
