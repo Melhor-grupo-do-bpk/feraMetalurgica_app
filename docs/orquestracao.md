@@ -27,10 +27,10 @@ Se algo aqui parecer contradizer o `CLAUDE.md`, pare e pergunte.
 | ID | Tarefa | Branch | Worktree | Depende de | Situação |
 |---|---|---|---|---|---|
 | F1 | [Fundação das telas](tarefas/F1-fundacao.md) | `feat/f1-fundacao-telas` | — | — | integrada |
-| T2 | [Lista e detalhes](tarefas/T2-orcamentos-lista-detalhes.md) | `feat/t2-orcamentos-lista-detalhes` | `worktrees/T2` | F1 | liberada |
+| T2 | [Lista e detalhes](tarefas/T2-orcamentos-lista-detalhes.md) | `feat/t2-orcamentos-lista-detalhes` | `worktrees/T2` | F1 | integrada |
 | T3 | [Wizard](tarefas/T3-wizard.md) | `feat/t3-wizard` | `worktrees/T3` | F1 | liberada |
 | T4 | [Dashboard](tarefas/T4-dashboard.md) | `feat/t4-dashboard` | `worktrees/T4` | F1 | liberada |
-| T5 | [PDF e WhatsApp](tarefas/T5-pdf-whatsapp.md) | `feat/t5-pdf-whatsapp` | `worktrees/T5` | T2 integrada | aguardando T2 |
+| T5 | [PDF e WhatsApp](tarefas/T5-pdf-whatsapp.md) | `feat/t5-pdf-whatsapp` | `worktrees/T5` | T2 integrada | liberada |
 | T6 | [Catálogo](tarefas/T6-catalogo.md) | `feat/t6-catalogo` | `worktrees/T6` | F1 | liberada |
 | T7 | [Cronograma](tarefas/T7-cronograma.md) | `feat/t7-cronograma` | `worktrees/T7` | F1 | liberada |
 | T8 | [Acabamento](tarefas/T8-acabamento.md) | `feat/t8-acabamento` | `worktrees/T8` | T2 a T7 integradas | aguardando |
@@ -65,7 +65,7 @@ arquivos da sua linha (mais o próprio `docs/tarefas/<arquivo>.md` e
 | T2 | `lib/features/orcamentos/presentation/lista/**`, `lib/features/orcamentos/presentation/detalhes/**`, `test/widget/orcamentos/lista/**`, `test/widget/orcamentos/detalhes/**` (exceto `enviar_whatsapp_test.dart`) |
 | T3 | `lib/features/orcamentos/presentation/wizard/**`, `test/widget/orcamentos/wizard/**`, `test/unit/orcamento_wizard_controller_test.dart` |
 | T4 | `lib/features/dashboard/presentation/**` (exceto `dashboard_routes.dart`), `test/widget/dashboard_page_test.dart`, `test/unit/dashboard_indicadores_test.dart` |
-| T5 | `lib/features/orcamentos/data/pdf/**`, `lib/features/orcamentos/data/whatsapp/**`, `lib/features/orcamentos/domain/mensagem_whatsapp.dart`, `lib/features/orcamentos/presentation/pdf/**`; em `presentation/detalhes/` **apenas** o corpo de `_enviarWhatsApp` e os imports necessários; `test/unit/mensagem_whatsapp_test.dart`, `test/unit/orcamento_pdf_builder_test.dart`, `test/widget/orcamentos/pdf/**`, `test/widget/orcamentos/detalhes/enviar_whatsapp_test.dart`, `test/mocks/mock_whatsapp_launcher.dart` |
+| T5 | `lib/features/orcamentos/data/pdf/**`, `lib/features/orcamentos/data/whatsapp/**`, `lib/features/orcamentos/domain/mensagem_whatsapp.dart`, `lib/features/orcamentos/presentation/pdf/**`; em `presentation/detalhes/` **apenas** o corpo de `_enviarWhatsApp` e os imports necessários; `test/unit/mensagem_whatsapp_test.dart`, `test/unit/orcamento_pdf_builder_test.dart`, `test/widget/orcamentos/pdf/**`, `test/widget/orcamentos/detalhes/enviar_whatsapp_test.dart`, `test/mocks/mock_whatsapp_launcher.dart`; em `test/widget/orcamentos/detalhes/orcamento_detalhes_page_test.dart` (da T2) **apenas** remover ou substituir o teste "Enviar WhatsApp ainda não faz nada (T5)" |
 | T6 | `lib/features/catalogo/presentation/**` (exceto `catalogo_controller.dart` e `catalogo_routes.dart`), `assets/images/catalogo/**`, `test/widget/catalogo/**` |
 | T7 | `lib/features/cronograma/presentation/**` (exceto `cronograma_controller.dart`, `cronograma_routes.dart` e `cronograma_ui.dart`), `test/widget/cronograma/**`, `test/unit/calendario_mes_test.dart` |
 | T8 | qualquer arquivo (roda sozinha, depois de todas) |
@@ -226,4 +226,6 @@ explícito.
 
 | Handoff | Resposta | Commit na integração |
 |---|---|---|
-| — | — | — |
+| HO-T2-01 (tokens `whatsapp`/`onWhatsapp`) | Adiado para a T8 (sugestão de acabamento). Por enquanto, o card usa tokens existentes. | — |
+| HO-T2-02 (normalização de acentos em `core/utils`) | Adiado para a T8, ou antes, se outra trilha precisar de busca (aí vira pedido no handoff dela). | — |
+| HO-T2-03 (`dart format` em 3 arquivos da F1) | Aceito e aplicado antes do merge da T2. | `6bfef6e` |

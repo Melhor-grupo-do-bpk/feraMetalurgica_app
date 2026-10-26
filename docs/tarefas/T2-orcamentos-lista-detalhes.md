@@ -1,7 +1,7 @@
 ---
 trilha: T2
 titulo: Lista e detalhes de orçamentos
-status: em revisão      # pendente | em andamento | em revisão | concluída
+status: concluída       # pendente | em andamento | em revisão | concluída
 responsavel: agente T2 (Claude Code)
 branch: feat/t2-orcamentos-lista-detalhes
 depende_de: F1
