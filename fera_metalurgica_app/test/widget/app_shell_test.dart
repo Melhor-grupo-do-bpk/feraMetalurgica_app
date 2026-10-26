@@ -5,10 +5,10 @@ import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
 import 'package:fera_metalurgica_app/features/dashboard/dashboard.dart';
 import 'package:fera_metalurgica_app/features/mais/mais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
-import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'fera_app_de_teste.dart';
 
 void main() {
   for (final (modo, cores) in [
@@ -19,7 +19,7 @@ void main() {
       tester,
     ) async {
       appRouter.go(AppRoutes.dashboard);
-      await tester.pumpWidget(ProviderScope(child: FeraApp(themeMode: modo)));
+      await tester.pumpWidget(await feraAppDeTeste(themeMode: modo));
       await tester.pumpAndSettle();
 
       final nav = find.byType(AppBottomNavBar);

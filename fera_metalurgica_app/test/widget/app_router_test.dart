@@ -7,17 +7,17 @@ import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/dashboard/dashboard.dart';
 import 'package:fera_metalurgica_app/features/mais/mais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
-import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'fera_app_de_teste.dart';
 
 /// Garante que cada helper de `AppRoutes` (D-11) abre a tela certa, com os
 /// parâmetros certos, dentro ou fora do shell.
 void main() {
   Future<void> abrir(WidgetTester tester, String rota) async {
     appRouter.go(rota);
-    await tester.pumpWidget(const ProviderScope(child: FeraApp()));
+    await tester.pumpWidget(await feraAppDeTeste());
     await tester.pumpAndSettle();
   }
 
