@@ -17,6 +17,9 @@ const List<StatusOrcamento> _statusDoMenu = [
   StatusOrcamento.recusado,
 ];
 
+/// Ações do menu ⋮ do card do cliente.
+enum _AcaoMenu { alterarStatus }
+
 /// Card do cliente nos detalhes (Tela 6, RF-30): nome, PF/PJ, número,
 /// data, prazo e validade, com o menu ⋮ "Alterar status" (RF-33, D-06).
 class DetalhesClienteCard extends StatelessWidget {
@@ -98,12 +101,17 @@ class DetalhesClienteCard extends StatelessWidget {
                   ],
                 ),
               ),
-              PopupMenuButton<void>(
+              PopupMenuButton<_AcaoMenu>(
                 tooltip: 'Mais opções',
                 icon: Icon(Icons.more_vert, color: colors.textSecondary),
-                onSelected: (_) => _escolherStatus(context),
+                onSelected: (acao) => switch (acao) {
+                  _AcaoMenu.alterarStatus => _escolherStatus(context),
+                },
                 itemBuilder: (context) => const [
-                  PopupMenuItem<void>(child: Text('Alterar status')),
+                  PopupMenuItem(
+                    value: _AcaoMenu.alterarStatus,
+                    child: Text('Alterar status'),
+                  ),
                 ],
               ),
             ],
