@@ -1,7 +1,7 @@
 ---
 trilha: T4
 titulo: Dashboard
-status: em revisão        # pendente | em andamento | em revisão | concluída
+status: concluída       # pendente | em andamento | em revisão | concluída
 responsavel: agente T4 (Claude Code)
 branch: feat/t4-dashboard
 depende_de: F1

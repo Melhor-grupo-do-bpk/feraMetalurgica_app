@@ -29,7 +29,7 @@ Se algo aqui parecer contradizer o `CLAUDE.md`, pare e pergunte.
 | F1 | [Fundação das telas](tarefas/F1-fundacao.md) | `feat/f1-fundacao-telas` | — | — | integrada |
 | T2 | [Lista e detalhes](tarefas/T2-orcamentos-lista-detalhes.md) | `feat/t2-orcamentos-lista-detalhes` | `worktrees/T2` | F1 | integrada |
 | T3 | [Wizard](tarefas/T3-wizard.md) | `feat/t3-wizard` | `worktrees/T3` | F1 | integrada |
-| T4 | [Dashboard](tarefas/T4-dashboard.md) | `feat/t4-dashboard` | `worktrees/T4` | F1 | liberada |
+| T4 | [Dashboard](tarefas/T4-dashboard.md) | `feat/t4-dashboard` | `worktrees/T4` | F1 | integrada |
 | T5 | [PDF e WhatsApp](tarefas/T5-pdf-whatsapp.md) | `feat/t5-pdf-whatsapp` | `worktrees/T5` | T2 integrada | liberada |
 | T6 | [Catálogo](tarefas/T6-catalogo.md) | `feat/t6-catalogo` | `worktrees/T6` | F1 | liberada |
 | T7 | [Cronograma](tarefas/T7-cronograma.md) | `feat/t7-cronograma` | `worktrees/T7` | F1 | liberada |
@@ -235,3 +235,4 @@ explícito.
 | HO-T3-02 (`StepProgressBar` com altura 0) | Aceito: `stretch` na `Row` e teste de altura. | `d1a3267` |
 | HO-T3-03 (área de toque do `ItemCard`) | Adiado para a T8 (RNF-06). | — |
 | HO-T3-04 (CPF/CNPJ inválidos nos seeds) | Aceito: `123.456.789-09` (#00482) e `12.345.678/0001-95` (#00481). | `77b3b34` |
+| HO-T4-01 (chip "Em análise" cinza no Figma e comentário do `StatusChip`) | O dashboard usa o mesmo tom da lista. Ajuste do comentário e revisão visual ficam para a T8. | — |
