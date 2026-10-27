@@ -25,4 +25,15 @@ void main() {
     expect(corDo(2), AppColors.light.progressTrack);
     expect(corDo(3), AppColors.light.progressTrack);
   });
+
+  testWidgets('os segmentos têm a altura da barra', (tester) async {
+    await pumpThemed(tester, const StepProgressBar(etapaAtual: 1));
+
+    for (var i = 0; i < 4; i++) {
+      expect(
+        tester.getSize(find.byKey(ValueKey('step-segment-$i'))).height,
+        8,
+      );
+    }
+  });
 }

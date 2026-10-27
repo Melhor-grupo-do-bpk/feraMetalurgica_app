@@ -28,6 +28,8 @@ class StepProgressBar extends StatelessWidget {
       child: SizedBox(
         height: 8,
         child: Row(
+          // Sem `stretch`, os segmentos (sem filho) ficam com altura 0.
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (var i = 0; i < totalEtapas; i++) ...[
               if (i > 0) const SizedBox(width: AppSpacing.xs),
