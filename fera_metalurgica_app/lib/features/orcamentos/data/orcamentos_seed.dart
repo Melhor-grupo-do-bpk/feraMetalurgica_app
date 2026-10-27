@@ -22,7 +22,7 @@ final List<Orcamento> orcamentosSeed = [
       id: 'cliente-joao-da-silva',
       nome: 'João da Silva',
       numero: '(99) 99999-9999',
-      cpfCnpj: '123.456.789-00',
+      cpfCnpj: '123.456.789-09',
     ),
     projeto: 'Portão metálico',
     itens: const [
@@ -51,7 +51,7 @@ final List<Orcamento> orcamentosSeed = [
       id: 'cliente-metalurgica-abc',
       nome: 'Metalúrgica ABC Ltda',
       numero: '(99) 99999-9999',
-      cpfCnpj: '12.345.678/0001-90',
+      cpfCnpj: '12.345.678/0001-95',
     ),
     projeto: 'Estrutura treliçada',
     itens: const [
