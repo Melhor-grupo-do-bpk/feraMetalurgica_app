@@ -1,8 +1,8 @@
 ---
 trilha: T3
 titulo: Wizard de orçamento
-status: pendente        # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: em andamento       # pendente | em andamento | em revisão | concluída
+responsavel: Claude (agente T3)
 branch: feat/t3-wizard
 depende_de: F1
 ---
