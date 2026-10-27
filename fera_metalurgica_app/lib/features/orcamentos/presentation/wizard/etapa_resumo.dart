@@ -129,25 +129,29 @@ class EtapaResumo extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const _Rotulo(
-                icone: Icons.payments_outlined,
-                texto: 'Valor final',
-              ),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  formatarMoeda(orcamento.valorFinal),
-                  key: const Key('valor-final'),
-                  style: AppTextStyles.display.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w700,
+          // Largura total, para alinhar rótulo e valor à direita.
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                const _Rotulo(
+                  icone: Icons.payments_outlined,
+                  texto: 'Valor final',
+                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    formatarMoeda(orcamento.valorFinal),
+                    key: const Key('valor-final'),
+                    style: AppTextStyles.display.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.lg),

@@ -1,5 +1,6 @@
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
+import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
@@ -128,7 +129,10 @@ class _ItemFormState extends ConsumerState<ItemForm> {
                   ? _tipo
                   : null,
               isExpanded: true,
-              hint: const Text('Selecione um item'),
+              hint: Text(
+                'Selecione um item',
+                style: AppTextStyles.body.copyWith(color: colors.textMuted),
+              ),
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.construction_outlined),
               ),
@@ -254,7 +258,23 @@ class _CampoMedida extends StatelessWidget {
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
-      decoration: InputDecoration(prefixText: '$letra  ', hintText: '0.00'),
+      // `prefixIcon` (e não `prefixText`): a letra aparece mesmo vazio.
+      decoration: InputDecoration(
+        hintText: '0.00',
+        prefixIcon: Center(
+          widthFactor: 1,
+          child: Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.sm),
+            child: Text(
+              letra,
+              style: AppTextStyles.body.copyWith(
+                color: context.colors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: AppSpacing.lg),
+      ),
       validator: (valor) {
         if (valor == null || valor.trim().isEmpty) return null;
         return _lerMedida(valor) == null ? 'Inválida' : null;
