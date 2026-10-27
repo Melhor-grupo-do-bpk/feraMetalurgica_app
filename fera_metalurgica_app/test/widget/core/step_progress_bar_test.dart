@@ -30,10 +30,7 @@ void main() {
     await pumpThemed(tester, const StepProgressBar(etapaAtual: 1));
 
     for (var i = 0; i < 4; i++) {
-      expect(
-        tester.getSize(find.byKey(ValueKey('step-segment-$i'))).height,
-        8,
-      );
+      expect(tester.getSize(find.byKey(ValueKey('step-segment-$i'))).height, 8);
     }
   });
 }
