@@ -1,8 +1,8 @@
 ---
 trilha: T5
 titulo: PDF e WhatsApp
-status: pendente        # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: em andamento  # pendente | em andamento | em revisão | concluída
+responsavel: Claude (agente T5)
 branch: feat/t5-pdf-whatsapp
 depende_de: T2
 ---
