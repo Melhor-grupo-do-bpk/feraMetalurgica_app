@@ -28,7 +28,7 @@ Se algo aqui parecer contradizer o `CLAUDE.md`, pare e pergunte.
 |---|---|---|---|---|---|
 | F1 | [Fundação das telas](tarefas/F1-fundacao.md) | `feat/f1-fundacao-telas` | — | — | integrada |
 | T2 | [Lista e detalhes](tarefas/T2-orcamentos-lista-detalhes.md) | `feat/t2-orcamentos-lista-detalhes` | `worktrees/T2` | F1 | integrada |
-| T3 | [Wizard](tarefas/T3-wizard.md) | `feat/t3-wizard` | `worktrees/T3` | F1 | liberada |
+| T3 | [Wizard](tarefas/T3-wizard.md) | `feat/t3-wizard` | `worktrees/T3` | F1 | integrada |
 | T4 | [Dashboard](tarefas/T4-dashboard.md) | `feat/t4-dashboard` | `worktrees/T4` | F1 | liberada |
 | T5 | [PDF e WhatsApp](tarefas/T5-pdf-whatsapp.md) | `feat/t5-pdf-whatsapp` | `worktrees/T5` | T2 integrada | liberada |
 | T6 | [Catálogo](tarefas/T6-catalogo.md) | `feat/t6-catalogo` | `worktrees/T6` | F1 | liberada |
@@ -231,3 +231,7 @@ explícito.
 | HO-T2-02 (normalização de acentos em `core/utils`) | Adiado para a T8, ou antes, se outra trilha precisar de busca (aí vira pedido no handoff dela). | — |
 | HO-T2-03 (`dart format` em 3 arquivos da F1) | Aceito e aplicado antes do merge da T2. | `6bfef6e` |
 | Revisão do plano da T3 (relógio) | T3 e T7 precisavam de um relógio sobrescrevível. Criei `agoraProvider` compartilhado em `core/di`, para evitar duas versões. | ver log |
+| HO-T3-01 (custos R$ 0,00) | Não bloquear. Vai para a lista de perguntas ao cliente da T8. | — |
+| HO-T3-02 (`StepProgressBar` com altura 0) | Aceito: `stretch` na `Row` e teste de altura. | `d1a3267` |
+| HO-T3-03 (área de toque do `ItemCard`) | Adiado para a T8 (RNF-06). | — |
+| HO-T3-04 (CPF/CNPJ inválidos nos seeds) | Aceito: `123.456.789-09` (#00482) e `12.345.678/0001-95` (#00481). | `77b3b34` |
