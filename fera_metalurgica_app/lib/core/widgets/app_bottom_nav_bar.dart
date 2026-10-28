@@ -40,15 +40,23 @@ class AppBottomNavBar extends StatelessWidget {
             horizontal: AppSpacing.md,
             vertical: AppSpacing.xs,
           ),
+          // Cada aba ocupa uma fatia igual da largura; em telas estreitas
+          // (ou com fonte grande) o rótulo é cortado com reticências.
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               for (var i = 0; i < itens.length; i++)
-                _NavButton(
-                  item: itens[i],
-                  ativo: i == indiceAtual,
-                  colors: colors,
-                  onTap: () => onSelecionado(i),
+                Expanded(
+                  // `heightFactor: 1`: sem ele, o `Center` ocupa toda a
+                  // altura que o Scaffold oferece à barra.
+                  child: Center(
+                    heightFactor: 1,
+                    child: _NavButton(
+                      item: itens[i],
+                      ativo: i == indiceAtual,
+                      colors: colors,
+                      onTap: () => onSelecionado(i),
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -73,7 +81,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = ativo ? colors.onPrimary : colors.navInactive;
+    final foreground = ativo ? colors.onNavActive : colors.navInactive;
     final radius = BorderRadius.circular(AppSpacing.radiusMd);
     return Semantics(
       selected: ativo,
@@ -96,6 +104,8 @@ class _NavButton extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.label.copyWith(color: foreground),
                 ),
               ],
