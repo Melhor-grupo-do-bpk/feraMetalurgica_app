@@ -115,6 +115,28 @@ barrel `<feature>.dart` com a API pública da feature.
   (orçamentos/produção/visitas).
 - **mais** — menu da aba "Mais" (hoje: Cronograma).
 
-> Estado atual: fundação das telas (F1) pronta — rotas, estado compartilhado,
-> utilitários e dados de exemplo; as telas ainda são stubs e são
-> implementadas nas trilhas T2–T8 de [`docs/04-plano.md`](docs/04-plano.md).
+## O que o app faz hoje
+
+Todas as telas do Figma (`Teste/`, Telas 1 a 10) estão implementadas, nos
+modos claro e escuro, e funcionam offline:
+
+- **Início:** botão "Criar orçamento", os 4 indicadores (rascunhos não
+  contam) e os 2 orçamentos mais recentes.
+- **Orçamentos:** lista com busca (sem diferenciar maiúsculas nem acentos)
+  e filtro por status; wizard de 4 etapas (cliente, itens, custos e resumo)
+  que cria ou edita um orçamento; detalhes com itens descritivos, valor
+  final, troca de status, envio por WhatsApp e prévia do PDF para
+  compartilhar.
+- **Catálogo:** produtos com foto, categoria e descrição técnica. "Usar no
+  orçamento" abre o wizard já com o item.
+- **Mais → Cronograma:** calendário do mês, filtros por tipo, linha do
+  tempo com tarefas que podem ser concluídas, e formulário para criar,
+  editar ou excluir tarefas (com vínculo opcional a um orçamento).
+
+Em modo debug, o primeiro uso grava dados de exemplo (D-17). Em release, só
+o catálogo vem preenchido.
+
+Ainda provisório, aguardando o cliente: margem (62,5%) e prazo (15 dias
+úteis), validade e dados do emissor no PDF, salvar rascunho no wizard, as
+fotos reais do catálogo e o logo completo. A lista está em
+[`docs/relatorios/2026-10-28-perguntas-cliente.md`](docs/relatorios/2026-10-28-perguntas-cliente.md).

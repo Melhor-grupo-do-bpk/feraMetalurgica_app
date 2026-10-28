@@ -209,11 +209,17 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
                         icon: const Icon(Icons.arrow_back, size: 16),
                         label: const Text('Voltar'),
                       ),
-                    const Spacer(),
-                    PrimaryButton(
-                      label: 'Continuar',
-                      trailingIcon: Icons.arrow_forward,
-                      onPressed: _salvando ? null : _continuar,
+                    // O espaço que sobra é do "Continuar", que corta o
+                    // texto com reticências se não couber.
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: PrimaryButton(
+                          label: 'Continuar',
+                          trailingIcon: Icons.arrow_forward,
+                          onPressed: _salvando ? null : _continuar,
+                        ),
+                      ),
                     ),
                   ],
                 ),

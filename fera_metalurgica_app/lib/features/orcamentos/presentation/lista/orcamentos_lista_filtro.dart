@@ -64,7 +64,8 @@ List<Orcamento> filtrarOrcamentos(
 const String _comAcento = 'áàâãäéèêëíìîïóòôõöúùûüçñ';
 const String _semAcento = 'aaaaaeeeeiiiiooooouuuucn';
 
-// TODO(T8): mover para `core/utils/` se outra tela precisar (HO-T2-02).
+// Privada enquanto só esta busca a usa. Se outra tela precisar, vai para
+// `core/utils/` (03-padroes §1, HO-T2-02).
 String _normalizar(String texto) {
   final buffer = StringBuffer();
   for (final char in texto.toLowerCase().split('')) {

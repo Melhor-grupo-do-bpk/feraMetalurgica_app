@@ -9,56 +9,16 @@ import 'package:pdf/widgets.dart' as pw;
 
 const String _logoAsset = 'assets/images/logo_fera.png';
 
-/// Trocas de caracteres fora do Latin-1 por equivalentes que a fonte
-/// padrão do PDF consegue desenhar.
-const Map<int, String> _equivalentesLatin1 = {
-  0x2018: "'", // ‘
-  0x2019: "'", // ’
-  0x201A: "'", // ‚
-  0x201B: "'", // ‛
-  0x2032: "'", // ′
-  0x201C: '"', // “
-  0x201D: '"', // ”
-  0x201E: '"', // „
-  0x201F: '"', // ‟
-  0x2033: '"', // ″
-  0x2010: '-', // ‐
-  0x2011: '-', // ‑
-  0x2012: '-', // ‒
-  0x2013: '-', // –
-  0x2014: '-', // —
-  0x2015: '-', // ―
-  0x2212: '-', // −
-  0x2022: '·', // •
-  0x2026: '...', // …
-};
+/// Fonte do PDF (Inter, a do Figma, licença OFL em `assets/fonts/OFL.txt`).
+/// A fonte padrão do pacote `pdf` só desenha Latin-1; com a Inter, aspas
+/// curvas, travessões e o "•" de D-01 saem como foram digitados.
+const String fontePdfRegular = 'assets/fonts/Inter-Regular.ttf';
 
-// TODO(T8): embutir uma fonte TTF em assets/ para desenhar qualquer
-// caractere e dispensar esta troca (HO-T5-01).
-/// [texto] só com caracteres Latin-1, os únicos que a fonte padrão do PDF
-/// (Helvetica) desenha; fora dela, o `pdf` falha.
-///
-/// Aspas curvas viram retas, travessões viram hífen, "•" vira "·",
-/// reticências viram "...", espaços especiais viram espaço comum e o
-/// resto (emoji, outros alfabetos) vira "?".
-String textoParaPdf(String texto) {
-  final saida = StringBuffer();
-  for (final rune in texto.runes) {
-    if (rune <= 0xFF) {
-      saida.writeCharCode(rune);
-    } else if (_equivalentesLatin1[rune] case final equivalente?) {
-      saida.write(equivalente);
-    } else if ((rune >= 0x2000 && rune <= 0x200A) ||
-        rune == 0x202F ||
-        rune == 0x205F ||
-        rune == 0x3000) {
-      saida.write(' ');
-    } else {
-      saida.write('?');
-    }
-  }
-  return saida.toString();
-}
+/// Versão em negrito de [fontePdfRegular].
+const String fontePdfNegrito = 'assets/fonts/Inter-Bold.ttf';
+
+Future<pw.Font> _carregarFonte(String asset) async =>
+    pw.Font.ttf(await rootBundle.load(asset));
 
 /// PDF do orçamento que vai para o cliente (Tela 7, RF-40): logo, número,
 /// data, validade, emissor, cliente, itens com quantidade e o valor total.
@@ -68,10 +28,15 @@ Future<Uint8List> gerarOrcamentoPdf(Orcamento orcamento) async {
   final logo = pw.MemoryImage(
     (await rootBundle.load(_logoAsset)).buffer.asUint8List(),
   );
+  final tema = pw.ThemeData.withFont(
+    base: await _carregarFonte(fontePdfRegular),
+    bold: await _carregarFonte(fontePdfNegrito),
+  );
   final documento =
       pw.Document(
         title: 'Orçamento Nº ${orcamento.id}',
         author: AppConstants.emissorNome,
+        theme: tema,
       )..addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -125,10 +90,10 @@ List<pw.Widget> _linhasCliente(Orcamento orcamento) {
   final documento = cliente.ehPessoaJuridica ? 'CNPJ' : 'CPF';
   final email = cliente.email;
   return [
-    _negrito(textoParaPdf(cliente.nome)),
-    pw.Text('$documento: ${textoParaPdf(cliente.cpfCnpj)}'),
-    pw.Text(textoParaPdf(cliente.numero)),
-    if (email != null && email.isNotEmpty) pw.Text(textoParaPdf(email)),
+    _negrito(cliente.nome),
+    pw.Text('$documento: ${cliente.cpfCnpj}'),
+    pw.Text(cliente.numero),
+    if (email != null && email.isNotEmpty) pw.Text(email),
   ];
 }
 
@@ -155,12 +120,12 @@ pw.Widget _cabecalhoItens() => pw.Container(
 );
 
 /// Item descritivo (D-01): tipo, medidas e material, especificações e
-/// quantidade em "un". "·" no lugar do "•" de D-01, fora do Latin-1.
+/// quantidade em "un".
 pw.Widget _linhaItem(ItemOrcamento item) {
   final detalhes = [
     item.medidas.formatada,
     item.materialPrincipal ?? '',
-  ].where((t) => t.isNotEmpty).join(' · ');
+  ].where((t) => t.isNotEmpty).join(' • ');
   final especificacoes = item.especificacoes ?? '';
   return pw.Container(
     padding: const pw.EdgeInsets.symmetric(vertical: 10),
@@ -175,12 +140,11 @@ pw.Widget _linhaItem(ItemOrcamento item) {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Text(
-                textoParaPdf(item.tipoServico),
+                item.tipoServico,
                 style: const pw.TextStyle(fontSize: 12),
               ),
-              if (detalhes.isNotEmpty) _pequeno(textoParaPdf(detalhes)),
-              if (especificacoes.isNotEmpty)
-                _pequeno(textoParaPdf(especificacoes)),
+              if (detalhes.isNotEmpty) _pequeno(detalhes),
+              if (especificacoes.isNotEmpty) _pequeno(especificacoes),
             ],
           ),
         ),

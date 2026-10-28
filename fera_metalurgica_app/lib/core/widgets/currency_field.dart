@@ -58,6 +58,7 @@ class _CurrencyFieldState extends State<CurrencyField> {
               child: TextField(
                 controller: _controller,
                 textAlign: TextAlign.right,
+                textAlignVertical: TextAlignVertical.center,
                 keyboardType: TextInputType.number,
                 style: AppTextStyles.amount.copyWith(color: colors.textPrimary),
                 inputFormatters: [
@@ -71,6 +72,8 @@ class _CurrencyFieldState extends State<CurrencyField> {
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
+                  // Área de toque mínima de 48 dp (RNF-06).
+                  constraints: BoxConstraints(minHeight: 48),
                 ),
                 onChanged: (texto) => widget.onChanged?.call(
                   _CentavosInputFormatter.parse(texto),

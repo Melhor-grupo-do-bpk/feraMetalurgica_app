@@ -1,12 +1,12 @@
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
+import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/core/widgets/item_card.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/item_form.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_wizard_controller.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_campo.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_dialogos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -79,7 +79,7 @@ class _EtapaItensState extends ConsumerState<EtapaItens> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SectionCard(
-          child: WizardCampo(
+          child: FormCampo(
             rotulo: 'Nome do projeto',
             child: TextField(
               key: const Key('campo-projeto'),

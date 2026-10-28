@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 /// Etiqueta retangular com a categoria do produto, como na Tela 9.
 ///
 /// Diferente do `StatusChip` (pílula sem borda). Uso interno da feature,
-/// fora do barrel.
-// TODO(T8): unificar com o `StatusChip` em `core/widgets/` se fizer sentido.
+/// fora do barrel: só o catálogo usa, e `core/widgets/` é para o que duas
+/// features ou mais usam (03-padroes §1, HO-T6-02).
 class CategoriaTag extends StatelessWidget {
   /// Cria a etiqueta com [categoria].
   const CategoriaTag({required this.categoria, super.key});
