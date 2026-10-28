@@ -1,8 +1,8 @@
 ---
 trilha: T6
 titulo: Catálogo
-status: pendente        # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: em andamento  # pendente | em andamento | em revisão | concluída
+responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/t6-catalogo
 depende_de: F1
 ---
