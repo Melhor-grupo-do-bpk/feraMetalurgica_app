@@ -3,11 +3,12 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Campo de formulário do wizard: rótulo acima (com `*` vermelho se
-/// [obrigatorio]) e o [child] embaixo.
-class WizardCampo extends StatelessWidget {
+/// Campo de formulário: rótulo acima (com `*` vermelho se [obrigatorio]) e
+/// o [child] embaixo. Usado no wizard de orçamento e no formulário de
+/// tarefa.
+class FormCampo extends StatelessWidget {
   /// Cria o campo.
-  const WizardCampo({
+  const FormCampo({
     required this.rotulo,
     required this.child,
     this.obrigatorio = false,

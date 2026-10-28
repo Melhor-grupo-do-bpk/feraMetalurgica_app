@@ -6,6 +6,7 @@ import 'package:fera_metalurgica_app/core/utils/date_format.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
+import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tipo_tarefa.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma_controller.dart';
@@ -175,101 +176,108 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
             style: AppTextStyles.headline.copyWith(color: colors.textPrimary),
           ),
           const SizedBox(height: AppSpacing.lg),
-          TextFormField(
-            key: const ValueKey('tarefa-titulo'),
-            controller: _titulo,
-            decoration: const InputDecoration(
-              label: _Rotulo('Título', obrigatorio: true),
+          FormCampo(
+            rotulo: 'Título',
+            obrigatorio: true,
+            child: TextFormField(
+              key: const ValueKey('tarefa-titulo'),
+              controller: _titulo,
+              textCapitalization: TextCapitalization.sentences,
+              textInputAction: TextInputAction.next,
+              validator: validarObrigatorio,
             ),
-            textCapitalization: TextCapitalization.sentences,
-            textInputAction: TextInputAction.next,
-            validator: validarObrigatorio,
           ),
-          const SizedBox(height: AppSpacing.md),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: TextFormField(
-                  key: const ValueKey('tarefa-data'),
-                  controller: _dataTexto,
-                  readOnly: true,
-                  onTap: _escolherData,
-                  decoration: const InputDecoration(
-                    label: _Rotulo('Data', obrigatorio: true),
-                    suffixIcon: Icon(Icons.calendar_today_outlined),
+                child: FormCampo(
+                  rotulo: 'Data',
+                  obrigatorio: true,
+                  child: TextFormField(
+                    key: const ValueKey('tarefa-data'),
+                    controller: _dataTexto,
+                    readOnly: true,
+                    onTap: _escolherData,
+                    decoration: const InputDecoration(
+                      suffixIcon: Icon(Icons.calendar_today_outlined),
+                    ),
+                    validator: validarObrigatorio,
                   ),
-                  validator: validarObrigatorio,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: TextFormField(
-                  key: const ValueKey('tarefa-hora'),
-                  controller: _horaTexto,
-                  readOnly: true,
-                  onTap: _escolherHora,
-                  decoration: const InputDecoration(
-                    label: _Rotulo('Hora', obrigatorio: true),
-                    suffixIcon: Icon(Icons.schedule),
+                child: FormCampo(
+                  rotulo: 'Hora',
+                  obrigatorio: true,
+                  child: TextFormField(
+                    key: const ValueKey('tarefa-hora'),
+                    controller: _horaTexto,
+                    readOnly: true,
+                    onTap: _escolherHora,
+                    decoration: const InputDecoration(
+                      suffixIcon: Icon(Icons.schedule),
+                    ),
+                    validator: validarObrigatorio,
                   ),
-                  validator: validarObrigatorio,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<TipoTarefa>(
-            key: const ValueKey('tarefa-tipo'),
-            initialValue: _tipo,
-            decoration: const InputDecoration(
-              label: _Rotulo('Tipo', obrigatorio: true),
+          FormCampo(
+            rotulo: 'Tipo',
+            obrigatorio: true,
+            child: DropdownButtonFormField<TipoTarefa>(
+              key: const ValueKey('tarefa-tipo'),
+              initialValue: _tipo,
+              items: [
+                for (final tipo in TipoTarefa.values)
+                  DropdownMenuItem(value: tipo, child: Text(tipo.label)),
+              ],
+              onChanged: (tipo) => setState(() => _tipo = tipo),
+              validator: (tipo) => tipo == null ? 'Campo obrigatório' : null,
             ),
-            items: [
-              for (final tipo in TipoTarefa.values)
-                DropdownMenuItem(value: tipo, child: Text(tipo.label)),
-            ],
-            onChanged: (tipo) => setState(() => _tipo = tipo),
-            validator: (tipo) => tipo == null ? 'Campo obrigatório' : null,
           ),
-          const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            key: const ValueKey('tarefa-descricao'),
-            controller: _descricao,
-            decoration: const InputDecoration(label: _Rotulo('Descrição')),
-            textCapitalization: TextCapitalization.sentences,
-            minLines: 2,
-            maxLines: 4,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<String?>(
-            key: const ValueKey('tarefa-orcamento'),
-            initialValue: _orcamentoId,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              label: _Rotulo('Orçamento vinculado'),
+          FormCampo(
+            rotulo: 'Descrição',
+            child: TextFormField(
+              key: const ValueKey('tarefa-descricao'),
+              controller: _descricao,
+              textCapitalization: TextCapitalization.sentences,
+              minLines: 2,
+              maxLines: 4,
             ),
-            items: [
-              const DropdownMenuItem(child: Text('Nenhum')),
-              for (final o in orcamentos)
-                DropdownMenuItem(
-                  value: o.id,
-                  child: Text(
-                    '${o.numeroFormatado} - ${o.cliente.nome}',
-                    overflow: TextOverflow.ellipsis,
+          ),
+          FormCampo(
+            rotulo: 'Orçamento vinculado',
+            child: DropdownButtonFormField<String?>(
+              key: const ValueKey('tarefa-orcamento'),
+              initialValue: _orcamentoId,
+              isExpanded: true,
+              items: [
+                const DropdownMenuItem(child: Text('Nenhum')),
+                for (final o in orcamentos)
+                  DropdownMenuItem(
+                    value: o.id,
+                    child: Text(
+                      '${o.numeroFormatado} - ${o.cliente.nome}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              // Vínculo com um orçamento que não existe mais (ou que ainda
-              // não carregou): mantém o valor em vez de perdê-lo.
-              if (_orcamentoId != null && !idsOrcamentos.contains(_orcamentoId))
-                DropdownMenuItem(
-                  value: _orcamentoId,
-                  child: Text('#$_orcamentoId'),
-                ),
-            ],
-            onChanged: (id) => setState(() => _orcamentoId = id),
+                // Vínculo com um orçamento que não existe mais (ou que ainda
+                // não carregou): mantém o valor em vez de perdê-lo.
+                if (_orcamentoId != null &&
+                    !idsOrcamentos.contains(_orcamentoId))
+                  DropdownMenuItem(
+                    value: _orcamentoId,
+                    child: Text('#$_orcamentoId'),
+                  ),
+              ],
+              onChanged: (id) => setState(() => _orcamentoId = id),
+            ),
           ),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.md),
           PrimaryButton(
             label: 'Salvar tarefa',
             icon: Icons.check,
@@ -289,26 +297,4 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
       ),
     );
   }
-}
-
-/// Rótulo do campo, com `*` na cor de erro quando [obrigatorio].
-class _Rotulo extends StatelessWidget {
-  const _Rotulo(this.texto, {this.obrigatorio = false});
-
-  final String texto;
-  final bool obrigatorio;
-
-  @override
-  Widget build(BuildContext context) => Text.rich(
-    TextSpan(
-      text: texto,
-      children: [
-        if (obrigatorio)
-          TextSpan(
-            text: ' *',
-            style: TextStyle(color: context.colors.error),
-          ),
-      ],
-    ),
-  );
 }

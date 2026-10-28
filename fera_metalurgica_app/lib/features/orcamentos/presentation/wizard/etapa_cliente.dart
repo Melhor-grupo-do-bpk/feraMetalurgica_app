@@ -1,8 +1,8 @@
 import 'package:fera_metalurgica_app/core/utils/input_formatters.dart';
 import 'package:fera_metalurgica_app/core/utils/validators.dart';
+import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_wizard_controller.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_campo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -74,7 +74,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
         key: widget.formKey,
         child: Column(
           children: [
-            WizardCampo(
+            FormCampo(
               rotulo: 'Nome do cliente',
               obrigatorio: true,
               child: TextFormField(
@@ -90,7 +90,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
                 onChanged: _atualizar,
               ),
             ),
-            WizardCampo(
+            FormCampo(
               rotulo: 'Número do cliente',
               obrigatorio: true,
               child: TextFormField(
@@ -107,7 +107,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
                 onChanged: _atualizar,
               ),
             ),
-            WizardCampo(
+            FormCampo(
               // "CPF/CNPJ", e não "CPF" como no Figma (D-10).
               rotulo: 'CPF/CNPJ do cliente',
               obrigatorio: true,
@@ -125,7 +125,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
                 onChanged: _atualizar,
               ),
             ),
-            WizardCampo(
+            FormCampo(
               rotulo: 'Email do cliente',
               child: TextFormField(
                 key: const Key('campo-email'),
@@ -140,7 +140,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
                 onChanged: _atualizar,
               ),
             ),
-            WizardCampo(
+            FormCampo(
               rotulo: 'Observações',
               child: TextFormField(
                 key: const Key('campo-observacoes'),

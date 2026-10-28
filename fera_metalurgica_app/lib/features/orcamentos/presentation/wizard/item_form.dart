@@ -4,10 +4,10 @@ import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
+import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/medidas.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_campo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,7 +118,7 @@ class _ItemFormState extends ConsumerState<ItemForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          WizardCampo(
+          FormCampo(
             rotulo: 'Tipo do serviço',
             obrigatorio: true,
             child: DropdownButtonFormField<String>(
@@ -149,7 +149,7 @@ class _ItemFormState extends ConsumerState<ItemForm> {
             ),
           ),
           if (_tipo == _outro)
-            WizardCampo(
+            FormCampo(
               rotulo: 'Descreva o serviço',
               obrigatorio: true,
               child: TextFormField(
@@ -162,7 +162,7 @@ class _ItemFormState extends ConsumerState<ItemForm> {
                 validator: validarObrigatorio,
               ),
             ),
-          WizardCampo(
+          FormCampo(
             rotulo: 'Medidas (Metros)',
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +181,7 @@ class _ItemFormState extends ConsumerState<ItemForm> {
               ],
             ),
           ),
-          WizardCampo(
+          FormCampo(
             rotulo: 'Material Principal',
             child: TextFormField(
               key: const Key('campo-material'),
@@ -192,7 +192,7 @@ class _ItemFormState extends ConsumerState<ItemForm> {
               ),
             ),
           ),
-          WizardCampo(
+          FormCampo(
             rotulo: 'Especificações Técnicas / Observações',
             child: TextFormField(
               key: const Key('campo-especificacoes'),
@@ -207,7 +207,7 @@ class _ItemFormState extends ConsumerState<ItemForm> {
               ),
             ),
           ),
-          WizardCampo(
+          FormCampo(
             rotulo: 'Quantidade',
             obrigatorio: true,
             child: TextFormField(
