@@ -44,4 +44,50 @@ void main() {
     expect(find.text('Produção'), findsNothing);
     expect(find.byKey(const ValueKey('timeline-line')), findsNothing);
   });
+
+  testWidgets('sem onMarcadorPressed, o marcador não é botão', (tester) async {
+    await pumpThemed(
+      tester,
+      const TimelineTile(horario: '09:00', titulo: 'Visita técnica'),
+    );
+
+    expect(find.byKey(const ValueKey('timeline-dot')), findsOneWidget);
+    expect(find.byType(IconButton), findsNothing);
+  });
+
+  testWidgets('com onMarcadorPressed, o marcador é um botão de 48 dp', (
+    tester,
+  ) async {
+    var toques = 0;
+    await pumpThemed(
+      tester,
+      TimelineTile(
+        horario: '09:00',
+        titulo: 'Visita técnica',
+        onMarcadorPressed: () => toques++,
+      ),
+    );
+
+    final botao = find.byKey(const ValueKey('timeline-marcador'));
+    expect(tester.getSize(botao).width, greaterThanOrEqualTo(48));
+    expect(tester.getSize(botao).height, greaterThanOrEqualTo(48));
+    expect(find.byTooltip('Marcar como concluída'), findsOneWidget);
+
+    await tester.tap(botao);
+    expect(toques, 1);
+  });
+
+  testWidgets('tarefa concluída oferece marcar como pendente', (tester) async {
+    await pumpThemed(
+      tester,
+      TimelineTile(
+        horario: '09:00',
+        titulo: 'Visita técnica',
+        concluida: true,
+        onMarcadorPressed: () {},
+      ),
+    );
+
+    expect(find.byTooltip('Marcar como pendente'), findsOneWidget);
+  });
 }
