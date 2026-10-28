@@ -41,6 +41,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/catalogo/
+    - assets/fonts/
 
 # Ícone e splash do app (D-24). As imagens-fonte ficam em assets/launcher/,
 # fora do bundle. Para regerar:
