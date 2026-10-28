@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 /// Tom visual de um [StatusChip]. O mapeamento de cada status de negócio
 /// para um tom fica na feature (o core não conhece os enums das features).
 enum StatusTone {
-  /// Cinza (ex: "Em análise" no dashboard, "ORÇAMENTO" no cronograma).
+  /// Cinza (ex: "Rascunho", "ORÇAMENTO" no cronograma).
   neutral,
 
-  /// Azul acinzentado (ex: "Em análise" na lista).
+  /// Azul acinzentado (ex: "Em análise", na lista e no dashboard).
   info,
 
   /// Verde (ex: "Aprovado").
@@ -59,7 +59,7 @@ class StatusChip extends StatelessWidget {
         colors.onSuccessContainer,
       ),
       StatusTone.danger => (colors.dangerContainer, colors.onDangerContainer),
-      StatusTone.accent => (colors.accentContainer, colors.accent),
+      StatusTone.accent => (colors.accentContainer, colors.onAccentContainer),
     };
     final style = uppercase ? AppTextStyles.tag : AppTextStyles.caption;
 

@@ -275,3 +275,22 @@ desligados). O app não importa nenhum dos dois em `lib/`.
   `project.pbxproj` do iOS: reverta essa mudança antes de commitar.
 - `TODO(cliente)`: logo completo, com o texto "FERA METALURGICA", para o
   splash e o PDF.
+
+### D-25
+**Contraste mínimo de 4,5:1 vale mais que a cor exata do Figma.** *(T8, 28/10/2026)*
+
+O `textContrastGuideline` do Flutter (WCAG AA) roda em todas as telas, nos
+modos claro e escuro (`test/widget/telas_pequenas_test.dart`). Para passar,
+alguns tokens de `app_colors.dart` mudaram o mínimo possível:
+
+| Token | Figma | Agora | Contraste |
+|---|---|---|---|
+| `primary` (claro) | #BA5E1B | #B75B1A | branco: 4,46 → 4,64 |
+| `onPrimary` (escuro) | branco | #141312 | sobre #D2761F: 3,31 → 5,61 |
+| `onNavActive` (novo, claro e escuro) | branco | #141312 | sobre #D56D22: 3,48 → 5,34 |
+| `navInactive` (escuro) | #575F67 | #A3A6A6 | sobre #141312: 2,86 → 7,57 |
+| `onAccentContainer` (novo; chip "Enviado", "PRODUÇÃO") | `accent` | #A64514 / #F0965F | 3,85 → 5,02 (claro), 4,22 → 5,54 (escuro) |
+| `onWhatsapp` (novo, HO-T2-01) | branco | #0B141A | sobre #25D366: 1,98 → 9,6 |
+
+Cor nova ou alterada em `app_colors.dart` precisa continuar passando
+nesse teste.
