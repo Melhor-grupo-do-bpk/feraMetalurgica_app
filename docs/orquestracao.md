@@ -32,8 +32,8 @@ Se algo aqui parecer contradizer o `CLAUDE.md`, pare e pergunte.
 | T4 | [Dashboard](tarefas/T4-dashboard.md) | `feat/t4-dashboard` | `worktrees/T4` | F1 | integrada |
 | T5 | [PDF e WhatsApp](tarefas/T5-pdf-whatsapp.md) | `feat/t5-pdf-whatsapp` | `worktrees/T5` | T2 integrada | integrada |
 | T6 | [Catálogo](tarefas/T6-catalogo.md) | `feat/t6-catalogo` | `worktrees/T6` | F1 | integrada |
-| T7 | [Cronograma](tarefas/T7-cronograma.md) | `feat/t7-cronograma` | `worktrees/T7` | F1 | liberada |
-| T8 | [Acabamento](tarefas/T8-acabamento.md) | `feat/t8-acabamento` | `worktrees/T8` | T2 a T7 integradas | aguardando |
+| T7 | [Cronograma](tarefas/T7-cronograma.md) | `feat/t7-cronograma` | `worktrees/T7` | F1 | integrada |
+| T8 | [Acabamento](tarefas/T8-acabamento.md) | `feat/t8-acabamento` | `worktrees/T8` | T2 a T7 integradas | liberada |
 
 A worktree de uma trilha só é criada (a partir da `integracao/telas-v1`)
 quando todas as dependências dela estão integradas.
@@ -241,3 +241,6 @@ explícito.
 | Plano da T6: `assets/images/catalogo/` fora do bundle | Aceito: a subpasta foi declarada no `pubspec.yaml` (bug da F1). | `e3bfc02` |
 | HO-T6-01 (fotos provisórias da Pexels) | Para a lista do cliente na T8: trocar pelas fotos reais, mantendo os nomes. A foto do portão é residencial, não basculante. | — |
 | HO-T6-02 (`CategoriaTag` em `core/widgets` ou junto do `StatusChip`) | Adiado para a T8. | — |
+| HO-T7-01 (marcador do `TimelineTile` tocável) | Aceito no plano da T7: `onMarcadorPressed` com botão de 48 dp e tooltip. | `4b26e2f` |
+| HO-T7-02 (`WizardCampo` em `core/widgets` para o formulário de tarefa) | Adiado para a T8. | — |
+| Relatório da T7: navegação inferior transborda a 400 dp com a fonte dos testes; textos de botão sem família de fonte | Para a T8 conferir em aparelho (RNF-01, telas pequenas). | — |

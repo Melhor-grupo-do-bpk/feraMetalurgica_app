@@ -1,7 +1,7 @@
 ---
 trilha: T7
 titulo: Cronograma
-status: em revisão     # pendente | em andamento | em revisão | concluída
+status: concluída       # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/t7-cronograma
 depende_de: F1
