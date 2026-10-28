@@ -254,3 +254,24 @@ O cliente ganha um getter (não um campo) `Cliente.ehPessoaJuridica`: 14
 dígitos indica PJ, qualquer outro valor indica PF. Para isso, `Cliente`
 precisa do construtor `const Cliente._()`. Exibição: "Cliente PF" ou
 "Cliente PJ".
+
+### D-24
+**Ícone e splash gerados por pacotes de desenvolvimento.** *(T8, 28/10/2026)*
+
+Complementa a D-14. Entram só como `dev_dependencies`
+`flutter_launcher_icons` e `flutter_native_splash`, configurados no fim do
+`pubspec.yaml`, apenas para Android e iOS (web, Windows e macOS
+desligados). O app não importa nenhum dos dois em `lib/`.
+
+- Imagens-fonte em `assets/launcher/` (fora do bundle), feitas a partir de
+  `assets/images/logo_fera.png` (só o "F"): `icone.png` (fundo branco),
+  `icone_adaptativo.png` (ícone adaptativo do Android, fundo `#FFFFFF`),
+  `splash.png` e `splash_android12.png`.
+- Splash: fundo `AppColors.light.background` (`#FDF8F8`) e, no modo escuro,
+  `AppColors.dark.background` (`#141312`), com o "F" no centro.
+- Para regerar: `dart run flutter_launcher_icons` e
+  `dart run flutter_native_splash:create`. O `flutter_launcher_icons` troca
+  `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS` no
+  `project.pbxproj` do iOS: reverta essa mudança antes de commitar.
+- `TODO(cliente)`: logo completo, com o texto "FERA METALURGICA", para o
+  splash e o PDF.
