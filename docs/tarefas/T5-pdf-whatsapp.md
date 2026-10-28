@@ -1,8 +1,8 @@
 ---
 trilha: T5
 titulo: PDF e WhatsApp
-status: pendente        # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: em revisão    # pendente | em andamento | em revisão | concluída
+responsavel: Claude (agente T5)
 branch: feat/t5-pdf-whatsapp
 depende_de: T2
 ---
@@ -24,31 +24,31 @@ os testes correspondentes e, **em `detalhes/`, apenas** o método
 ## Checklist
 
 ### PDF
-- [ ] `data/pdf/orcamento_pdf_builder.dart`: `Future<Uint8List>
+- [x] `data/pdf/orcamento_pdf_builder.dart`: `Future<Uint8List>
       gerarOrcamentoPdf(Orcamento)` com o pacote `pdf`. Layout da Tela 7:
       logo (`assets/images/logo_fera.png`), "ORÇAMENTO", "Nº 00482", data,
       validade, EMISSOR (`AppConstants`), CLIENTE, tabela "Descrição do item
       / serviço | Qtd" e "Valor Total". Nada de custos internos.
-- [ ] `presentation/pdf/orcamento_pdf_page.dart`: `PdfPreview` (pacote
+- [x] `presentation/pdf/orcamento_pdf_page.dart`: `PdfPreview` (pacote
       `printing`) sem as ações padrão, mais o rodapé Voltar/"Baixar". Baixar
       chama `Printing.sharePdf(bytes, filename: 'orcamento-<id>.pdf')`.
 
 ### WhatsApp
-- [ ] `domain/mensagem_whatsapp.dart`: função pura `String
+- [x] `domain/mensagem_whatsapp.dart`: função pura `String
       montarMensagemWhatsApp(Orcamento)` (D-15).
-- [ ] `data/whatsapp/whatsapp_launcher.dart`: `Future<bool>
+- [x] `data/whatsapp/whatsapp_launcher.dart`: `Future<bool>
       abrirWhatsApp(String numero, String mensagem)` com `url_launcher`,
       exposto por um provider `@riverpod` (para poder trocar por mock nos
       testes).
-- [ ] Em `detalhes/`: implementar `_enviarWhatsApp`. Se abrir com sucesso e o
+- [x] Em `detalhes/`: implementar `_enviarWhatsApp`. Se abrir com sucesso e o
       status for `emAnalise`, salvar como `enviado` (D-06). Se falhar,
       mostrar `SnackBar`.
 
 ## Testes
-- [ ] Unitário: `montarMensagemWhatsApp` (sem custos; com número, valor,
+- [x] Unitário: `montarMensagemWhatsApp` (sem custos; com número, valor,
       prazo e validade); `gerarOrcamentoPdf` retorna bytes não vazios para o
       seed.
-- [ ] Widget: o botão WhatsApp com launcher mockado (sucesso muda o status;
+- [x] Widget: o botão WhatsApp com launcher mockado (sucesso muda o status;
       falha mostra o SnackBar), em
       `test/widget/orcamentos/detalhes/enviar_whatsapp_test.dart` (os demais
       testes de `detalhes/` são da T2), e a prévia em

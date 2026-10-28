@@ -4,7 +4,10 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/data/whatsapp/whatsapp_launcher.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/mensagem_whatsapp.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/detalhes/detalhes_cliente_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/detalhes/detalhes_itens_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/detalhes/valor_final_card.dart';
@@ -27,8 +30,29 @@ class OrcamentoDetalhesPage extends ConsumerWidget {
     WidgetRef ref,
     Orcamento orcamento,
   ) async {
-    // TODO(T5): abrir o WhatsApp com a mensagem de resumo e, se abrir,
-    // passar o status de emAnalise para enviado (RF-34, D-06, D-15).
+    final abriu = await ref
+        .read(whatsappLauncherProvider)
+        .abrirWhatsApp(
+          orcamento.cliente.numero,
+          montarMensagemWhatsApp(orcamento),
+        );
+    if (!abriu) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível abrir o WhatsApp. Confira o número do cliente.',
+          ),
+        ),
+      );
+      return;
+    }
+    // Só sai de emAnalise; os outros status não mudam ao reenviar (D-06).
+    if (orcamento.status == StatusOrcamento.emAnalise) {
+      await ref
+          .read(orcamentosProvider.notifier)
+          .salvar(orcamento.copyWith(status: StatusOrcamento.enviado));
+    }
   }
 
   @override

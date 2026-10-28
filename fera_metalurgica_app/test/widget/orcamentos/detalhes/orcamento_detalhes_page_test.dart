@@ -203,14 +203,4 @@ void main() {
 
     expect(find.text('pdf 00482'), findsOneWidget);
   });
-
-  testWidgets('"Enviar WhatsApp" ainda não faz nada (T5)', (tester) async {
-    await abrirDetalhes(tester, '00482');
-
-    await tester.tap(find.text('Enviar WhatsApp'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(OrcamentoDetalhesPage), findsOneWidget);
-    verifyNever(() => repository.save(any()));
-  });
 }
