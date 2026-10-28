@@ -23,7 +23,7 @@ void main() {
     AppRoutes.editarOrcamento('00478'),
     AppRoutes.pdfOrcamento('00482'),
     AppRoutes.tarefa(),
-    AppRoutes.tarefa(id: 't1'),
+    AppRoutes.tarefa(id: 'tarefa-producao-00124'),
   ];
 
   const tamanhos = <String, Size>{

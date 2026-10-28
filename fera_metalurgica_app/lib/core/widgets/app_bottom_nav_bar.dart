@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
+
+const double _tamanhoIcone = 20;
 
 /// Uma aba da [AppBottomNavBar].
 typedef AppNavItem = ({IconData icone, String label});
@@ -40,29 +44,62 @@ class AppBottomNavBar extends StatelessWidget {
             horizontal: AppSpacing.md,
             vertical: AppSpacing.xs,
           ),
-          // Cada aba ocupa uma fatia igual da largura; em telas estreitas
-          // (ou com fonte grande) o rótulo é cortado com reticências.
-          child: Row(
-            children: [
-              for (var i = 0; i < itens.length; i++)
-                Expanded(
-                  // `heightFactor: 1`: sem ele, o `Center` ocupa toda a
-                  // altura que o Scaffold oferece à barra.
-                  child: Center(
-                    heightFactor: 1,
-                    child: _NavButton(
-                      item: itens[i],
-                      ativo: i == indiceAtual,
-                      colors: colors,
-                      onTap: () => onSelecionado(i),
-                    ),
-                  ),
-                ),
-            ],
+          // As abas ficam no tamanho natural, espalhadas pela largura. Se
+          // não couberem (tela estreita ou fonte grande do sistema), cada
+          // uma recebe uma fatia igual e o rótulo é cortado com reticências.
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final cabem = _larguraNatural(context) <= constraints.maxWidth;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  for (var i = 0; i < itens.length; i++)
+                    if (cabem)
+                      _botao(i, colors)
+                    else
+                      Expanded(
+                        // `heightFactor: 1`: sem ele, o `Center` ocupa toda
+                        // a altura que o Scaffold oferece à barra.
+                        child: Center(
+                          heightFactor: 1,
+                          child: _botao(i, colors),
+                        ),
+                      ),
+                ],
+              );
+            },
           ),
         ),
       ),
     );
+  }
+
+  Widget _botao(int i, AppColors colors) => _NavButton(
+    item: itens[i],
+    ativo: i == indiceAtual,
+    colors: colors,
+    onTap: () => onSelecionado(i),
+  );
+
+  /// Soma das larguras das abas sem corte: rótulo (ou ícone, se maior)
+  /// mais o padding horizontal do [_NavButton].
+  double _larguraNatural(BuildContext context) {
+    final estilo = DefaultTextStyle.of(
+      context,
+    ).style.merge(AppTextStyles.label);
+    final escala = MediaQuery.textScalerOf(context);
+    var total = 0.0;
+    for (final item in itens) {
+      final texto = TextPainter(
+        text: TextSpan(text: item.label, style: estilo),
+        textDirection: Directionality.of(context),
+        textScaler: escala,
+        maxLines: 1,
+      )..layout();
+      total += max(texto.width, _tamanhoIcone) + 2 * AppSpacing.sm;
+      texto.dispose();
+    }
+    return total;
   }
 }
 
@@ -100,7 +137,7 @@ class _NavButton extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(item.icone, size: 20, color: foreground),
+                Icon(item.icone, size: _tamanhoIcone, color: foreground),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   item.label,

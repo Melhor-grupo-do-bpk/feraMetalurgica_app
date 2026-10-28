@@ -190,7 +190,9 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // A data ("10/10/2026") é mais larga que a hora ("14:00").
               Expanded(
+                flex: 3,
                 child: FormCampo(
                   rotulo: 'Data',
                   obrigatorio: true,
@@ -208,6 +210,7 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
+                flex: 2,
                 child: FormCampo(
                   rotulo: 'Hora',
                   obrigatorio: true,
