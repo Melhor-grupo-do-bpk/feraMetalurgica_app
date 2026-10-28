@@ -1,8 +1,8 @@
 ---
 trilha: T8
 titulo: Acabamento
-status: pendente        # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: em andamento       # pendente | em andamento | em revisão | concluída
+responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/t8-acabamento
 depende_de: T2, T3, T4, T5, T6, T7
 ---
