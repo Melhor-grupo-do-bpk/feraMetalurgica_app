@@ -33,7 +33,7 @@ Se algo aqui parecer contradizer o `CLAUDE.md`, pare e pergunte.
 | T5 | [PDF e WhatsApp](tarefas/T5-pdf-whatsapp.md) | `feat/t5-pdf-whatsapp` | `worktrees/T5` | T2 integrada | integrada |
 | T6 | [Catálogo](tarefas/T6-catalogo.md) | `feat/t6-catalogo` | `worktrees/T6` | F1 | integrada |
 | T7 | [Cronograma](tarefas/T7-cronograma.md) | `feat/t7-cronograma` | `worktrees/T7` | F1 | integrada |
-| T8 | [Acabamento](tarefas/T8-acabamento.md) | `feat/t8-acabamento` | `worktrees/T8` | T2 a T7 integradas | liberada |
+| T8 | [Acabamento](tarefas/T8-acabamento.md) | `feat/t8-acabamento` | `worktrees/T8` | T2 a T7 integradas | integrada |
 
 A worktree de uma trilha só é criada (a partir da `integracao/telas-v1`)
 quando todas as dependências dela estão integradas.
@@ -227,20 +227,22 @@ explícito.
 
 | Handoff | Resposta | Commit na integração |
 |---|---|---|
-| HO-T2-01 (tokens `whatsapp`/`onWhatsapp`) | Adiado para a T8 (sugestão de acabamento). Por enquanto, o card usa tokens existentes. | — |
-| HO-T2-02 (normalização de acentos em `core/utils`) | Adiado para a T8, ou antes, se outra trilha precisar de busca (aí vira pedido no handoff dela). | — |
+| HO-T2-01 (tokens `whatsapp`/`onWhatsapp`) | Feito na T8: `whatsapp` (#25D366) com `onWhatsapp` quase preto, porque o branco do Figma dava contraste de 2:1. | `4a2596c` |
+| HO-T2-02 (normalização de acentos em `core/utils`) | Fica privada na lista de orçamentos: só uma feature usa (`03-padroes` §1). Decidido na T8. | — |
 | HO-T2-03 (`dart format` em 3 arquivos da F1) | Aceito e aplicado antes do merge da T2. | `6bfef6e` |
 | Revisão do plano da T3 (relógio) | T3 e T7 precisavam de um relógio sobrescrevível. Criei `agoraProvider` compartilhado em `core/di`, para evitar duas versões. | ver log |
 | HO-T3-01 (custos R$ 0,00) | Não bloquear. Vai para a lista de perguntas ao cliente da T8. | — |
 | HO-T3-02 (`StepProgressBar` com altura 0) | Aceito: `stretch` na `Row` e teste de altura. | `d1a3267` |
-| HO-T3-03 (área de toque do `ItemCard`) | Adiado para a T8 (RNF-06). | — |
+| HO-T3-03 (área de toque do `ItemCard`) | Feito na T8 (48 dp), coberto pelo `telas_pequenas_test`. | `9492f82` |
 | HO-T3-04 (CPF/CNPJ inválidos nos seeds) | Aceito: `123.456.789-09` (#00482) e `12.345.678/0001-95` (#00481). | `77b3b34` |
-| HO-T4-01 (chip "Em análise" cinza no Figma e comentário do `StatusChip`) | O dashboard usa o mesmo tom da lista. Ajuste do comentário e revisão visual ficam para a T8. | — |
-| HO-T5-01 (fonte TTF no PDF) | Adiado para a T8: embutir a fonte em `assets/fonts/` (mexe em `pubspec`), eliminar `textoParaPdf` e voltar o "•" da D-01. | — |
-| Relatório da T5: logo | O `logo_fera.png` só tem o "F", sem o texto "FERA METALURGICA" do Figma. Fica para a T8, com o ícone do app. | — |
+| HO-T4-01 (chip "Em análise" cinza no Figma e comentário do `StatusChip`) | Tom `info` mantido em todas as telas; comentário corrigido na T8. | `9492f82` |
+| HO-T5-01 (fonte TTF no PDF) | Feito na T8: Inter (OFL) em `assets/fonts/`, carregada com `rootBundle`; `textoParaPdf` removido e "•" de volta. | `c1f0732` |
+| Relatório da T5: logo | Ícone e splash gerados com o "F" (D-24). O logo completo continua na lista de perguntas ao cliente. | `bf9c376` |
 | Plano da T6: `assets/images/catalogo/` fora do bundle | Aceito: a subpasta foi declarada no `pubspec.yaml` (bug da F1). | `e3bfc02` |
 | HO-T6-01 (fotos provisórias da Pexels) | Para a lista do cliente na T8: trocar pelas fotos reais, mantendo os nomes. A foto do portão é residencial, não basculante. | — |
-| HO-T6-02 (`CategoriaTag` em `core/widgets` ou junto do `StatusChip`) | Adiado para a T8. | — |
+| HO-T6-02 (`CategoriaTag` em `core/widgets` ou junto do `StatusChip`) | Fica no catálogo: só uma feature usa (`03-padroes` §1). Decidido na T8. | — |
 | HO-T7-01 (marcador do `TimelineTile` tocável) | Aceito no plano da T7: `onMarcadorPressed` com botão de 48 dp e tooltip. | `4b26e2f` |
-| HO-T7-02 (`WizardCampo` em `core/widgets` para o formulário de tarefa) | Adiado para a T8. | — |
-| Relatório da T7: navegação inferior transborda a 400 dp com a fonte dos testes; textos de botão sem família de fonte | Para a T8 conferir em aparelho (RNF-01, telas pequenas). | — |
+| HO-T7-02 (`WizardCampo` em `core/widgets` para o formulário de tarefa) | Feito na T8: virou `FormCampo` em `core/widgets/form_campo.dart`, usado no wizard e no formulário de tarefa. | `6f2ad46` |
+| Relatório da T7: navegação inferior transborda a 400 dp com a fonte dos testes; textos de botão sem família de fonte | Transbordamento corrigido na T8 e coberto pelo `telas_pequenas_test` (360 dp, 412 dp e tablet). A fonte dos botões fica para conferir em aparelho real. | `9492f82`, `ecb2d28` |
+| T8: arquivos compartilhados (`pubspec`, `android/`, `ios/`, `app_colors.dart`, `core/widgets/`, `README.md`, D-24 e D-25) | Alterados na própria branch, como o plano aprovou. Conferidos na integração: nada em `windows/`, `web/` nem no `project.pbxproj`. | `9f543bb` |
+| HO-T8-01 (seed do cronograma em 2023: agenda de "hoje" vazia em debug) | Em aberto: precisa de decisão. Proposta: gerar as datas do seed a partir de "agora" e ajustar os testes da T7. | — |
