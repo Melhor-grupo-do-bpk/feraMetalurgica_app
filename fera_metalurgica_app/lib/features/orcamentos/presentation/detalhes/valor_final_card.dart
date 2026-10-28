@@ -37,8 +37,6 @@ class ValorFinalCard extends StatelessWidget {
     final formatoBotao = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
     );
-    // TODO(T8): o Figma usa verde de WhatsApp e cinza no PDF; sem tokens
-    // próprios, usamos os tons de sucesso e neutro (HO-T2-01).
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg + AppSpacing.xs),
@@ -76,8 +74,8 @@ class ValorFinalCard extends StatelessWidget {
             style: FilledButton.styleFrom(
               minimumSize: tamanhoBotao,
               shape: formatoBotao,
-              backgroundColor: colors.successContainer,
-              foregroundColor: colors.onSuccessContainer,
+              backgroundColor: colors.whatsapp,
+              foregroundColor: colors.onWhatsapp,
             ),
           ),
           const SizedBox(height: AppSpacing.md),

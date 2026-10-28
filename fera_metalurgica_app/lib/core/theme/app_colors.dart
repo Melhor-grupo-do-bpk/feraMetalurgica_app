@@ -40,6 +40,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.dangerContainer,
     required this.onDangerContainer,
     required this.accentContainer,
+    required this.whatsapp,
+    required this.onWhatsapp,
     required this.error,
   });
 
@@ -106,7 +108,7 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Linha vertical da timeline do cronograma (#E9ECEF).
   final Color timelineLine;
 
-  /// Chip neutro (ex: "Em análise" no dashboard).
+  /// Chip neutro (ex: "Rascunho") e botão "Gerar PDF".
   final Color neutralContainer;
 
   /// Texto sobre [neutralContainer].
@@ -115,7 +117,7 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Ponto indicador do chip neutro.
   final Color neutralDot;
 
-  /// Badge informativo (ex: "Em análise" na lista).
+  /// Badge informativo (ex: "Em análise", em todas as telas).
   final Color infoContainer;
 
   /// Texto sobre [infoContainer].
@@ -135,6 +137,13 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// Fundo translúcido de tags de destaque (ex: "PRODUÇÃO").
   final Color accentContainer;
+
+  /// Botão "Enviar WhatsApp" dos detalhes (verde do WhatsApp, #25D366).
+  final Color whatsapp;
+
+  /// Conteúdo sobre [whatsapp]. O Figma usa branco, mas o contraste com o
+  /// verde fica em 2:1; o quase preto do WhatsApp (#0B141A) passa de 9:1.
+  final Color onWhatsapp;
 
   /// Cor de erro/campo obrigatório (#BA1A1A).
   final Color error;
@@ -173,6 +182,8 @@ class AppColors extends ThemeExtension<AppColors> {
     dangerContainer: Color(0xFFFFDAD6),
     onDangerContainer: Color(0xFFBA1A1A),
     accentContainer: Color(0x1AC25316),
+    whatsapp: Color(0xFF25D366),
+    onWhatsapp: Color(0xFF0B141A),
     error: Color(0xFFBA1A1A),
   );
 
@@ -214,6 +225,8 @@ class AppColors extends ThemeExtension<AppColors> {
     dangerContainer: Color(0xFF3B1F1C), // derivado
     onDangerContainer: Color(0xFFFFB4AB), // derivado
     accentContainer: Color(0x33E07A3F), // derivado
+    whatsapp: Color(0xFF25D366),
+    onWhatsapp: Color(0xFF0B141A),
     error: Color(0xFFFFB4AB), // derivado
   );
 
@@ -250,6 +263,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? dangerContainer,
     Color? onDangerContainer,
     Color? accentContainer,
+    Color? whatsapp,
+    Color? onWhatsapp,
     Color? error,
   }) {
     return AppColors(
@@ -284,6 +299,8 @@ class AppColors extends ThemeExtension<AppColors> {
       dangerContainer: dangerContainer ?? this.dangerContainer,
       onDangerContainer: onDangerContainer ?? this.onDangerContainer,
       accentContainer: accentContainer ?? this.accentContainer,
+      whatsapp: whatsapp ?? this.whatsapp,
+      onWhatsapp: onWhatsapp ?? this.onWhatsapp,
       error: error ?? this.error,
     );
   }
@@ -324,6 +341,8 @@ class AppColors extends ThemeExtension<AppColors> {
       dangerContainer: l(dangerContainer, other.dangerContainer),
       onDangerContainer: l(onDangerContainer, other.onDangerContainer),
       accentContainer: l(accentContainer, other.accentContainer),
+      whatsapp: l(whatsapp, other.whatsapp),
+      onWhatsapp: l(onWhatsapp, other.onWhatsapp),
       error: l(error, other.error),
     );
   }
