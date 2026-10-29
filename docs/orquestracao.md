@@ -1,42 +1,47 @@
-# Orquestração: desenvolvimento paralelo por agentes (rodada telas-v1)
+# Orquestração: desenvolvimento paralelo por agentes (rodada v2)
 
-Este arquivo define **como** as trilhas T2 a T8 são executadas em paralelo,
-cada uma por um agente de IA na sua própria branch e worktree, e como o
-trabalho é integrado. Ele é mantido **só pelo orquestrador**; agentes de
-trilha leem, não editam.
+Este arquivo define **como** as trilhas da rodada v2 são executadas, cada
+uma por um agente de IA na sua própria branch e worktree, e como o trabalho
+é integrado. Ele é mantido **só pelo orquestrador**; agentes de trilha leem,
+não editam. A rodada anterior (telas v1) está em
+[`historico/orquestracao-telas-v1.md`](historico/orquestracao-telas-v1.md).
+
+O **quê** desta rodada está em [`v2-plano.md`](v2-plano.md) e em
+[`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md). As
+decisões D-26 a D-33 em [`02-decisoes.md`](02-decisoes.md) valem sobre o
+prompt quando divergem dele (ex: Riverpod, edição, status).
 
 Precedência: nesta rodada, este arquivo vale sobre a seção 6 ("Git e PR")
 de [`03-padroes.md`](03-padroes.md) e sobre a seção "Mudanças fora da sua
-trilha" de [`04-plano.md`](04-plano.md). Todo o resto (`CLAUDE.md`,
-`01-requisitos.md` a `04-plano.md`, arquivos de `tarefas/`) continua valendo.
-Se algo aqui parecer contradizer o `CLAUDE.md`, pare e pergunte.
+trilha" de [`04-plano.md`](04-plano.md). As tarefas da rodada anterior em
+`tarefas/*.md` são histórico; as desta rodada estão em
+[`tarefas/v2/`](tarefas/v2/). Se algo aqui parecer contradizer o
+`CLAUDE.md`, pare e pergunte.
 
 ## 1. Branches e worktrees
 
-- **Branch de integração:** `integracao/telas-v1`, criada a partir da
-  `main`. A F1 já foi integrada nela. Nada vai para a `main` (nem para o
-  `origin`) sem OK explícito do responsável pelo projeto.
+- **Branch de integração:** `integracao/v2`, criada a partir da `main` com o
+  planejamento desta rodada. Nada vai para a `main` sem OK explícito do
+  responsável, e sempre por PR com o CI verde.
 - **Worktrees:** dentro do repositório, em `worktrees/<ID>/` (ex:
-  `worktrees/T2/`). A pasta `worktrees/` está no `.gitignore` da raiz: o
-  trabalho de cada worktree é versionado **na branch dela**. O checkout
-  principal do repositório fica na `integracao/telas-v1` e é do
-  orquestrador.
+  `worktrees/V2-F1/`). A pasta `worktrees/` está no `.gitignore`. O checkout
+  principal fica na `integracao/v2` e é do orquestrador.
 - O projeto Flutter de cada worktree fica em
   `worktrees/<ID>/fera_metalurgica_app/`.
 
-| ID | Tarefa | Branch | Worktree | Depende de | Situação |
-|---|---|---|---|---|---|
-| F1 | [Fundação das telas](tarefas/F1-fundacao.md) | `feat/f1-fundacao-telas` | — | — | integrada |
-| T2 | [Lista e detalhes](tarefas/T2-orcamentos-lista-detalhes.md) | `feat/t2-orcamentos-lista-detalhes` | `worktrees/T2` | F1 | integrada |
-| T3 | [Wizard](tarefas/T3-wizard.md) | `feat/t3-wizard` | `worktrees/T3` | F1 | integrada |
-| T4 | [Dashboard](tarefas/T4-dashboard.md) | `feat/t4-dashboard` | `worktrees/T4` | F1 | integrada |
-| T5 | [PDF e WhatsApp](tarefas/T5-pdf-whatsapp.md) | `feat/t5-pdf-whatsapp` | `worktrees/T5` | T2 integrada | integrada |
-| T6 | [Catálogo](tarefas/T6-catalogo.md) | `feat/t6-catalogo` | `worktrees/T6` | F1 | integrada |
-| T7 | [Cronograma](tarefas/T7-cronograma.md) | `feat/t7-cronograma` | `worktrees/T7` | F1 | integrada |
-| T8 | [Acabamento](tarefas/T8-acabamento.md) | `feat/t8-acabamento` | `worktrees/T8` | T2 a T7 integradas | integrada |
+| ID | Tarefa | Branch | Depende de | Situação |
+|---|---|---|---|---|
+| V2-F1 | [Domínio e cálculo](tarefas/v2/F1-dominio-calculo.md) | `feat/v2-f1-dominio` | — | liberada |
+| V2-F2 | [Persistência e troca do modelo](tarefas/v2/F2-persistencia.md) | `feat/v2-f2-persistencia` | F1 integrada | aguardando |
+| V2-A | [Wizard: produtos e peças](tarefas/v2/A-produtos-pecas.md) | `feat/v2-a-produtos` | F2 integrada | aguardando |
+| V2-B | [Wizard: cliente, valores e prévia](tarefas/v2/B-cliente-valores-previa.md) | `feat/v2-b-cliente-valores` | F2 integrada | aguardando |
+| V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | aguardando |
+| V2-D | [Orçamentos salvos](tarefas/v2/D-orcamentos-salvos.md) | `feat/v2-d-salvos` | F2 integrada | aguardando |
+| V2-E | [Agenda](tarefas/v2/E-agenda.md) | `feat/v2-e-agenda` | F2 integrada | aguardando |
+| V2-G | [Acabamento](tarefas/v2/G-acabamento.md) | `feat/v2-g-acabamento` | A a E integradas | aguardando |
 
-A worktree de uma trilha só é criada (a partir da `integracao/telas-v1`)
-quando todas as dependências dela estão integradas.
+A worktree de uma trilha só é criada (a partir da `integracao/v2`) quando
+todas as dependências dela estão integradas.
 
 ## 2. Ambiente
 
@@ -44,132 +49,98 @@ quando todas as dependências dela estão integradas.
   é outra versão e quebra o `pub get`. Use o SDK do FVM pelo caminho
   completo: `C:\Users\felip\fvm\versions\3.47.1\bin\flutter` e
   `...\bin\dart` (no Git Bash: `/c/Users/felip/fvm/versions/3.47.1/bin/`).
-  Se o `fvm` estiver no PATH, `fvm flutter` / `fvm dart` também servem.
 - Primeira vez na worktree (dentro de `fera_metalurgica_app/`):
   `flutter pub get` e `dart run build_runner build --delete-conflicting-outputs`.
-- Fim de linha: o repositório usa LF (`.gitattributes`). Não converta
-  arquivos para CRLF.
-- **Nunca commite** `windows/flutter/generated_*`, `.fvmrc`, `.fvm/`,
-  `*.g.dart`, `*.freezed.dart` nem arquivos de IDE. Se o `pub get` alterar
-  algo em `windows/`, `android/`, `ios/` ou no `pubspec.lock`, não commite:
-  avise no relatório.
+- Fim de linha: LF (`.gitattributes`). Não converta para CRLF.
+- **Nunca commite** `.fvmrc`, `.fvm/`, `*.g.dart`, `*.freezed.dart` nem
+  arquivos de IDE. Se o `pub get` alterar algo em `windows/`, `android/`,
+  `ios/` ou no `pubspec.lock` sem você ter mudado o `pubspec.yaml`, não
+  commite: avise no relatório.
 
 ## 3. O que cada trilha possui
 
 Caminhos relativos a `fera_metalurgica_app/`. Uma trilha só cria ou altera
-arquivos da sua linha (mais o próprio `docs/tarefas/<arquivo>.md` e
-`docs/handoffs/<ID>.md`).
+arquivos da sua linha, mais o próprio arquivo em `docs/tarefas/v2/` e
+`docs/handoffs/v2/<ID>.md`.
 
 | ID | Arquivos (posse exclusiva) |
 |---|---|
-| T2 | `lib/features/orcamentos/presentation/lista/**`, `lib/features/orcamentos/presentation/detalhes/**`, `test/widget/orcamentos/lista/**`, `test/widget/orcamentos/detalhes/**` (exceto `enviar_whatsapp_test.dart`) |
-| T3 | `lib/features/orcamentos/presentation/wizard/**`, `test/widget/orcamentos/wizard/**`, `test/unit/orcamento_wizard_controller_test.dart` |
-| T4 | `lib/features/dashboard/presentation/**` (exceto `dashboard_routes.dart`), `test/widget/dashboard_page_test.dart`, `test/unit/dashboard_indicadores_test.dart` |
-| T5 | `lib/features/orcamentos/data/pdf/**`, `lib/features/orcamentos/data/whatsapp/**`, `lib/features/orcamentos/domain/mensagem_whatsapp.dart`, `lib/features/orcamentos/presentation/pdf/**`; em `presentation/detalhes/` **apenas** o corpo de `_enviarWhatsApp` e os imports necessários; `test/unit/mensagem_whatsapp_test.dart`, `test/unit/whatsapp_launcher_test.dart`, `test/unit/orcamento_pdf_builder_test.dart`, `test/widget/orcamentos/pdf/**`, `test/widget/orcamentos/detalhes/enviar_whatsapp_test.dart`, `test/mocks/mock_whatsapp_launcher.dart`; em `test/widget/orcamentos/detalhes/orcamento_detalhes_page_test.dart` (da T2) **apenas** remover ou substituir o teste "Enviar WhatsApp ainda não faz nada (T5)" |
-| T6 | `lib/features/catalogo/presentation/**` (exceto `catalogo_controller.dart` e `catalogo_routes.dart`), `assets/images/catalogo/**`, `test/widget/catalogo/**` |
-| T7 | `lib/features/cronograma/presentation/**` (exceto `cronograma_controller.dart`, `cronograma_routes.dart` e `cronograma_ui.dart`), `test/widget/cronograma/**`, `test/unit/calendario_mes_test.dart` |
-| T8 | qualquer arquivo (roda sozinha, depois de todas) |
+| V2-F1 | **Só arquivos novos**: `lib/core/domain/**`; `lib/features/orcamentos/domain/v2/**`; `lib/features/materiais/{materiais.dart,domain/**}`; `lib/features/empresa/{empresa.dart,domain/**}`; `lib/features/clientes/{clientes.dart,domain/**}`; `test/unit/v2/**`. Além disso, a seção "Domínio do negócio" do `CLAUDE.md` e do `.cursorrules` (ver tarefa). |
+| V2-F2 | Qualquer arquivo (roda sozinha, entre a F1 e as trilhas paralelas). |
+| V2-A a V2-E | Definido pelo orquestrador ao integrar a F2, nesta seção. A previsão está em cada tarefa. |
+| V2-G | Qualquer arquivo (roda sozinha, por último). |
 
 Arquivos de teste novos que não couberem nessas pastas: peça no handoff.
 
 ## 4. Contratos
 
-Todos já existem na `integracao/telas-v1` (criados pela F1). **Não mude
-assinaturas.** Os nomes abaixo são os importados pelos barrels
-`features/<feature>/<feature>.dart`.
-
-### Expostos por cada trilha
-
-| ID | Expõe (assinatura fixa) |
-|---|---|
-| T2 | `OrcamentosListaPage()`, `OrcamentoDetalhesPage({required String orcamentoId})`; nos detalhes, um método `_enviarWhatsApp` vazio com `// TODO(T5)`, chamado pelo botão "Enviar WhatsApp", e um `AppTopBar(onBack: ...)` com o botão voltar padrão (usado por `app_router_test.dart`) |
-| T3 | `OrcamentoWizardPage({String? orcamentoId, String? produtoId})`; `OrcamentoWizardController` (D-21) é interno à pasta `wizard/` |
-| T4 | `DashboardPage()`; provider `indicadoresDashboard` interno a `dashboard/presentation/` |
-| T5 | `gerarOrcamentoPdf(Orcamento) → Future<Uint8List>`, `montarMensagemWhatsApp(Orcamento) → String`, `abrirWhatsApp(String numero, String mensagem) → Future<bool>` exposto por provider `@riverpod`, `OrcamentoPdfPage({required String orcamentoId})`. Não entram no barrel (são usados dentro da feature por caminho relativo) |
-| T6 | `CatalogoPage()` |
-| T7 | `CronogramaPage()`, `TarefaFormPage({String? tarefaId})`; "hoje" derivado de `agoraProvider` |
-
-### Consumidos (da F1, congelados)
-
-| Contrato | Usado por |
-|---|---|
-| `orcamentosProvider` (`salvar`, `excluir`), `orcamentoPorIdProvider(id)` | T2, T3, T4, T5, T7 |
-| `produtosCatalogoProvider`, `produtoPorIdProvider(id)` | T3, T6 |
-| `tarefasProvider` (`salvar`, `excluir`, `alternarConcluida`), `tarefaPorIdProvider(id)` | T4, T7 |
-| `StatusOrcamentoUi` (`label`, `labelFiltro`, `tone`), `OrcamentoUi.numeroFormatado` | T2, T4, T7 |
-| `TipoTarefaUi` (`label`, `labelFiltro`, `tone`, `corDestaque`) | T7 |
-| `AppRoutes.*`, `rootNavigatorKey` | todas |
-| `proximoIdOrcamento`, `calcularTotalCustos`, `calcularValorFinal`, `Orcamento.valorFinal`, `Cliente.ehPessoaJuridica`, `Medidas.formatada` | T2, T3, T5 |
-| `gerarId`, `date_format`, `input_formatters`, `validators`, `formatarMoeda` (`core/utils/`) | T2, T3, T4, T7 |
-| `AppConstants` (`validadeOrcamentoDias`, `emissor*`, `margemPadraoPercentual`) | T2, T5 |
-| Widgets de `core/widgets/` | todas |
-| `agoraProvider` (`core/di/relogio_provider.dart`): data e hora atuais, sobrescrevível nos testes. Nunca chame `DateTime.now()` direto | T3, T7 (e quem precisar de "agora") |
-| Testes: `pumpThemed` (`test/widget/core/pump_themed.dart`), `InMemoryJsonStorage` (`test/mocks/fake_local_json_storage.dart`), mocks `mock_*_repository.dart`, `feraAppDeTeste()` (`test/widget/fera_app_de_teste.dart`: o app inteiro com armazenamento em memória e seed) | todas |
+- **F1 expõe** os tipos e funções puras da seção 7 do prompt, com as
+  adaptações da D-26 a D-30. Os nomes exatos estão na tarefa da F1. A F2 os
+  consome sem mudar assinaturas; se precisar, pede por handoff.
+- **F2 expõe** o que as trilhas paralelas consomem: providers dos
+  repositórios, o controller da edição (D-28), as rotas novas em
+  `AppRoutes` e os stubs de cada tela. A lista definitiva entra aqui quando a
+  F2 for integrada.
+- **Continuam valendo** os da rodada v1: `AppRoutes.*`, `rootNavigatorKey`,
+  `agoraProvider` (nunca chame `DateTime.now()` direto), os widgets de
+  `core/widgets/` e os utilitários de `core/utils/`.
+- **Testes:** `pumpThemed` e `feraAppDeTeste()`. A F2 adapta o
+  `feraAppDeTeste()` ao SQLite em memória.
 
 ## 5. Arquivos compartilhados
 
-Só o orquestrador altera, na `integracao/telas-v1`, a partir dos handoffs:
+Fora das fases que podem mexer em qualquer arquivo (F2 e G), só o
+orquestrador altera, na `integracao/v2`, a partir dos handoffs:
 
 - `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `lib/main.dart`;
-- `lib/core/**`;
-- `lib/features/*/domain/**` e `lib/features/*/data/**` (exceto os arquivos
-  novos reservados à T5);
-- barrels (`lib/features/*/<feature>.dart`), `*_routes.dart`,
-  `*_controller.dart`, `*_ui.dart`, `lib/features/mais/**`;
-- testes e mocks existentes (`test/mocks/*`, `test/widget/core/*`,
-  `test/widget/app_*_test.dart`, `test/widget/fera_app_de_teste.dart`,
-  `test/unit/*` já existentes), `test/README.md`;
+- `lib/core/**` (exceto `lib/core/domain/**` durante a F1);
+- `lib/features/*/domain/**` e `lib/features/*/data/**`, salvo os arquivos
+  novos da F1;
+- barrels, `*_routes.dart`, `*_controller.dart`, `*_ui.dart`;
+- testes e mocks compartilhados (`test/mocks/*`, `test/widget/core/*`,
+  `test/widget/app_*_test.dart`, `test/widget/fera_app_de_teste.dart`);
 - `android/`, `ios/`, `windows/`, `web/`, `.github/`, `.gitattributes`,
   `.gitignore`;
-- `CLAUDE.md`, `.cursorrules`, `AGENTS.md`, `README.md`, `docs/0*.md`,
-  `docs/README.md`, `docs/orquestracao.md`, `docs/prompts/**`.
+- `CLAUDE.md`, `.cursorrules` (exceto o que a F1 atualiza), `AGENTS.md`,
+  `README.md`, `docs/0*.md`, `docs/README.md`, `docs/orquestracao.md`,
+  `docs/v2-plano.md`, `docs/prompts/**`.
 
-Inclui **adicionar métodos aos controllers** (o que o `03-padroes.md` §2
-permitia) e **acrescentar decisões `D-xx`** em `02-decisoes.md`: nesta rodada
-ambos vão por handoff, e o orquestrador numera e aplica. Enquanto o pedido
-não é aplicado, a trilha segue com o contrato atual (ou com uma versão
-privada dentro da pasta dela, que será trocada depois).
+Métodos novos em controllers e decisões `D-xx` novas também vão por handoff:
+o orquestrador numera e aplica.
 
 ## 6. Handoffs
 
-Cada trilha tem `docs/handoffs/<ID>.md`, editado **só pela própria trilha**,
-na branch dela. Use para:
-
+Cada trilha tem `docs/handoffs/v2/<ID>.md`, editado **só pela própria
+trilha**, na branch dela. Serve para:
 - pedidos de mudança em arquivo compartilhado ou de outra trilha;
-- contratos que parecem errados ou insuficientes;
-- decisões novas propostas (`D-xx`);
+- contratos errados ou insuficientes;
+- decisões novas;
 - dúvidas que bloqueiam.
 
-Formato de cada entrada (numere `HO-<ID>-01`, `HO-<ID>-02`…):
+Formato (numere `HO-<ID>-01`, `HO-<ID>-02`…):
 
 ```markdown
-### HO-T3-01: <título curto>
+### HO-V2-A-01: <título curto>
 - **Tipo:** mudança em compartilhado | contrato | decisão | dúvida
 - **Arquivo(s):** caminho
 - **O quê:** ...
 - **Por quê:** ...
-- **Trecho proposto:**
-  ```dart
-  ...
-  ```
-- **Enquanto isso:** o que a trilha fez para seguir (ex: versão privada em
-  `wizard/_x.dart`)
+- **Trecho proposto:** ...
+- **Enquanto isso:** o que a trilha fez para seguir
 ```
 
-O orquestrador registra a resposta e o commit na seção 10 deste arquivo
-(não no handoff, para não gerar conflito). Trazer para a branch da trilha
-uma mudança já aplicada na integração (`git merge integracao/telas-v1`) só
-acontece quando o responsável pelo projeto pedir explicitamente; fora isso,
-agentes não fazem merge.
+O orquestrador registra a resposta e o commit na seção 10 deste arquivo.
+Agentes não fazem merge da integração na própria branch, salvo pedido
+explícito do responsável.
 
 ## 7. Commits
 
-- Só na branch da trilha. Sem push, sem merge (exceto o caso acima), sem
-  `rebase` na integração, sem `--force`, sem `reset --hard`.
-- Conventional Commits em pt-BR, com o **ID da trilha** como escopo:
-  `feat(t3): etapa 1 do wizard`, `test(t3): ...`, `fix(t3): ...`,
-  `docs(t3): status em andamento`.
-- Commits pequenos e coesos. O primeiro commit muda `status: em andamento` e
+- Só na branch da trilha. Sem push, sem merge, sem `rebase`, sem `--force`,
+  sem `reset --hard`.
+- Conventional Commits em pt-BR, com o ID da trilha como escopo:
+  `feat(v2-f1): Dinheiro em centavos`, `test(v2-a): ...`,
+  `docs(v2-f1): status em andamento`.
+- Commits pequenos e coesos. O primeiro muda `status: em andamento` e
   `responsavel` no arquivo da tarefa.
 - Antes de **cada** commit, dentro de `fera_metalurgica_app/`, nesta ordem:
   1. `dart run build_runner build --delete-conflicting-outputs`
@@ -177,72 +148,48 @@ agentes não fazem merge.
   3. `flutter analyze --fatal-infos`
   4. `flutter test`
 
-  Tudo verde. Se o format mudar arquivo de fora da trilha, não commite
-  essa mudança (reverta-a) e avise.
+  Tudo verde. **O app continua compilando e rodando a cada commit** (prompt
+  §11.5).
 
 ## 8. Checklist de entrega
 
-- [ ] RF da tarefa atendidos, ou o que faltou listado no relatório.
-- [ ] Testes exigidos pela tarefa e pelo `03-padroes.md` §5.
+- [ ] Checklist da tarefa feito, ou o que faltou listado no relatório.
+- [ ] Testes exigidos pela tarefa (cenários da seção 9 do prompt, quando
+      couber).
 - [ ] Os 4 comandos da seção 7 verdes no último commit.
-- [ ] Tela conferida contra o PDF em `Teste/`, modo claro e escuro.
-- [ ] Nenhum arquivo fora da seção 3 alterado (`git diff --stat integracao/telas-v1...HEAD`).
-- [ ] Contratos da seção 4 preservados.
-- [ ] `docs/handoffs/<ID>.md` atualizado (ou "Nenhum pedido").
+- [ ] Telas conferidas em modo claro e escuro e a 360 dp (trilhas com tela).
+- [ ] Nenhum arquivo fora da seção 3 alterado (`git diff --stat
+      integracao/v2...HEAD`).
+- [ ] `docs/handoffs/v2/<ID>.md` atualizado (ou "Nenhum pedido").
 - [ ] `status: em revisão` no arquivo da tarefa.
-- [ ] Relatório final (ver o prompt da trilha em `docs/prompts/<ID>.md`).
+- [ ] Relatório final (ver `docs/prompts/v2/<ID>.md`).
 
 ## 9. Integração
 
 Quando o responsável avisa que uma trilha terminou, o orquestrador:
+1. Revisa a branch: o escopo, os contratos e o handoff.
+2. Aplica na integração, em commits próprios, os pedidos aceitos.
+3. Faz `git merge --no-ff` na `integracao/v2`, marca a tarefa como
+   `concluída` e roda os 4 comandos da seção 7.
+4. Reporta o resultado e cria as worktrees liberadas.
 
-1. Revisa a branch contra este arquivo: escopo (`git diff --stat
-   integracao/telas-v1...feat/...`), contratos, handoff.
-2. Aplica na integração, em commits próprios, os pedidos aceitos do
-   handoff.
-3. Faz `git merge --no-ff` da branch na `integracao/telas-v1`, marca a
-   tarefa como `concluída` e roda os 4 comandos da seção 7.
-4. Reporta conflitos, falhas e pendências, e cria as worktrees que
-   ficaram liberadas.
-
-**Ordem:** T2 antes de T5 (a T5 parte da T2 integrada); T3, T4, T6 e T7
-entram na ordem em que terminarem (não compartilham arquivos); T8 por
-último. Ao fim, a `integracao/telas-v1` só vai para a `main` com OK
-explícito.
+**Ordem:**
+1. F1, depois F2.
+2. A, B, C, D e E em paralelo, entrando na ordem em que terminarem.
+3. G por último.
+4. A `integracao/v2` vai para a `main` por PR, com OK explícito.
 
 **Riscos conhecidos:**
-
-- `orcamentos_controller.dart`: T2, T3 e T5 podem pedir métodos novos.
-  Pedidos conflitantes são resolvidos pelo orquestrador.
-- `detalhes/`: T2 cria, T5 completa só `_enviarWhatsApp`.
-- Cartões de orçamento parecidos em T2 (lista) e T4 (recentes): cada um
-  fica privado na sua pasta; a T8 unifica em `core/widgets/` se fizer
-  sentido.
-- `app_router_test.dart` e `app_shell_test.dart` abrem todas as telas reais
-  com `feraAppDeTeste()`. Se uma tela nova quebrar esses testes, corrija a
-  tela (ex: estado de carregamento infinito), não o teste; se o teste
-  estiver errado, peça no handoff.
+- **F2 é grande:** troca o modelo em todo o app de uma vez e reescreve os
+  testes que dependem dele.
+- **A e B compartilham o controller da edição,** congelado depois da F2.
+  Operações novas vão por handoff.
+- **D e E se encontram nos detalhes do orçamento:** a E fornece o widget de
+  tarefas do orçamento e o botão "Agendar", e a D só posiciona. A F2 deixa o
+  contrato pronto.
 
 ## 10. Registro de handoffs
 
 | Handoff | Resposta | Commit na integração |
 |---|---|---|
-| HO-T2-01 (tokens `whatsapp`/`onWhatsapp`) | Feito na T8: `whatsapp` (#25D366) com `onWhatsapp` quase preto, porque o branco do Figma dava contraste de 2:1. | `4a2596c` |
-| HO-T2-02 (normalização de acentos em `core/utils`) | Fica privada na lista de orçamentos: só uma feature usa (`03-padroes` §1). Decidido na T8. | — |
-| HO-T2-03 (`dart format` em 3 arquivos da F1) | Aceito e aplicado antes do merge da T2. | `6bfef6e` |
-| Revisão do plano da T3 (relógio) | T3 e T7 precisavam de um relógio sobrescrevível. Criei `agoraProvider` compartilhado em `core/di`, para evitar duas versões. | ver log |
-| HO-T3-01 (custos R$ 0,00) | Não bloquear. Vai para a lista de perguntas ao cliente da T8. | — |
-| HO-T3-02 (`StepProgressBar` com altura 0) | Aceito: `stretch` na `Row` e teste de altura. | `d1a3267` |
-| HO-T3-03 (área de toque do `ItemCard`) | Feito na T8 (48 dp), coberto pelo `telas_pequenas_test`. | `9492f82` |
-| HO-T3-04 (CPF/CNPJ inválidos nos seeds) | Aceito: `123.456.789-09` (#00482) e `12.345.678/0001-95` (#00481). | `77b3b34` |
-| HO-T4-01 (chip "Em análise" cinza no Figma e comentário do `StatusChip`) | Tom `info` mantido em todas as telas; comentário corrigido na T8. | `9492f82` |
-| HO-T5-01 (fonte TTF no PDF) | Feito na T8: Inter (OFL) em `assets/fonts/`, carregada com `rootBundle`; `textoParaPdf` removido e "•" de volta. | `c1f0732` |
-| Relatório da T5: logo | Ícone e splash gerados com o "F" (D-24). O logo completo continua na lista de perguntas ao cliente. | `bf9c376` |
-| Plano da T6: `assets/images/catalogo/` fora do bundle | Aceito: a subpasta foi declarada no `pubspec.yaml` (bug da F1). | `e3bfc02` |
-| HO-T6-01 (fotos provisórias da Pexels) | Para a lista do cliente na T8: trocar pelas fotos reais, mantendo os nomes. A foto do portão é residencial, não basculante. | — |
-| HO-T6-02 (`CategoriaTag` em `core/widgets` ou junto do `StatusChip`) | Fica no catálogo: só uma feature usa (`03-padroes` §1). Decidido na T8. | — |
-| HO-T7-01 (marcador do `TimelineTile` tocável) | Aceito no plano da T7: `onMarcadorPressed` com botão de 48 dp e tooltip. | `4b26e2f` |
-| HO-T7-02 (`WizardCampo` em `core/widgets` para o formulário de tarefa) | Feito na T8: virou `FormCampo` em `core/widgets/form_campo.dart`, usado no wizard e no formulário de tarefa. | `6f2ad46` |
-| Relatório da T7: navegação inferior transborda a 400 dp com a fonte dos testes; textos de botão sem família de fonte | Transbordamento corrigido na T8 e coberto pelo `telas_pequenas_test` (360 dp, 412 dp e tablet). A fonte dos botões fica para conferir em aparelho real. | `9492f82`, `ecb2d28` |
-| T8: arquivos compartilhados (`pubspec`, `android/`, `ios/`, `app_colors.dart`, `core/widgets/`, `README.md`, D-24 e D-25) | Alterados na própria branch, como o plano aprovou. Conferidos na integração: nada em `windows/`, `web/` nem no `project.pbxproj`. | `9f543bb` |
-| HO-T8-01 (seed do cronograma em 2023: agenda de "hoje" vazia em debug) | Em aberto: precisa de decisão. Proposta: gerar as datas do seed a partir de "agora" e ajustar os testes da T7. | — |
+| HO-T8-01 (seed do cronograma em 2023) | Aceito na rodada v2: item 2 da agenda. A F2 gera as datas dos exemplos a partir de `agoraProvider`. | — |

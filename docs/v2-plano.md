@@ -2,8 +2,9 @@
 
 28/10/2026 · resposta às etapas 1 a 4 da seção 11 de
 [`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md).
-Nenhum código foi alterado. As decisões marcadas **(proposta)** só valem
-depois do OK do responsável; as marcadas **(decidida)** já foram respondidas.
+Nenhum código foi alterado. **Plano aprovado pelo responsável em
+29/10/2026**, com todas as propostas abaixo (D-26 a D-32, opção principal
+da D-30) e os itens 1, 2, 3, 4 e 7 da seção 6.
 
 Escopo desta rodada:
 - novo módulo de orçamento por peças (o prompt);
@@ -65,7 +66,7 @@ A partir daqui, toda mudança de esquema é uma migração versionada do SQLite
 
 Entram em [`02-decisoes.md`](02-decisoes.md) na primeira tarefa da rodada.
 
-- **D-26 Modelo por peças (proposta).** Vale o modelo da seção 7 do prompt,
+- **D-26 Modelo por peças (decidida).** Vale o modelo da seção 7 do prompt,
   com estas diferenças:
   - edição e status, conforme D-29 e D-30;
   - Riverpod no lugar do Provider (D-28).
@@ -83,7 +84,7 @@ Entram em [`02-decisoes.md`](02-decisoes.md) na primeira tarefa da rodada.
   Todos os dados vão para o SQLite, inclusive as tarefas do cronograma,
   para não manter dois mecanismos de persistência (regra 1 do
   `CLAUDE.md`). O `LocalJsonStorage` é removido quando o último uso sair.
-- **D-28 Riverpod (proposta, sem alternativa real).** A regra 4 do
+- **D-28 Riverpod (decidida).** A regra 4 do
   `CLAUDE.md` proíbe Provider e `ChangeNotifier`. O `OrcamentoController`
   do prompt vira um Notifier Riverpod com as mesmas operações e o mesmo
   estado: edição, etapa, resumo, erros e `finalizando`.
@@ -94,7 +95,7 @@ Entram em [`02-decisoes.md`](02-decisoes.md) na primeira tarefa da rodada.
   - O enum é serializado pelo nome.
   - A lista filtra por "Todos", "Criados" e "Enviados".
   - Os cards do dashboard são revistos no item 5.
-- **D-30 Edição e controle de versões (proposta: escolher abaixo).** A edição
+- **D-30 Edição e controle de versões (decidida: código `AAMMDD-NN` e revisão).** A edição
   continua possível e o controle deixa de ser o número de série. Proposta:
   - **Identificação:** cada orçamento tem um **código** gerado ao criar, com
     data e sequência do dia: `AAMMDD-NN` (ex: `281026-03`, o terceiro do dia
@@ -121,8 +122,8 @@ Entram em [`02-decisoes.md`](02-decisoes.md) na primeira tarefa da rodada.
   aba, rotas, seed, fotos, testes, D-18 e D-20, e o `produtoId` do item. A
   aba "Catálogo" é substituída pela **Agenda** (o cronograma, hoje dentro de
   "Mais"). Assim a navegação fica Início, Orçamentos, Agenda e Mais, e
-  "Mais" passa a ter Materiais e Dados da empresa. **(proposta)**
-- **D-32 Dashboard (proposta).** Os quatro cards passam a ser:
+  "Mais" passa a ter Materiais e Dados da empresa. **(decidida)**
+- **D-32 Dashboard (decidida).** Os quatro cards passam a ser:
   - Criados: orçamentos que ainda não foram enviados;
   - Enviados no mês;
   - Valor enviado no mês: soma do total geral;
@@ -186,7 +187,10 @@ Documentos afetados:
 
 As tarefas T2, T3, T5 e T6 da rodada anterior ficam como histórico.
 
-## 6. Agenda: o que melhorar (aguarda o responsável)
+## 6. Agenda: o que melhorar
+
+Entram nesta rodada os itens **1, 2, 3, 4 e 7**. Os itens 5 e 6 ficam para
+depois (dependência nova e tela grande); dá para trocar até a V2-E começar.
 
 O agendamento "ficou legal" e pode ser otimizado. Candidatos, para escolher
 ou trocar:

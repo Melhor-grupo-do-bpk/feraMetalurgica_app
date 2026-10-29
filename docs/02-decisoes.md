@@ -13,6 +13,8 @@ fácil encontrar quando o cliente responder.
 ---
 
 ### D-01
+> **Substituída pela D-26 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Itens não têm valor; só existe o valor final.** *(Telas 6 e 7)*
 
 As telas 6 e 7 mostram valor unitário, unidade (pç, m², h), subtotal e
@@ -28,6 +30,8 @@ vem dos custos operacionais. **Vale o modelo.**
   Geral".
 
 ### D-02
+> **Substituída pela D-26 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **"Nome do projeto" é um campo no topo da etapa 2.** *(Telas 3 e 5)*
 
 O resumo mostra "PROJETO", mas nenhuma etapa pede esse dado. O campo
@@ -36,6 +40,8 @@ O resumo mostra "PROJETO", mas nenhuma etapa pede esse dado. O campo
 `tipoServico` do primeiro item. O modelo não muda (`projeto` já existe).
 
 ### D-03
+> **Substituída pela D-32 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Como cada indicador do dashboard é contado.** *(Tela 1)*
 
 | Card | Regra |
@@ -51,6 +57,8 @@ também ignora rascunhos. A contagem fica num provider de
 tarefas pelos barrels.
 
 ### D-04
+> **Substituída pela D-26 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Validade e dados do emissor são constantes.** *(Telas 6 e 7)* `TODO(cliente)`
 
 - `AppConstants.validadeOrcamentoDias = 15`.
@@ -79,6 +87,8 @@ própria tela mostra uma tarefa de produção. O estado do filtro não é
 persistido.
 
 ### D-06
+> **Substituída pela D-29 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Fluxo de status do orçamento.** *(Telas 6 e 8)*
 
 ```
@@ -102,6 +112,8 @@ O wizard só grava no fim. Sair dele com dados preenchidos pede confirmação
 "Rascunhos" da lista funciona e os dados de exemplo têm um rascunho.
 
 ### D-08
+> **Substituída pela D-26 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Margem e prazo continuam provisórios.** `TODO(cliente)`
 
 - A margem segue em 62,5% (`AppConstants.margemPadraoPercentual`).
@@ -110,6 +122,8 @@ O wizard só grava no fim. Sair dele com dados preenchidos pede confirmação
   para leitura.
 
 ### D-09
+> **Substituída pela D-30 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Identificadores.**
 
 - **Orçamento**: número sequencial com 5 dígitos (`"00483"`). Uma função
@@ -207,6 +221,8 @@ catálogo, que é sempre semeado se o arquivo não existir, porque é o
 catálogo real da empresa.
 
 ### D-18
+> **Substituída pela D-31 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Catálogo só para leitura; as fotos ficam em assets.**
 
 - Não há tela de criar ou editar produto (o Figma não tem).
@@ -223,6 +239,8 @@ O sino continua na `AppTopBar` sem ação (`onNotificationsPressed: null`).
 Não implemente notificações sem uma nova decisão.
 
 ### D-20
+> **Substituída pela D-31 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **"Tipo do serviço" vem do catálogo, com opção "Outro".**
 
 A lista de seleção mostra os nomes dos produtos do catálogo e, no fim,
@@ -231,6 +249,8 @@ A lista de seleção mostra os nomes dos produtos do catálogo e, no fim,
 `produtoId = null`.
 
 ### D-21
+> **Substituída pela D-28 na rodada v2** ([`v2-plano.md`](v2-plano.md)). Vale só como histórico das telas v1.
+
 **Estado do wizard.**
 
 Um único `@riverpod class OrcamentoWizardController` (autoDispose), em
@@ -294,3 +314,127 @@ alguns tokens de `app_colors.dart` mudaram o mínimo possível:
 
 Cor nova ou alterada em `app_colors.dart` precisa continuar passando
 nesse teste.
+
+## Rodada v2 (29/10/2026)
+
+Aprovadas com o [`v2-plano.md`](v2-plano.md). O modelo completo está na
+seção 7 de [`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md);
+as decisões abaixo registram onde o app diverge dele ou o completa.
+
+### D-26
+**Orçamento por produtos e peças.**
+
+- Um produto (`ItemOrcamento`) tem preço base por unidade e uma ou mais
+  peças. Cada peça tem um material copiado (`MaterialSnapshot`), medidas em
+  cm e quantidade por produto. Cálculo, validações e exemplos: seções 5, 6 e
+  9 do prompt.
+- **Precisão sem pacote novo:**
+  - `Dinheiro` em centavos (`int`);
+  - `MedidaCm` em centésimos de cm (`int`), lida de texto pt-BR com até duas
+    casas;
+  - consumo exato em escala fixa de 12 casas (`BigInt`), serializado como
+    texto;
+  - arredondamento half-up só no custo unitário da peça;
+  - nunca `double` em dinheiro, medida ou consumo.
+- Objetos de valor usados por mais de uma feature (`Dinheiro`, `MedidaCm`,
+  `Documento`, `Endereco`) ficam em `lib/core/domain/`.
+- **Saem:**
+  - a margem e o `CustosOperacionais`, substituídos por preço base,
+    adicionais e desconto;
+  - o `projeto`, que vai para a descrição do produto ou as observações;
+  - o prazo de entrega, que vai para as observações se o cliente quiser;
+  - o e-mail e as observações do cliente;
+  - as constantes de emissor e validade, substituídas pelo cadastro da
+    empresa e pelo `validadeDias?` por orçamento.
+- O cliente ganha `endereco` obrigatório e passa a ter cadastro próprio, com o
+  documento normalizado como chave única.
+- Ninguém informa o valor final: ele é sempre o `ResultadoOrcamento`
+  calculado pela `CalculadoraOrcamento` e gravado ao salvar. Um orçamento
+  salvo mostra os totais gravados, sem recalcular.
+
+### D-27
+**SQLite.**
+
+- Dependências novas: `sqflite` (app) e `sqflite_common_ffi` (testes e
+  execução no Windows).
+- Todos os dados do app ficam no SQLite, inclusive as tarefas do cronograma.
+  O esquema é versionado, com migrações em `onUpgrade`.
+- Gravações de vários registros rodam numa transação
+  (`UnidadeDeTrabalho`).
+- O `LocalJsonStorage` e os arquivos JSON do beta deixam de ser usados. Não
+  há migração dos dados do beta, que são só de teste.
+
+### D-28
+**Estado da edição com Riverpod.**
+
+O `OrcamentoController` do prompt é um Notifier Riverpod (regra 4 do
+`CLAUDE.md`), não `ChangeNotifier`/Provider. Tem as mesmas operações e o
+mesmo estado:
+- `edicao`, `etapaAtual`, `resumo`, `erros` e `finalizando`;
+- `iniciar`, `selecionarCliente`, `atualizarCliente`;
+- adicionar, editar, remover e duplicar item e peça;
+- `atualizarValores`, `avancar`, `voltar`, `finalizar`, `descartar`.
+
+Fórmulas ficam na `CalculadoraOrcamento` e gravação no serviço de
+finalização; o controller não tem nem um nem outro.
+
+### D-29
+**Status `criado` e `enviado`.**
+
+- `StatusOrcamento` tem só `criado` e `enviado`, serializados pelo nome.
+- Ao salvar, o orçamento fica `criado`. Enviar pelo WhatsApp com sucesso
+  muda para `enviado`.
+- Nos detalhes, dá para alternar manualmente entre os dois.
+- A lista filtra por Todos, Criados e Enviados.
+
+### D-30
+**Código, edição e revisão.**
+
+- **Identificador interno:** `id` UUID.
+- **Código exibido:** `AAMMDD-NN`, a data de criação mais a sequência do
+  dia, com dois dígitos (ou mais, se passar de 99). Ex: `281026-03`.
+  - O contador de cada dia fica persistido e nunca volta atrás, então
+    excluir um orçamento não libera o código.
+  - Exibição: `281026-03` nas telas e `Nº 281026-03` no PDF.
+- **Edição:** orçamentos salvos podem ser editados. "Editar" reabre o wizard
+  com uma cópia do orçamento, e salvar grava a nova versão no lugar da
+  anterior, em transação:
+  - `revisao + 1` e `atualizadoEm` com a data atual;
+  - totais recalculados;
+  - cliente e empresa copiados de novo dos cadastros atuais. As peças mantêm
+    os materiais copiados, salvo se o operador trocar.
+- **Status na edição:** se o orçamento estava `enviado`, volta para
+  `criado`.
+- **Exibição da revisão:** a partir da 2ª revisão, telas, PDF e WhatsApp
+  mostram "rev. N".
+- **Histórico:** só a revisão atual é guardada.
+- **Validade:** conta a partir de `atualizadoEm`.
+- **Gravação dupla:** a `chaveFinalizacao` evita gravar duas vezes no clique
+  duplo, tanto ao criar quanto ao editar.
+
+### D-31
+**Catálogo removido e Agenda como aba.**
+
+- Sai a feature `catalogo` inteira: aba, rotas, repositório, seed, fotos e
+  testes, e o `produtoId` do item.
+- A navegação inferior fica Início, Orçamentos, Agenda e Mais. A Agenda é
+  o cronograma, que sai de "Mais".
+- "Mais" passa a ter "Materiais" e "Dados da empresa".
+
+### D-32
+**Cards do dashboard.**
+
+| Card | Conta |
+|---|---|
+| Criados | orçamentos com status `criado` |
+| Enviados no mês | orçamentos `enviado` com `atualizadoEm` no mês atual |
+| Valor enviado no mês | soma do total geral desses mesmos orçamentos |
+| Pedidos em produção | tarefas de produção pendentes (como antes) |
+
+Os "recentes" são os 2 orçamentos de `atualizadoEm` mais recente.
+
+### D-33
+**Dependências da rodada v2.** Complementa a D-14.
+
+Só entram `sqflite` e `sqflite_common_ffi` (D-27). Notificações locais e
+pacotes de decimal ficam de fora: a precisão segue a D-26.

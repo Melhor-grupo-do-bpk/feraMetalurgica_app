@@ -1,5 +1,10 @@
 # Plano de desenvolvimento
 
+> **Rodada v2 em andamento:** o plano desta rodada está em
+> [`v2-plano.md`](v2-plano.md) e a execução em
+> [`orquestracao.md`](orquestracao.md). O conteúdo abaixo é o plano da
+> rodada telas-v1, já concluída.
+
 ## Estratégia
 
 Primeiro uma fase **sequencial** (F1) cria tudo o que é compartilhado:
