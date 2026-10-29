@@ -4,19 +4,23 @@ import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
 import 'package:flutter/material.dart';
 
-/// Tela provisória das abas cujas features ainda não foram implementadas.
+/// Tela provisória das telas cujas features ainda não foram implementadas.
 class PlaceholderPage extends StatelessWidget {
-  /// Cria a tela com o [titulo] da aba.
-  const PlaceholderPage({required this.titulo, super.key});
+  /// Cria a tela com o [titulo] da aba. [onBack] mostra o botão voltar na
+  /// top bar (telas abertas por cima de uma aba).
+  const PlaceholderPage({required this.titulo, this.onBack, super.key});
 
   /// Título exibido no centro da tela.
   final String titulo;
+
+  /// Ação do botão voltar; sem ele, o botão não aparece.
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Scaffold(
-      appBar: const AppTopBar(),
+      appBar: AppTopBar(onBack: onBack),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),

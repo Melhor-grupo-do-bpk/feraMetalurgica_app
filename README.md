@@ -68,6 +68,12 @@ O projeto usa [`very_good_analysis`](https://pub.dev/packages/very_good_analysis
 O CI (`.github/workflows/analyze.yml`) roda `flutter analyze --fatal-infos`
 em todo Pull Request — nenhum erro ou aviso de lint pode ficar sem correção.
 
+## Planejamento
+
+Requisitos, decisões, padrões e o plano de desenvolvimento em trilhas
+paralelas ficam em [`docs/`](docs/README.md). Leia antes de começar uma
+tarefa.
+
 ## Estrutura de pastas
 
 ```
@@ -75,15 +81,17 @@ fera_metalurgica_app/
   lib/
     core/            # infraestrutura compartilhada
       di/            # providers riverpod compartilhados (ex: LocalJsonStorage)
-      router/        # AppRouter (go_router) — rota central do app
-      theme/         # AppTheme
-      utils/         # utilitários genéricos
+      router/        # AppRoutes (mapa de rotas) + appRouter (go_router)
+      theme/         # AppTheme + tokens (cores, textos, espaçamentos)
+      utils/         # utilitários genéricos (storage, datas, máscaras...)
+      widgets/       # componentes visuais compartilhados
       constants/     # constantes globais
     features/
       dashboard/     # tela inicial com indicadores e recentes
       orcamentos/     # CRUD + wizard de orçamentos
       catalogo/       # catálogo de produtos/estruturas
       cronograma/     # calendário e tarefas
+      mais/           # menu da aba "Mais"
   test/
     unit/    widget/    mocks/
 ```
@@ -95,7 +103,8 @@ barrel `<feature>.dart` com a API pública da feature.
 ## Features
 
 - **dashboard** — tela inicial com indicadores (orçamentos em andamento,
-  aguardando resposta, aprovados, pendentes) e lista de orçamentos recentes.
+  aguardando aprovação, aprovados, pedidos em produção) e lista de
+  orçamentos recentes.
 - **orcamentos** — CRUD de orçamentos e wizard de criação em 4 etapas
   (1. dados do cliente, 2. itens/medidas/material, 3. custos operacionais,
   4. resumo com valor final calculado), detalhes do orçamento, geração/prévia
@@ -103,9 +112,31 @@ barrel `<feature>.dart` com a API pública da feature.
 - **catalogo** — catálogo de produtos/estruturas (foto, categoria, descrição
   técnica).
 - **cronograma** — calendário e lista de tarefas do dia, filtráveis por tipo
-  (orçamentos/visitas).
+  (orçamentos/produção/visitas).
+- **mais** — menu da aba "Mais" (hoje: Cronograma).
 
-> Este commit contém apenas a estrutura base do projeto (pastas, stack,
-> lint, CI, modelos de domínio e uma tela Home mínima) — a lógica de negócio
-> completa de cada feature (wizard, PDF, WhatsApp, etc.) ainda será
-> implementada.
+## O que o app faz hoje
+
+Todas as telas do Figma (`Teste/`, Telas 1 a 10) estão implementadas, nos
+modos claro e escuro, e funcionam offline:
+
+- **Início:** botão "Criar orçamento", os 4 indicadores (rascunhos não
+  contam) e os 2 orçamentos mais recentes.
+- **Orçamentos:** lista com busca (sem diferenciar maiúsculas nem acentos)
+  e filtro por status; wizard de 4 etapas (cliente, itens, custos e resumo)
+  que cria ou edita um orçamento; detalhes com itens descritivos, valor
+  final, troca de status, envio por WhatsApp e prévia do PDF para
+  compartilhar.
+- **Catálogo:** produtos com foto, categoria e descrição técnica. "Usar no
+  orçamento" abre o wizard já com o item.
+- **Mais → Cronograma:** calendário do mês, filtros por tipo, linha do
+  tempo com tarefas que podem ser concluídas, e formulário para criar,
+  editar ou excluir tarefas (com vínculo opcional a um orçamento).
+
+Em modo debug, o primeiro uso grava dados de exemplo (D-17). Em release, só
+o catálogo vem preenchido.
+
+Ainda provisório, aguardando o cliente: margem (62,5%) e prazo (15 dias
+úteis), validade e dados do emissor no PDF, salvar rascunho no wizard, as
+fotos reais do catálogo e o logo completo. A lista está em
+[`docs/relatorios/2026-10-28-perguntas-cliente.md`](docs/relatorios/2026-10-28-perguntas-cliente.md).

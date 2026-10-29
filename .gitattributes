@@ -1,0 +1,14 @@
+# Fim de linha LF em todos os arquivos de texto, em qualquer SO (evita
+# CRLF misturado no Windows com core.autocrlf=true e diffs falsos do
+# dart format).
+* text=auto eol=lf
+
+# Binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.rar binary
+*.ttf binary
+*.otf binary
+*.jar binary

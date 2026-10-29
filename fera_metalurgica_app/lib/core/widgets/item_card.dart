@@ -85,7 +85,6 @@ class ItemCard extends StatelessWidget {
                         if (onEditar != null)
                           IconButton(
                             tooltip: 'Editar',
-                            visualDensity: VisualDensity.compact,
                             iconSize: 16,
                             color: colors.textSecondary,
                             icon: const Icon(Icons.edit_outlined),
@@ -94,7 +93,6 @@ class ItemCard extends StatelessWidget {
                         if (onExcluir != null)
                           IconButton(
                             tooltip: 'Excluir',
-                            visualDensity: VisualDensity.compact,
                             iconSize: 16,
                             color: colors.textSecondary,
                             icon: const Icon(Icons.delete_outline),

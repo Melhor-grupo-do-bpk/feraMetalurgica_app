@@ -16,6 +16,7 @@ class TimelineTile extends StatelessWidget {
     this.corDestaque,
     this.concluida = false,
     this.ultimo = false,
+    this.onMarcadorPressed,
     super.key,
   });
 
@@ -43,6 +44,11 @@ class TimelineTile extends StatelessWidget {
   /// Último item da lista: não desenha a linha abaixo do marcador.
   final bool ultimo;
 
+  /// Toque no marcador (ex: alternar `concluida`, RF-84). Com ele, o
+  /// marcador vira um botão de 48 dp com tooltip (RNF-06); sem ele, é só
+  /// desenho.
+  final VoidCallback? onMarcadorPressed;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -50,6 +56,12 @@ class TimelineTile extends StatelessWidget {
         ? colors.border
         : (corDestaque ?? colors.darkSurface);
     final riscado = concluida ? TextDecoration.lineThrough : null;
+    final marcador = Container(
+      key: const ValueKey('timeline-dot'),
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(color: destaque, shape: BoxShape.circle),
+    );
 
     return Opacity(
       opacity: concluida ? 0.6 : 1,
@@ -76,15 +88,17 @@ class TimelineTile extends StatelessWidget {
                             ),
                   ),
                   const SizedBox(height: AppSpacing.xxs),
-                  Container(
-                    key: const ValueKey('timeline-dot'),
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: destaque,
-                      shape: BoxShape.circle,
+                  if (onMarcadorPressed == null)
+                    marcador
+                  else
+                    IconButton(
+                      key: const ValueKey('timeline-marcador'),
+                      onPressed: onMarcadorPressed,
+                      tooltip: concluida
+                          ? 'Marcar como pendente'
+                          : 'Marcar como concluída',
+                      icon: marcador,
                     ),
-                  ),
                   if (!ultimo)
                     Expanded(
                       child: Container(

@@ -27,6 +27,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.darkSurface,
     required this.onDarkSurface,
     required this.navActive,
+    required this.onNavActive,
     required this.navInactive,
     required this.progressTrack,
     required this.timelineLine,
@@ -40,6 +41,9 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.dangerContainer,
     required this.onDangerContainer,
     required this.accentContainer,
+    required this.onAccentContainer,
+    required this.whatsapp,
+    required this.onWhatsapp,
     required this.error,
   });
 
@@ -70,7 +74,8 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Texto terciário (datas, placeholders).
   final Color textMuted;
 
-  /// "Marron claro" — única variável cadastrada no Figma (#BA5E1B).
+  /// "Marron claro" — única variável cadastrada no Figma (#BA5E1B),
+  /// escurecida para #B75B1A para o texto branco passar de 4,5:1 (D-25).
   final Color primary;
 
   /// Conteúdo sobre [primary].
@@ -97,6 +102,10 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Fundo da aba ativa da navegação inferior (#D56D22).
   final Color navActive;
 
+  /// Ícone/rótulo da aba ativa. O Figma usa branco, com contraste de 3,5:1
+  /// sobre [navActive]; o quase preto passa de 5:1 (D-25).
+  final Color onNavActive;
+
   /// Ícone/rótulo das abas inativas (#575F67).
   final Color navInactive;
 
@@ -106,7 +115,7 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Linha vertical da timeline do cronograma (#E9ECEF).
   final Color timelineLine;
 
-  /// Chip neutro (ex: "Em análise" no dashboard).
+  /// Chip neutro (ex: "Rascunho") e botão "Gerar PDF".
   final Color neutralContainer;
 
   /// Texto sobre [neutralContainer].
@@ -115,7 +124,7 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Ponto indicador do chip neutro.
   final Color neutralDot;
 
-  /// Badge informativo (ex: "Em análise" na lista).
+  /// Badge informativo (ex: "Em análise", em todas as telas).
   final Color infoContainer;
 
   /// Texto sobre [infoContainer].
@@ -136,6 +145,17 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Fundo translúcido de tags de destaque (ex: "PRODUÇÃO").
   final Color accentContainer;
 
+  /// Texto sobre [accentContainer]. O Figma usa [accent], com contraste
+  /// abaixo de 4,5:1 sobre o fundo translúcido (D-25).
+  final Color onAccentContainer;
+
+  /// Botão "Enviar WhatsApp" dos detalhes (verde do WhatsApp, #25D366).
+  final Color whatsapp;
+
+  /// Conteúdo sobre [whatsapp]. O Figma usa branco, mas o contraste com o
+  /// verde fica em 2:1; o quase preto do WhatsApp (#0B141A) passa de 9:1.
+  final Color onWhatsapp;
+
   /// Cor de erro/campo obrigatório (#BA1A1A).
   final Color error;
 
@@ -150,7 +170,7 @@ class AppColors extends ThemeExtension<AppColors> {
     textPrimary: Color(0xFF000000),
     textSecondary: Color(0xFF444748),
     textMuted: Color(0xFF747878),
-    primary: Color(0xFFBA5E1B),
+    primary: Color(0xFFB75B1A),
     onPrimary: Color(0xFFFFFFFF),
     brand: Color(0xFF61310E),
     onBrand: Color(0xFFFFFFFF),
@@ -159,6 +179,7 @@ class AppColors extends ThemeExtension<AppColors> {
     darkSurface: Color(0xFF000000),
     onDarkSurface: Color(0xFFFFFFFF),
     navActive: Color(0xFFD56D22),
+    onNavActive: Color(0xFF141312),
     navInactive: Color(0xFF575F67),
     progressTrack: Color(0xFFDDD9D8),
     timelineLine: Color(0xFFE9ECEF),
@@ -173,6 +194,9 @@ class AppColors extends ThemeExtension<AppColors> {
     dangerContainer: Color(0xFFFFDAD6),
     onDangerContainer: Color(0xFFBA1A1A),
     accentContainer: Color(0x1AC25316),
+    onAccentContainer: Color(0xFFA64514),
+    whatsapp: Color(0xFF25D366),
+    onWhatsapp: Color(0xFF0B141A),
     error: Color(0xFFBA1A1A),
   );
 
@@ -193,7 +217,8 @@ class AppColors extends ThemeExtension<AppColors> {
     textSecondary: Color(0xFFC6C2BF),
     textMuted: Color(0xFFA3A6A6),
     primary: Color(0xFFD2761F),
-    onPrimary: Color(0xFFFFFFFF),
+    // Branco no Figma; o quase preto passa de 4,5:1 sobre o laranja (D-25).
+    onPrimary: Color(0xFF141312),
     brand: Color(0xFFE9A268),
     onBrand: Color(0xFF141312), // derivado
     brandStrong: Color(0xFFE9A268), // derivado
@@ -201,7 +226,9 @@ class AppColors extends ThemeExtension<AppColors> {
     darkSurface: Color(0xFFF2EFED), // derivado (invertido para contraste)
     onDarkSurface: Color(0xFF141312), // derivado
     navActive: Color(0xFFD56D22),
-    navInactive: Color(0xFF575F67),
+    onNavActive: Color(0xFF141312),
+    // #575F67 no Figma, com contraste de 2,9:1 sobre o fundo (D-25).
+    navInactive: Color(0xFFA3A6A6),
     progressTrack: Color(0xFF3C3835), // derivado
     timelineLine: Color(0xFF3C3835), // derivado
     neutralContainer: Color(0xFF2E2A26),
@@ -214,6 +241,9 @@ class AppColors extends ThemeExtension<AppColors> {
     dangerContainer: Color(0xFF3B1F1C), // derivado
     onDangerContainer: Color(0xFFFFB4AB), // derivado
     accentContainer: Color(0x33E07A3F), // derivado
+    onAccentContainer: Color(0xFFF0965F),
+    whatsapp: Color(0xFF25D366),
+    onWhatsapp: Color(0xFF0B141A),
     error: Color(0xFFFFB4AB), // derivado
   );
 
@@ -237,6 +267,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? darkSurface,
     Color? onDarkSurface,
     Color? navActive,
+    Color? onNavActive,
     Color? navInactive,
     Color? progressTrack,
     Color? timelineLine,
@@ -250,6 +281,9 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? dangerContainer,
     Color? onDangerContainer,
     Color? accentContainer,
+    Color? onAccentContainer,
+    Color? whatsapp,
+    Color? onWhatsapp,
     Color? error,
   }) {
     return AppColors(
@@ -271,6 +305,7 @@ class AppColors extends ThemeExtension<AppColors> {
       darkSurface: darkSurface ?? this.darkSurface,
       onDarkSurface: onDarkSurface ?? this.onDarkSurface,
       navActive: navActive ?? this.navActive,
+      onNavActive: onNavActive ?? this.onNavActive,
       navInactive: navInactive ?? this.navInactive,
       progressTrack: progressTrack ?? this.progressTrack,
       timelineLine: timelineLine ?? this.timelineLine,
@@ -284,6 +319,9 @@ class AppColors extends ThemeExtension<AppColors> {
       dangerContainer: dangerContainer ?? this.dangerContainer,
       onDangerContainer: onDangerContainer ?? this.onDangerContainer,
       accentContainer: accentContainer ?? this.accentContainer,
+      onAccentContainer: onAccentContainer ?? this.onAccentContainer,
+      whatsapp: whatsapp ?? this.whatsapp,
+      onWhatsapp: onWhatsapp ?? this.onWhatsapp,
       error: error ?? this.error,
     );
   }
@@ -311,6 +349,7 @@ class AppColors extends ThemeExtension<AppColors> {
       darkSurface: l(darkSurface, other.darkSurface),
       onDarkSurface: l(onDarkSurface, other.onDarkSurface),
       navActive: l(navActive, other.navActive),
+      onNavActive: l(onNavActive, other.onNavActive),
       navInactive: l(navInactive, other.navInactive),
       progressTrack: l(progressTrack, other.progressTrack),
       timelineLine: l(timelineLine, other.timelineLine),
@@ -324,6 +363,9 @@ class AppColors extends ThemeExtension<AppColors> {
       dangerContainer: l(dangerContainer, other.dangerContainer),
       onDangerContainer: l(onDangerContainer, other.onDangerContainer),
       accentContainer: l(accentContainer, other.accentContainer),
+      onAccentContainer: l(onAccentContainer, other.onAccentContainer),
+      whatsapp: l(whatsapp, other.whatsapp),
+      onWhatsapp: l(onWhatsapp, other.onWhatsapp),
       error: l(error, other.error),
     );
   }
