@@ -31,8 +31,8 @@ trilha" de [`04-plano.md`](04-plano.md). As tarefas da rodada anterior em
 
 | ID | Tarefa | Branch | Depende de | Situação |
 |---|---|---|---|---|
-| V2-F1 | [Domínio e cálculo](tarefas/v2/F1-dominio-calculo.md) | `feat/v2-f1-dominio` | — | liberada |
-| V2-F2 | [Persistência e troca do modelo](tarefas/v2/F2-persistencia.md) | `feat/v2-f2-persistencia` | F1 integrada | aguardando |
+| V2-F1 | [Domínio e cálculo](tarefas/v2/F1-dominio-calculo.md) | `feat/v2-f1-dominio` | — | integrada |
+| V2-F2 | [Persistência e troca do modelo](tarefas/v2/F2-persistencia.md) | `feat/v2-f2-persistencia` | F1 integrada | liberada |
 | V2-A | [Wizard: produtos e peças](tarefas/v2/A-produtos-pecas.md) | `feat/v2-a-produtos` | F2 integrada | aguardando |
 | V2-B | [Wizard: cliente, valores e prévia](tarefas/v2/B-cliente-valores-previa.md) | `feat/v2-b-cliente-valores` | F2 integrada | aguardando |
 | V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | aguardando |
@@ -193,3 +193,8 @@ Quando o responsável avisa que uma trilha terminou, o orquestrador:
 | Handoff | Resposta | Commit na integração |
 |---|---|---|
 | HO-T8-01 (seed do cronograma em 2023) | Aceito na rodada v2: item 2 da agenda. A F2 gera as datas dos exemplos a partir de `agoraProvider`. | — |
+| HO-V2-F1-01 (código `DDMMAA-NN`, não `AAMMDD-NN`) | Aceito: o exemplo aprovado (`281026-03`) é dia-mês-ano. D-30, plano e tarefas corrigidos. | ver log |
+| HO-V2-F1-02 a 07, 09 e 11 (detalhes do domínio) | Aceitos, registrados na D-34. | ver log |
+| HO-V2-F1-08 (número com ponto) | Aceito, registrado na D-35. | ver log |
+| HO-V2-F1-10 (`Material` colide com o widget do Flutter) | Mantido o nome; `hide Material` no import do Flutter nas telas (D-36). | ver log |
+| HO-V2-F1-11 (`numeroFormatado` no `03-padroes.md` §4) | A F2 troca por `codigoExibicao` ao apagar o modelo antigo. | — |

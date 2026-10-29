@@ -10,7 +10,8 @@ depende_de: V2-F1
 # V2-F2: persistência e troca do modelo
 
 **Base:** prompt v2 §7 (repositórios e serviços), §8 e §11.
-**Decisões:** D-26 a D-33.
+**Decisões:** D-26 a D-36. Contratos da F1: D-34 e o handoff
+[`handoffs/v2/F1.md`](../../handoffs/v2/F1.md).
 **Arquivos:** qualquer arquivo. A F2 roda sozinha, entre a F1 e as trilhas
 paralelas.
 
@@ -103,6 +104,8 @@ mínima descrita abaixo.
       continuam passando.
 
 ### Documentação
+- [ ] Em `03-padroes.md` §4, trocar `numeroFormatado` por `codigoExibicao`
+      (HO-V2-F1-11).
 - [ ] Atualizar `CLAUDE.md` e `.cursorrules`: tirar as marcas "em
       substituição", trocar `LocalJsonStorage` por SQLite e remover o
       catálogo.
@@ -113,7 +116,7 @@ mínima descrita abaixo.
 ## Critério de aceite
 - Com os exemplos de debug, a lista mostra os dois orçamentos de exemplo
   com os totais certos (R$ 3.630,80 e R$ 644,40).
-- O wizard em stub cria um orçamento novo com código `AAMMDD-01`; editar
+- O wizard em stub cria um orçamento novo com código `DDMMAA-01`; editar
   gera "rev. 2".
 - A agenda abre com tarefas de hoje.
 - `flutter analyze --fatal-infos` sem problemas e todos os testes passando.

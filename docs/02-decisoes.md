@@ -391,8 +391,8 @@ finalização; o controller não tem nem um nem outro.
 **Código, edição e revisão.**
 
 - **Identificador interno:** `id` UUID.
-- **Código exibido:** `AAMMDD-NN`, a data de criação mais a sequência do
-  dia, com dois dígitos (ou mais, se passar de 99). Ex: `281026-03`.
+- **Código exibido:** `DDMMAA-NN`, o dia, o mês e o ano (2 dígitos) da
+  criação mais a sequência do dia, com dois dígitos (ou mais, se passar de 99). Ex: `281026-03`.
   - O contador de cada dia fica persistido e nunca volta atrás, então
     excluir um orçamento não libera o código.
   - Exibição: `281026-03` nas telas e `Nº 281026-03` no PDF.
@@ -438,3 +438,63 @@ Os "recentes" são os 2 orçamentos de `atualizadoEm` mais recente.
 
 Só entram `sqflite` e `sqflite_common_ffi` (D-27). Notificações locais e
 pacotes de decimal ficam de fora: a precisão segue a D-26.
+
+### D-34
+**Detalhes do domínio v2 definidos na F1** (HO-V2-F1-02 a 07 e 09 a 11).
+
+- **`Consumo` no JSON:** leva a unidade, no formato
+  `{"unidade": "m3", "valor": "0.004800000000"}`. `ResultadoPeca.unidade` é
+  um getter.
+- **Snapshots:** `gerarSnapshot()` são extensões no arquivo de cada
+  snapshot. Os cadastros não importam `orcamentos`.
+- **Validações:**
+  - as comuns (`ErroValidacao`, documento, endereço, texto, telefone,
+    e-mail) ficam em `core/domain/`;
+  - as de cada cadastro ficam na própria feature;
+  - as do orçamento ficam em `validacao_orcamento.dart`.
+
+  O `X.validar()` do prompt equivale a `validarX(x)`, e o `copiarCom` ao
+  `copyWith`.
+- **`UnidadeCobranca`:** fica em `core/domain/`, reexportada por
+  `materiais.dart`.
+- **`listarResumos()`:** devolve `Future<List<Orcamento>>`, ordenado por
+  `atualizadoEm` decrescente. Não existe `ResumoOrcamento`.
+- **Total zero:** sinalizado por `ResultadoOrcamento.totalGeralZero`; não é
+  erro de validação.
+- **Endereço:**
+  - logradouro, número (texto, aceita "s/n"), bairro e cidade são
+    obrigatórios;
+  - UF tem 2 letras maiúsculas;
+  - CEP é opcional e, se informado, tem 8 dígitos;
+  - celular e telefone usam `validarTelefone` (10 ou 11 dígitos);
+  - o e-mail da empresa usa `validarEmail`.
+- **`UnidadeDeTrabalho`:** `executarEmTransacao<T>(Future<T>
+  Function(RepositoriosTransacao repos))`, sem `Zone`.
+  `RepositoriosTransacao` expõe `clientes`, `orcamentos` e `sequencias`
+  ligados à transação.
+- **`CalculadoraOrcamento`:**
+  - `calcularOrcamento` recebe parâmetros nomeados, para servir ao
+    orçamento salvo e à edição;
+  - `versaoCalculo` é `static const`;
+  - total negativo e peça em m³ sem espessura lançam `ArgumentError`, e a
+    validação barra os dois antes.
+
+### D-35
+**Leitura de números com ponto** (HO-V2-F1-08).
+
+Em `Dinheiro` e `MedidaCm`:
+- sem vírgula e com 1 ou 2 dígitos depois de um único ponto, o ponto é
+  decimal (`"7.5"`);
+- com 3 dígitos depois do ponto, ou vários grupos, o ponto é milhar
+  (`"1.500"`);
+- com vírgula, ela é decimal e o ponto é milhar.
+
+Muitos teclados numéricos de celular só têm ponto.
+
+### D-36
+**O nome `Material` fica** (HO-V2-F1-10).
+
+O prompt usa `Material` em todo o modelo. Nos arquivos de tela que usam o
+`Material` do domínio, importe o Flutter com
+`import 'package:flutter/material.dart' hide Material;`. Se o arquivo
+precisar dos dois, use um prefixo no barrel de materiais.

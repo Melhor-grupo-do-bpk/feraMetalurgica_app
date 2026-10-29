@@ -1,7 +1,7 @@
 ---
 trilha: V2-F1
 titulo: Domínio e cálculo do orçamento por peças
-status: em revisão     # pendente | em andamento | em revisão | concluída
+status: concluída    # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-f1-dominio
 depende_de: —

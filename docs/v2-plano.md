@@ -95,10 +95,10 @@ Entram em [`02-decisoes.md`](02-decisoes.md) na primeira tarefa da rodada.
   - O enum é serializado pelo nome.
   - A lista filtra por "Todos", "Criados" e "Enviados".
   - Os cards do dashboard são revistos no item 5.
-- **D-30 Edição e controle de versões (decidida: código `AAMMDD-NN` e revisão).** A edição
+- **D-30 Edição e controle de versões (decidida: código `DDMMAA-NN` e revisão).** A edição
   continua possível e o controle deixa de ser o número de série. Proposta:
   - **Identificação:** cada orçamento tem um **código** gerado ao criar, com
-    data e sequência do dia: `AAMMDD-NN` (ex: `281026-03`, o terceiro do dia
+    data e sequência do dia: `DDMMAA-NN` (ex: `281026-03`, o terceiro do dia
     28/10/2026). Não se reutiliza, porque o contador do dia é persistido. Não
     depende de uma série global, e o código já diz quando o orçamento nasceu.
   - **Controle das alterações:** cada orçamento tem `revisao` (começa em 1)
