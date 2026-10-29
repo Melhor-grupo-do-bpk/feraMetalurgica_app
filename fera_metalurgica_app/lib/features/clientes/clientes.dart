@@ -3,6 +3,7 @@
 /// `data/`/`domain/`/`presentation/` diretamente.
 library;
 
+export 'data/sqlite_cliente_repository.dart';
 export 'domain/cliente.dart';
 export 'domain/cliente_repository.dart';
 export 'domain/validacao_cliente.dart';
