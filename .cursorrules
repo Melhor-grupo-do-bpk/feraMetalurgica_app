@@ -36,7 +36,9 @@ FERA é um app de gestão de orçamentos para uma empresa de estruturas
 metálicas (portões basculantes, estruturas treliçadas, grades de proteção).
 Permite montar, calcular e enviar orçamentos B2B, com catálogo de produtos e
 cronograma de tarefas. Android e iOS. Sem backend: persistência local em
-arquivos JSON (`LocalJsonStorage`, em `lib/core/utils/`).
+SQLite (D-27), atrás dos repositórios de cada feature. Até a F2 da rodada
+v2, o app ainda grava em arquivos JSON (`LocalJsonStorage`, em
+`lib/core/utils/`), que será removido.
 
 ## Estrutura de pastas (feature-first)
 
@@ -44,6 +46,7 @@ arquivos JSON (`LocalJsonStorage`, em `lib/core/utils/`).
 lib/
   core/
     di/         # providers riverpod compartilhados entre features
+    domain/      # objetos de valor compartilhados (Dinheiro, MedidaCm, Documento...)
     router/      # AppRouter (go_router) — única fonte de rotas do app
     theme/       # AppTheme + tokens (AppColors, AppTextStyles, AppSpacing)
     widgets/     # componentes visuais compartilhados (AppTopBar, StatCard...)
@@ -52,7 +55,10 @@ lib/
   features/
     dashboard/
     orcamentos/
-    catalogo/
+    materiais/   # cadastro de materiais (D-26)
+    empresa/     # dados da empresa emitente (D-26)
+    clientes/    # cadastro de clientes (D-26)
+    catalogo/    # em substituição na rodada v2: sai na F2 (D-31)
     cronograma/
     mais/        # só presentation: menu da aba "Mais" (D-13)
 ```
@@ -115,60 +121,137 @@ uma feature existente, pare e pergunte antes de criar uma categoria nova.
 
 ## Domínio do negócio — não invente campos fora disso
 
-Modelo final de dados (todos `freezed` + `json_serializable`; `?` = opcional,
-`= x` = valor padrão). Campos fora desta lista exigem alinhamento antes.
+Modelo de dados da rodada v2 (D-26 a D-30), com todos os modelos em
+`freezed` + `json_serializable`. Notação: `?` = opcional, `= x` = valor
+padrão. Campos fora desta lista exigem alinhamento antes. O modelo completo,
+as fórmulas e as regras de validação estão nas seções 5 a 7 de
+[`docs/prompt-modulo-orcamento-v2.md`](docs/prompt-modulo-orcamento-v2.md).
+As decisões D-26 a D-30 valem sobre o prompt.
 
-### Orçamentos (`lib/features/orcamentos/domain/`)
+**Precisão (D-26): nunca `double` em dinheiro, medida ou consumo.**
 
-Um **Orçamento** é sempre a composição de cliente + itens + custos
-operacionais, que são as etapas 1 a 3 do wizard; a etapa 4 é o resumo.
+### Objetos de valor (`lib/core/domain/`)
 
-- **`Orcamento`** — `id` (exibido como "#00482"), `cliente` (`Cliente`),
-  `projeto` (nome do projeto), `itens` (`List<ItemOrcamento>`),
-  `custosOperacionais` (`CustosOperacionais`), `status`
-  (`StatusOrcamento`), `criadoEm` (`DateTime`), `prazoDiasUteis` (`int = 15`;
-  provisório, nenhuma etapa do wizard pede esse dado).
-- **`Cliente`** (etapa 1) — `id`, `nome`, `numero` (telefone/WhatsApp),
-  `cpfCnpj`, `email?`, `observacoes?`. Getter `ehPessoaJuridica` (14
-  dígitos no `cpfCnpj`, D-23). Sem endereço (D-04).
-- **`ItemOrcamento`** (etapa 2) — `id`, `tipoServico`, `medidas`
-  (`Medidas = Medidas()`), `materialPrincipal?`, `especificacoes?`,
-  `quantidade` (`int = 1`), `produtoId?` (referência a um
-  `ProdutoCatalogo`). Itens são descritivos: **não têm valor unitário** e não
-  entram no valor final.
-- **`Medidas`** — `altura?`, `largura?`, `comprimento?` (A, L, C, em metros).
-  Para exibir, use o getter `Medidas.formatada` (só as preenchidas, ordem
-  A x L x C, ex: "2.50m x 2.20m"; vazio se nenhuma).
-- **`CustosOperacionais`** (etapa 3) — `materiaPrima`, `maoDeObra`,
-  `insumos`, `combustivel`, `impostos` (todos `double = 0`).
-- **`StatusOrcamento`** — `rascunho`, `emAnalise`, `enviado`, `aprovado`,
-  `recusado`. Não adicione outros status sem alinhar com o time. É
-  serializado pelo **nome** (`"emAnalise"`), nunca pelo índice — não renomeie
-  valores existentes sem migrar os dados salvos. Regras do `rascunho`:
-  - os cards (indicadores) e os "recentes" do dashboard **ignoram**
-    orçamentos em rascunho (regras de cada card em D-03);
-  - a lista de orçamentos mostra o chip "Rascunho";
-  - por enquanto o wizard só grava `emAnalise` ao concluir; salvar como
-    rascunho fica para quando o cliente confirmar (`// TODO(cliente)` em
-    `status_orcamento.dart`).
+- **`Dinheiro`** — `centavos` (`int`). Operadores `+`, `-`, `*` (por `int`)
+  e comparações; `formatado` (`R$ 1.234,56`). `tryParse`/`parse` leem
+  pt-BR sem `double`:
+  - vírgula decimal, com ou sem ponto de milhar (`"1.234,56"`);
+  - ponto decimal só sem vírgula e com 1 ou 2 dígitos depois (`"7.5"`);
+  - ponto com 3 dígitos é milhar (`"1.500"`);
+  - mais de 2 casas, sinal ou texto vazio dão `null`.
 
-**Valor final** — **não é um campo digitado**. É sempre calculado:
+  JSON: `int` (`DinheiroJsonConverter`).
+- **`MedidaCm`** — `centesimos` (`int`) de cm, com a mesma leitura pt-BR.
+  Vazio dá `null`, nunca zero. JSON: `int` (`MedidaCmJsonConverter`).
+- **`Consumo`** — `unidade` + `valor` (`BigInt` × 10¹², exato). Só soma
+  com a mesma unidade. JSON: `{"unidade": "m3", "valor": "0.004800000000"}`.
+- **`UnidadeCobranca`** — `m2`, `m3`, serializada pelo nome. Reexportada
+  por `materiais.dart`.
+- **`Documento`** — `valorNormalizado` (só dígitos, texto). Getter `tipo`
+  (`cpf`/`cnpj`): 14 dígitos indica CNPJ (D-23). JSON: texto
+  (`DocumentoJsonConverter`).
+- **`Endereco`** — `logradouro`, `numero` (texto, aceita "s/n"), `bairro`,
+  `cidade`, `uf` (2 letras maiúsculas), `cep?`, `complemento?`. Getter
+  `formatado` (uma linha).
+- **`ErroValidacao`** — `caminhoCampo` (ex:
+  `itens[0].pecas[1].espessuraCm`), `codigo` (`CodigoErroValidacao`) e
+  `mensagem`. As validações comuns ficam em `validacao_comum.dart`.
+
+### Cadastros (`materiais/`, `empresa/`, `clientes/`)
+
+- **`Material`** — `id`, `nome`, `unidade`, `precoReferencia`
+  (`Dinheiro`), `ativo` (`= true`). Inativar substitui excluir.
+  `MaterialRepository`: `listarAtivos({filtro})`, `listarTodos`,
+  `buscarPorId`, `salvar`, `inativar`, `reativar`. Atenção: o nome colide
+  com o widget `Material` do Flutter.
+- **`Empresa`** — `id`, `nomeRazaoSocial`, `documento`, `telefone`,
+  `endereco`, `email?`. Getter `estaCompleta`.
+  `EmpresaRepository`: `obter`, `salvar` (um emitente só).
+- **`Cliente`** — `id`, `nome`, `documento` (chave única normalizada),
+  `celular`, `endereco`, todos obrigatórios.
+  `ClienteRepository`: `buscarPorDocumento`, `pesquisar(termo)`, `salvar`.
+
+### Orçamentos (`lib/features/orcamentos/domain/v2/`)
+
+A F2 move estes tipos para `orcamentos/domain/`. Um orçamento é composto
+por produtos (`ItemOrcamento`), e cada produto, por peças. Cada peça tem um
+material copiado.
+
+- **Snapshots** — `MaterialSnapshot` (`nome`, `unidade`,
+  `precoReferenciaCopiado`, `precoAplicado`, `materialOrigemId?`; getter
+  `precoAjustado`), `ClienteSnapshot` e `EmpresaSnapshot` (cópias
+  completas, com `...OrigemId?`). São gerados por `material.gerarSnapshot()`,
+  `cliente.gerarSnapshot()` e `empresa.gerarSnapshot()`, extensões
+  definidas no arquivo de cada snapshot. Mudar o cadastro não altera
+  orçamentos.
+- **`PecaOrcamento`** — `id`, `descricao`, `quantidadePorProduto` (≥ 1),
+  `material`, `comprimentoCm`, `larguraCm`, `espessuraCm?` (obrigatória em
+  m³, informativa em m²), `observacoes?`. Método `duplicar(novoId)`.
+- **`ItemOrcamento`** — `id`, `descricao`, `quantidadeProdutos` (≥ 1),
+  `precoBase` (≥ 0, sem materiais), `pecas` (≥ 1), `observacoes?`. Método
+  `duplicarComNovosIds(gerarId)`, uma cópia profunda.
+- **`StatusOrcamento`** (D-29) — `criado` e `enviado`, serializados pelo
+  nome. Editar um orçamento `enviado` o devolve para `criado`.
+- **`Orcamento`** (D-30) — campos:
+  - identificação: `id` (UUID), `codigo` (`DDMMAA-NN`, ex: `281026-03`),
+    `revisao`, `chaveFinalizacao`;
+  - datas: `criadoEm`, `atualizadoEm`;
+  - `status`, `cliente`, `emitente`, `itens`;
+  - adicionais: `insumos`, `impostos`, `combustivel`, `outros`,
+    `outrosDescricao?`, `desconto`;
+  - `validadeDias?`, `observacoes?`;
+  - `totais` (`ResultadoOrcamento`) e `versaoCalculo`.
+
+  Getters: `codigoExibicao` (`281026-03 rev. 2` a partir da 2ª revisão),
+  `totalGeral` e `dataValidade` (contada de `atualizadoEm`).
+- **`OrcamentoEmEdicao`** — a sessão do wizard, só em memória e sem totais.
+  - `cliente?` e `emitente`;
+  - `itens = []` e adicionais `= Dinheiro.zero`;
+  - `orcamentoOrigemId?`, `codigo?` e `revisao?` na edição de um orçamento
+    salvo.
+- **Resultados** — `ResultadoPeca`, `ResultadoItem` e `ResultadoOrcamento`,
+  gravados no orçamento. `ResultadoOrcamento.totalGeralZero` sinaliza o
+  total zero, que é permitido.
+- **Código** — `formatarCodigoOrcamento(data, sequenciaDoDia)` e
+  `lerCodigoOrcamento(codigo)`, em `codigo_orcamento.dart`.
+- **Contratos de persistência** (a F2 implementa em SQLite):
+  - `OrcamentoRepository`: `listarResumos` (por `atualizadoEm`
+    decrescente), `buscarPorId`, `buscarPorChaveFinalizacao`, `inserir`,
+    `atualizar`, `excluir`;
+  - `SequenciaRepository.proximaDoDia(data)`;
+  - `UnidadeDeTrabalho.executarEmTransacao((RepositoriosTransacao repos)
+    async => ...)`, em que `repos` dá acesso a `clientes`, `orcamentos` e
+    `sequencias` ligados à transação.
+
+**Valor final: nunca é digitado nem gravado à mão.** É sempre o
+`ResultadoOrcamento` calculado pela `CalculadoraOrcamento`
+(`versaoCalculo = 1`, pura, em `calculadora_orcamento.dart`):
 
 ```
-valorFinal = custos × (1 + margem)
+custoUnitarioPeca = arredondarHalfUp(consumo × precoAplicado)   (único arredondamento)
+custoLinhaPeca    = custoUnitarioPeca × quantidadePorProduto
+precoUnitario     = soma das linhas + precoBase
+totalItem         = precoUnitario × quantidadeProdutos
+subtotal          = soma dos totalItem + insumos + impostos + combustivel + outros
+totalGeral        = subtotal − desconto            (nunca negativo)
 ```
 
-ou seja, getter `Orcamento.valorFinal` =
-`calcularValorFinal(calcularTotalCustos(custosOperacionais), margem)`, com as
-funções puras em `orcamentos/domain/calculo_orcamento.dart` e a margem padrão
-em `AppConstants.margemPadraoPercentual` (provisória: 62,5%, que leva
-R$ 5.200 a R$ 8.450). Se a lógica mudar, mude essas funções — nunca adicione um
-campo `valorFinal` gravável no freezed.
+Um orçamento salvo mostra os totais gravados, sem recalcular. Se a fórmula
+mudar, altere a calculadora e a `versaoCalculo`.
 
-### Catálogo (`lib/features/catalogo/domain/`)
+As validações (`validarPeca`, `validarItem`, `validarOrcamento`, além de
+`validarMaterial`, `validarEmpresa`, `validarCliente` e `validarDocumento`)
+devolvem `List<ErroValidacao>` e nunca alteram os dados.
 
-- **`ProdutoCatalogo`** — `id`, `nome`, `categoria`, `descricaoTecnica`,
-  `fotoPath?`.
+### Em substituição na rodada v2 (F2)
+
+O modelo antigo continua no código até a F2, que o remove. Não crie código
+novo em cima dele:
+- `Orcamento` com `projeto`, `custosOperacionais` e `prazoDiasUteis`;
+- `Cliente`, `ItemOrcamento` e `Medidas`;
+- `CustosOperacionais` e a margem de `calculo_orcamento.dart`;
+- `StatusOrcamento` de 5 valores;
+- `ProdutoCatalogo` (D-31).
 
 ### Cronograma (`lib/features/cronograma/domain/`)
 
