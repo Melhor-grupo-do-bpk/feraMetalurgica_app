@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../mocks/mock_cronograma_repository.dart';
+import '../mocks/dados_exemplo.dart';
 import '../mocks/mock_orcamento_repository.dart';
+import '../mocks/mock_tarefa_repository.dart';
 
 /// Um orçamento do seed com [status] e [id] trocados.
 Orcamento _orcamento(String id, StatusOrcamento status, DateTime criadoEm) =>
@@ -14,7 +15,7 @@ Orcamento _orcamento(String id, StatusOrcamento status, DateTime criadoEm) =>
 
 /// Uma tarefa do seed com [tipo] e [concluida] trocados.
 Tarefa _tarefa(TipoTarefa tipo, {bool concluida = false}) =>
-    cronogramaSeed.first.copyWith(tipo: tipo, concluida: concluida);
+    tarefasExemplo.first.copyWith(tipo: tipo, concluida: concluida);
 
 void main() {
   group('calcularIndicadores (D-03)', () {
@@ -61,7 +62,7 @@ void main() {
     });
 
     test('com os dados de exemplo', () {
-      expect(calcularIndicadores(orcamentosSeed, cronogramaSeed), (
+      expect(calcularIndicadores(orcamentosSeed, tarefasExemplo), (
         emAndamento: 1,
         aguardandoAprovacao: 1,
         aprovados: 1,
@@ -119,22 +120,22 @@ void main() {
 
   group('providers', () {
     late MockOrcamentoRepository orcamentos;
-    late MockCronogramaRepository tarefas;
+    late MockTarefaRepository tarefas;
     late ProviderContainer container;
 
-    setUpAll(() => registerFallbackValue(cronogramaSeed.first));
+    setUpAll(() => registerFallbackValue(tarefasExemplo.first));
 
     setUp(() {
       orcamentos = MockOrcamentoRepository();
-      tarefas = MockCronogramaRepository();
+      tarefas = MockTarefaRepository();
       when(() => orcamentos.getAll()).thenAnswer((_) async => orcamentosSeed);
-      when(() => tarefas.getAll()).thenAnswer((_) async => cronogramaSeed);
+      when(() => tarefas.getAll()).thenAnswer((_) async => tarefasExemplo);
       container = ProviderContainer(
         // Sem o retry automático do Riverpod, para o erro aparecer na hora.
         retry: (_, _) => null,
         overrides: [
           orcamentoRepositoryProvider.overrideWithValue(orcamentos),
-          cronogramaRepositoryProvider.overrideWithValue(tarefas),
+          tarefaRepositoryProvider.overrideWithValue(tarefas),
         ],
       );
       addTearDown(container.dispose);
@@ -192,7 +193,7 @@ void main() {
       when(() => tarefas.save(any())).thenAnswer((_) async {});
       when(() => tarefas.getAll()).thenAnswer(
         (_) async => [
-          for (final t in cronogramaSeed) t.copyWith(concluida: true),
+          for (final t in tarefasExemplo) t.copyWith(concluida: true),
         ],
       );
 

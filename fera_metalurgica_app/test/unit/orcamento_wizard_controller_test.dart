@@ -1,28 +1,17 @@
-import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
-import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_wizard_controller.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_wizard_state.dart';
-import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../mocks/fake_local_json_storage.dart';
+import '../mocks/container_de_teste.dart';
 
 void main() {
   final agora = DateTime(2026, 10, 26, 9, 30);
   late ProviderContainer container;
 
   setUp(() async {
-    final storage = InMemoryJsonStorage();
-    await popularDadosIniciais(storage, incluirExemplos: true);
-    container = ProviderContainer(
-      overrides: [
-        localJsonStorageProvider.overrideWithValue(storage),
-        agoraProvider.overrideWithValue(agora),
-      ],
-    );
-    addTearDown(container.dispose);
+    container = await containerDeTeste(agora: agora);
   });
 
   /// Abre o wizard (mantendo o provider autoDispose vivo) e devolve o

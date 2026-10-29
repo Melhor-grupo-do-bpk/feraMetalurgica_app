@@ -6,12 +6,12 @@ import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/widgets/item_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
-import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../mocks/container_de_teste.dart';
 import '../../../mocks/fake_local_json_storage.dart';
 import 'wizard_teste_helpers.dart';
 
@@ -19,8 +19,9 @@ void main() {
   late InMemoryJsonStorage storage;
 
   setUp(() async {
-    storage = InMemoryJsonStorage();
-    await popularDadosIniciais(storage, incluirExemplos: true);
+    storage =
+        (await containerDeTeste()).read(localJsonStorageProvider)
+            as InMemoryJsonStorage;
   });
 
   /// Abre [rota] num router mínimo: a lista e os detalhes viram textos, e

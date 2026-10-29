@@ -1,13 +1,9 @@
-import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
-import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/core/widgets/stat_card.dart';
-import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../mocks/fake_local_json_storage.dart';
+import '../fera_app_de_teste.dart';
 
 /// Critério de aceite da T7: uma tarefa criada no formulário aparece no
 /// dia certo e, se for de produção, soma em "Pedidos em produção".
@@ -20,18 +16,10 @@ void main() {
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    // Como `feraAppDeTeste()`, mas com o "agora" fixo no dia do Figma.
-    final storage = InMemoryJsonStorage();
-    await popularDadosIniciais(storage, incluirExemplos: true);
+    // O "agora" fica fixo no dia do Figma.
     appRouter.go(AppRoutes.dashboard);
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          localJsonStorageProvider.overrideWithValue(storage),
-          agoraProvider.overrideWithValue(DateTime(2023, 10, 9, 8)),
-        ],
-        child: const FeraApp(),
-      ),
+      await feraAppDeTeste(agora: DateTime(2023, 10, 9, 8)),
     );
     await tester.pumpAndSettle();
 

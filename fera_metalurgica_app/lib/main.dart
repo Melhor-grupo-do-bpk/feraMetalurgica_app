@@ -1,4 +1,7 @@
 import 'package:fera_metalurgica_app/core/constants/app_constants.dart';
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
+import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/utils/local_json_storage.dart';
@@ -12,22 +15,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final (:banco, :novo) = await abrirBancoDoApp();
+  final container = ProviderContainer(
+    overrides: [bancoDeDadosProvider.overrideWithValue(banco)],
+  );
   await popularDadosIniciais(
-    const LocalJsonStorage(),
+    container,
+    bancoNovo: novo,
     incluirExemplos: kDebugMode,
   );
-  runApp(const ProviderScope(child: FeraApp()));
+  runApp(
+    UncontrolledProviderScope(container: container, child: const FeraApp()),
+  );
 }
 
 /// Grava os dados iniciais na primeira execução (D-17): o catálogo sempre
 /// (é o catálogo real da empresa) e, se [incluirExemplos] (o app passa
-/// `kDebugMode`), os orçamentos e tarefas de exemplo. Cada arquivo só é
-/// semeado se nunca foi gravado, então apagar tudo pelo app não traz os
-/// exemplos de volta.
+/// `kDebugMode`), os orçamentos e tarefas de exemplo, com as datas a partir
+/// do `agoraProvider`.
+///
+/// Os exemplos do banco só entram quando ele acabou de ser criado
+/// ([bancoNovo]); os arquivos JSON, quando nunca foram gravados. Assim,
+/// apagar tudo pelo app não traz os exemplos de volta.
 Future<void> popularDadosIniciais(
-  LocalJsonStorage storage, {
+  ProviderContainer container, {
+  required bool bancoNovo,
   required bool incluirExemplos,
 }) async {
+  final storage = container.read(localJsonStorageProvider);
   await _semear(
     storage,
     AppConstants.catalogoFileName,
@@ -41,12 +56,11 @@ Future<void> popularDadosIniciais(
     orcamentosSeed,
     LocalOrcamentoRepository(storage).save,
   );
-  await _semear(
-    storage,
-    AppConstants.tarefasFileName,
-    cronogramaSeed,
-    LocalCronogramaRepository(storage).save,
-  );
+  if (!bancoNovo) return;
+  final tarefas = container.read(tarefaRepositoryProvider);
+  for (final tarefa in cronogramaSeed(container.read(agoraProvider))) {
+    await tarefas.save(tarefa);
+  }
 }
 
 Future<void> _semear<T>(

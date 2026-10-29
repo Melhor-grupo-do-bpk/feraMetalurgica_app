@@ -10,17 +10,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_cronograma_repository.dart';
+import '../../mocks/dados_exemplo.dart';
+import '../../mocks/mock_tarefa_repository.dart';
 
 void main() {
-  late MockCronogramaRepository repository;
+  late MockTarefaRepository repository;
   late List<Tarefa> salvas;
 
-  setUpAll(() => registerFallbackValue(cronogramaSeed.first));
+  setUpAll(() => registerFallbackValue(tarefasExemplo.first));
 
   setUp(() {
-    salvas = [...cronogramaSeed];
-    repository = MockCronogramaRepository();
+    salvas = [...tarefasExemplo];
+    repository = MockTarefaRepository();
     when(() => repository.getAll()).thenAnswer((_) async => [...salvas]);
     when(() => repository.save(any())).thenAnswer((invocation) async {
       final tarefa = invocation.positionalArguments.first as Tarefa;
@@ -68,7 +69,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          cronogramaRepositoryProvider.overrideWithValue(repository),
+          tarefaRepositoryProvider.overrideWithValue(repository),
           agoraProvider.overrideWithValue(DateTime(2023, 10, 9, 8)),
         ],
         // Sem o retry automático do Riverpod, para o erro aparecer na hora.
@@ -248,7 +249,7 @@ void main() {
 
     expect(find.text('Não foi possível carregar as tarefas.'), findsOneWidget);
 
-    when(() => repository.getAll()).thenAnswer((_) async => cronogramaSeed);
+    when(() => repository.getAll()).thenAnswer((_) async => tarefasExemplo);
     await tester.tap(find.text('Tentar novamente'));
     await tester.pumpAndSettle();
 
@@ -257,7 +258,7 @@ void main() {
 
   test('montarAgenda e rótulos', () {
     final agenda = montarAgenda(
-      cronogramaSeed,
+      tarefasExemplo,
       diaSelecionado: DateTime(2023, 10, 9, 15),
       tipos: TipoTarefa.values.toSet(),
     );

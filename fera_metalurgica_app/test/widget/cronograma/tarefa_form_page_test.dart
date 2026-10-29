@@ -11,18 +11,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_cronograma_repository.dart';
+import '../../mocks/dados_exemplo.dart';
 import '../../mocks/mock_orcamento_repository.dart';
+import '../../mocks/mock_tarefa_repository.dart';
 
 void main() {
-  late MockCronogramaRepository tarefas;
+  late MockTarefaRepository tarefas;
   late MockOrcamentoRepository orcamentos;
 
-  setUpAll(() => registerFallbackValue(cronogramaSeed.first));
+  setUpAll(() => registerFallbackValue(tarefasExemplo.first));
 
   setUp(() {
-    tarefas = MockCronogramaRepository();
-    when(() => tarefas.getAll()).thenAnswer((_) async => cronogramaSeed);
+    tarefas = MockTarefaRepository();
+    when(() => tarefas.getAll()).thenAnswer((_) async => tarefasExemplo);
     when(() => tarefas.save(any())).thenAnswer((_) async {});
     when(() => tarefas.delete(any())).thenAnswer((_) async {});
     orcamentos = MockOrcamentoRepository();
@@ -63,7 +64,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          cronogramaRepositoryProvider.overrideWithValue(tarefas),
+          tarefaRepositoryProvider.overrideWithValue(tarefas),
           orcamentoRepositoryProvider.overrideWithValue(orcamentos),
           agoraProvider.overrideWithValue(DateTime(2023, 10, 9, 8)),
         ],

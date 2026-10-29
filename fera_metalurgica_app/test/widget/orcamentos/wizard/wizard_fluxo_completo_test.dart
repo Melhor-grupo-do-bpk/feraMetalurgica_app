@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../mocks/container_de_teste.dart';
 import '../../../mocks/fake_local_json_storage.dart';
 import 'wizard_teste_helpers.dart';
 
@@ -24,8 +25,9 @@ void main() {
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final storage = InMemoryJsonStorage();
-    await popularDadosIniciais(storage, incluirExemplos: true);
+    final storage =
+        (await containerDeTeste()).read(localJsonStorageProvider)
+            as InMemoryJsonStorage;
     appRouter.go(AppRoutes.orcamentos);
     await tester.pumpWidget(
       ProviderScope(

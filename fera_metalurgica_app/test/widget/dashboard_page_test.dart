@@ -14,8 +14,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../mocks/mock_cronograma_repository.dart';
+import '../mocks/dados_exemplo.dart';
 import '../mocks/mock_orcamento_repository.dart';
+import '../mocks/mock_tarefa_repository.dart';
 
 /// Um orçamento do seed com [id], [status] e [dia] (de agosto) trocados.
 Orcamento _orcamento(String id, StatusOrcamento status, int dia) =>
@@ -41,18 +42,18 @@ final List<Orcamento> _orcamentos = [
 /// 4 tarefas de produção pendentes, mais uma concluída e uma de outro
 /// tipo, que não contam.
 final List<Tarefa> _tarefas = [
-  for (var i = 0; i < 4; i++) cronogramaSeed.last.copyWith(id: 'producao-$i'),
-  cronogramaSeed.last.copyWith(id: 'concluida', concluida: true),
-  cronogramaSeed.first,
+  for (var i = 0; i < 4; i++) tarefasExemplo.last.copyWith(id: 'producao-$i'),
+  tarefasExemplo.last.copyWith(id: 'concluida', concluida: true),
+  tarefasExemplo.first,
 ];
 
 void main() {
   late MockOrcamentoRepository orcamentos;
-  late MockCronogramaRepository tarefas;
+  late MockTarefaRepository tarefas;
 
   setUp(() {
     orcamentos = MockOrcamentoRepository();
-    tarefas = MockCronogramaRepository();
+    tarefas = MockTarefaRepository();
     when(() => orcamentos.getAll()).thenAnswer((_) async => _orcamentos);
     when(() => tarefas.getAll()).thenAnswer((_) async => _tarefas);
   });
@@ -99,7 +100,7 @@ void main() {
         retry: (_, _) => null,
         overrides: [
           orcamentoRepositoryProvider.overrideWithValue(orcamentos),
-          cronogramaRepositoryProvider.overrideWithValue(tarefas),
+          tarefaRepositoryProvider.overrideWithValue(tarefas),
         ],
         child: MaterialApp.router(
           theme: AppTheme.light,

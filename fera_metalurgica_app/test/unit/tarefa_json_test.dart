@@ -1,9 +1,11 @@
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../mocks/dados_exemplo.dart';
+
 void main() {
   test('descricao e orcamentoId fazem ida e volta no JSON', () {
-    final tarefa = cronogramaSeed.firstWhere((t) => t.orcamentoId != null);
+    final tarefa = tarefasExemplo.firstWhere((t) => t.orcamentoId != null);
 
     expect(Tarefa.fromJson(tarefa.toJson()), tarefa);
     expect(tarefa.toJson()['descricao'], 'Cliente: João da Silva');

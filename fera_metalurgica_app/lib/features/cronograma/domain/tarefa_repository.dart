@@ -4,7 +4,7 @@ import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
 ///
 /// Não crie uma segunda implementação/local de acesso a tarefas: toda
 /// leitura/escrita de tarefas passa por aqui.
-abstract class CronogramaRepository {
+abstract class TarefaRepository {
   /// Retorna todas as tarefas salvas.
   Future<List<Tarefa>> getAll();
 

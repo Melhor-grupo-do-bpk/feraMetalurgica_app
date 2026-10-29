@@ -3,10 +3,10 @@
 /// `data/`/`domain/`/`presentation/` diretamente.
 library;
 
-export 'data/cronograma_repository_impl.dart';
 export 'data/cronograma_seed.dart';
-export 'domain/cronograma_repository.dart';
+export 'data/sqlite_tarefa_repository.dart';
 export 'domain/tarefa.dart';
+export 'domain/tarefa_repository.dart';
 export 'domain/tipo_tarefa.dart';
 export 'presentation/cronograma_controller.dart';
 export 'presentation/cronograma_page.dart';
