@@ -22,10 +22,13 @@ const List<String> _subtitulos = ['Cliente', 'Produtos', 'Valores', 'Prévia'];
 
 /// Wizard de criação/edição de orçamento (prompt §4, D-28, D-30): as 4
 /// etapas sobre o `OrcamentoController`, com a navegação entre elas, o
-/// descarte com confirmação e o "Finalizar".
+/// descarte com confirmação e o "Finalizar" ("Salvar alterações" na
+/// edição).
 ///
-/// Na F2 as etapas são stubs mínimos; os formulários são da V2-A (etapa 2)
-/// e da V2-B (etapas 1, 3 e 4, e o acabamento desta página).
+/// Ao salvar, o botão fica bloqueado e mostra o progresso (o controller
+/// também ignora a chamada repetida); se a gravação falhar, a sessão
+/// continua e dá para tentar de novo. Um orçamento novo abre nos detalhes;
+/// a edição volta para os detalhes, que já estão embaixo na pilha.
 class OrcamentoWizardPage extends ConsumerStatefulWidget {
   /// Cria o wizard. Com [orcamentoId], edita o orçamento salvo (D-30).
   const OrcamentoWizardPage({this.orcamentoId, super.key});
@@ -95,7 +98,10 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
       titulo: estado.ehEdicao
           ? 'Descartar alterações?'
           : 'Descartar orçamento?',
-      mensagem: 'Os dados preenchidos serão perdidos.',
+      mensagem: estado.ehEdicao
+          ? 'As alterações feitas aqui serão perdidas. O orçamento salvo '
+                'não muda.'
+          : 'Os dados preenchidos serão perdidos.',
       acao: 'Descartar',
     );
     if (!descartar || !mounted) return;
@@ -228,6 +234,14 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
                   ),
                 // O espaço que sobra é do botão principal, que corta o
                 // texto com reticências se não couber.
+                if (estado.finalizando)
+                  const Padding(
+                    padding: EdgeInsets.only(left: AppSpacing.xs),
+                    child: SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
                 Expanded(
                   child: Align(
                     alignment: Alignment.centerRight,
