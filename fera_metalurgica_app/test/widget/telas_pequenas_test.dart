@@ -94,6 +94,20 @@ void main() {
       AppRoutes.detalhesOrcamento(_c),
       () => [find.byTooltip('Mais opções'), find.text('Alterar status')],
     ),
+    (
+      'formulário de produto (etapa 2)',
+      AppRoutes.editarOrcamento(_c),
+      () => [continuar, find.text('Novo produto')],
+    ),
+    (
+      'seletor de material (etapa 2)',
+      AppRoutes.editarOrcamento(_c),
+      () => [
+        continuar,
+        find.text('Novo produto'),
+        find.byKey(const ValueKey('peca-material')),
+      ],
+    ),
   ];
   for (final (nome, rota, toques) in sobreposicoes) {
     for (final tema in [ThemeMode.light, ThemeMode.dark]) {

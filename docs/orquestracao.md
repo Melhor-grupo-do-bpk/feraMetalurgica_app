@@ -33,7 +33,7 @@ trilha" de [`04-plano.md`](04-plano.md). As tarefas da rodada anterior em
 |---|---|---|---|---|
 | V2-F1 | [Domínio e cálculo](tarefas/v2/F1-dominio-calculo.md) | `feat/v2-f1-dominio` | — | integrada |
 | V2-F2 | [Persistência e troca do modelo](tarefas/v2/F2-persistencia.md) | `feat/v2-f2-persistencia` | F1 integrada | integrada |
-| V2-A | [Wizard: produtos e peças](tarefas/v2/A-produtos-pecas.md) | `feat/v2-a-produtos` | F2 integrada | liberada |
+| V2-A | [Wizard: produtos e peças](tarefas/v2/A-produtos-pecas.md) | `feat/v2-a-produtos` | F2 integrada | integrada |
 | V2-B | [Wizard: cliente, valores e prévia](tarefas/v2/B-cliente-valores-previa.md) | `feat/v2-b-cliente-valores` | F2 integrada | liberada |
 | V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | liberada |
 | V2-D | [Orçamentos salvos](tarefas/v2/D-orcamentos-salvos.md) | `feat/v2-d-salvos` | F2 integrada | liberada |
@@ -254,3 +254,8 @@ Quando o responsável avisa que uma trilha terminou, o orquestrador:
 | HO-V2-F2-02 (decisões da revisão do plano da F2) | Aceitos, registrados na D-38. | ver log |
 | HO-V2-F2-03 (contratos e posse sugerida) | Aceito, com a `wizard_teste_helpers.dart` dividida por linha entre A e B e os testes da V2-D listados. Seções 3 e 4. | ver log |
 | HO-V2-F2-04 (avisos) | Registrado nos pontos de contato da seção 3. O cartão da lista com `criadoEm` ou `atualizadoEm` fica com a V2-D. | — |
+| HO-V2-A-01 (aviso ao sair da etapa 2) | Aceito. O orquestrador liga `podeSairDaEtapaProdutos` na página quando a V2-B for integrada. | pendente |
+| HO-V2-A-02 (contratos usados de B e C) | Aceito. B e C avisadas: `confirmarAcao`, o scroll da página, "Continuar", `UnidadeCobrancaUi.simbolo`, o `pop(id)` do material e os nomes dos materiais de exemplo. | — |
+| HO-V2-A-03 (`CurrencyField` com `double`) | Aceito. O orquestrador troca por um `CampoDinheiro` com `Dinheiro` no core ao integrar a V2-B, juntando os campos privados de A e B. | pendente |
+| HO-V2-A-04 (linhas do `telas_pequenas_test`) | Aplicado. | ver log |
+| HO-V2-A-05 (conflito na `wizard_teste_helpers.dart`) | Registrado para o merge da V2-B. | — |
