@@ -1,13 +1,13 @@
 import 'package:fera_metalurgica_app/core/domain/erro_validacao.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/calculadora_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/cliente_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/codigo_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/status_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/unidade_de_trabalho.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/validacao_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/codigo_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/unidade_de_trabalho.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/validacao_orcamento.dart';
 
 /// A edição não passou na validação: nada foi gravado.
 class OrcamentoInvalidoException implements Exception {

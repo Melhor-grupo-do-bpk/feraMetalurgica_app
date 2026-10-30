@@ -1,6 +1,6 @@
 import 'package:fera_metalurgica_app/core/domain/erro_validacao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/resultado_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/resultado_orcamento.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'orcamento_controller_state.freezed.dart';

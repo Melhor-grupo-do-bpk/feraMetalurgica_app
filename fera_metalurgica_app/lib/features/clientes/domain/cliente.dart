@@ -10,7 +10,7 @@ part 'cliente.g.dart';
 /// bastam para mesclar pessoas.
 ///
 /// O orçamento guarda uma cópia editável (`ClienteSnapshot`, gerada por
-/// `gerarSnapshot()` em `orcamentos/domain/v2/cliente_snapshot.dart`). O
+/// `gerarSnapshot()` em `orcamentos/domain/cliente_snapshot.dart`). O
 /// cadastro só é criado ou atualizado ao salvar o orçamento.
 @freezed
 abstract class Cliente with _$Cliente {

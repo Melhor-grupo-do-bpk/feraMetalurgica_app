@@ -1,4 +1,4 @@
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/sequencia_repository.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/sequencia_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// [SequenciaRepository] no SQLite: um contador por dia na tabela

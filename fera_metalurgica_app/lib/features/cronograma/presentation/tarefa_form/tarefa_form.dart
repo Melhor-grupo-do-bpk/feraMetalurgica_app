@@ -264,7 +264,7 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
                   DropdownMenuItem(
                     value: o.id,
                     child: Text(
-                      '${o.numeroFormatado} - ${o.cliente.nome}',
+                      '${o.codigoExibicao} - ${o.cliente.nome}',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -274,7 +274,7 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
                     !idsOrcamentos.contains(_orcamentoId))
                   DropdownMenuItem(
                     value: _orcamentoId,
-                    child: Text('#$_orcamentoId'),
+                    child: const Text('Orçamento não encontrado'),
                   ),
               ],
               onChanged: (id) => setState(() => _orcamentoId = id),

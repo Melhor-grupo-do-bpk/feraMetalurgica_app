@@ -8,15 +8,15 @@ import 'package:fera_metalurgica_app/core/domain/medida_cm.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
 import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/calculadora_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/cliente_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/empresa_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/item_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/material_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/peca_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/empresa_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/material_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 
 const enderecoTeste = Endereco(
   logradouro: 'Rua das Flores',

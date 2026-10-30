@@ -3,7 +3,9 @@
 /// `data/`/`domain/`/`presentation/` diretamente.
 library;
 
+export 'data/empresa_seed.dart';
 export 'data/sqlite_empresa_repository.dart';
 export 'domain/empresa.dart';
 export 'domain/empresa_repository.dart';
 export 'domain/validacao_empresa.dart';
+export 'presentation/empresa_controller.dart';

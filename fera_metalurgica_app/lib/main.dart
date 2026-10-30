@@ -4,9 +4,12 @@ import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
+import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/core/utils/local_json_storage.dart';
 import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
+import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
+import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,11 +34,15 @@ Future<void> main() async {
 
 /// Grava os dados iniciais na primeira execução (D-17): o catálogo sempre
 /// (é o catálogo real da empresa) e, se [incluirExemplos] (o app passa
-/// `kDebugMode`), os orçamentos e tarefas de exemplo, com as datas a partir
-/// do `agoraProvider`.
+/// `kDebugMode`), os exemplos: a empresa, um material de cada unidade, os
+/// orçamentos C (A + B) e B, e tarefas de hoje e de amanhã (HO-T8-01).
+///
+/// As datas saem do `agoraProvider`. Os orçamentos são gravados pelo
+/// `FinalizarOrcamentoService` em dias anteriores (anteontem e ontem), para
+/// que o primeiro orçamento do dia seja o `-01`.
 ///
 /// Os exemplos do banco só entram quando ele acabou de ser criado
-/// ([bancoNovo]); os arquivos JSON, quando nunca foram gravados. Assim,
+/// ([bancoNovo]), e o catálogo, quando o arquivo nunca foi gravado. Assim,
 /// apagar tudo pelo app não traz os exemplos de volta.
 Future<void> popularDadosIniciais(
   ProviderContainer container, {
@@ -50,15 +57,33 @@ Future<void> popularDadosIniciais(
     LocalCatalogoRepository(storage).save,
   );
   if (!incluirExemplos) return;
-  await _semear(
-    storage,
-    AppConstants.orcamentosFileName,
-    orcamentosSeed,
-    LocalOrcamentoRepository(storage).save,
-  );
   if (!bancoNovo) return;
+
+  final agora = container.read(agoraProvider);
+  await container.read(empresaRepositoryProvider).salvar(empresaExemplo);
+  final materiais = container.read(materialRepositoryProvider);
+  for (final material in materiaisExemplo) {
+    await materiais.salvar(material);
+  }
+
+  DateTime diaAnterior(int dias, int hora) =>
+      DateTime(agora.year, agora.month, agora.day - dias, hora);
+  Future<Orcamento> gravar(OrcamentoEmEdicao edicao, DateTime quando) =>
+      FinalizarOrcamentoService(
+        unidadeDeTrabalho: container.read(unidadeDeTrabalhoProvider),
+        relogio: () => quando,
+        gerarId: gerarId,
+      ).executar(edicao);
+  final orcamentoC = await gravar(edicaoExemploC(gerarId), diaAnterior(2, 10));
+  await gravar(edicaoExemploB(gerarId), diaAnterior(1, 15));
+
   final tarefas = container.read(tarefaRepositoryProvider);
-  for (final tarefa in cronogramaSeed(container.read(agoraProvider))) {
+  final exemplos = cronogramaSeed(
+    agora,
+    orcamentoId: orcamentoC.id,
+    codigoOrcamento: orcamentoC.codigoExibicao,
+  );
+  for (final tarefa in exemplos) {
     await tarefas.save(tarefa);
   }
 }

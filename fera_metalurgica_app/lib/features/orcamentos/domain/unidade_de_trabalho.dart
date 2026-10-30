@@ -1,6 +1,6 @@
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_repository.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/sequencia_repository.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_repository.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/sequencia_repository.dart';
 
 /// Executa gravações de vários registros numa transação (prompt §7 e §8,
 /// D-27): tudo confirma ou tudo desfaz.

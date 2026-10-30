@@ -1,5 +1,4 @@
-import 'package:fera_metalurgica_app/core/constants/app_constants.dart';
-import 'package:fera_metalurgica_app/core/utils/currency_format.dart';
+import 'package:fera_metalurgica_app/core/domain/documento.dart';
 import 'package:fera_metalurgica_app/core/utils/date_format.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
@@ -20,10 +19,12 @@ const String fontePdfNegrito = 'assets/fonts/Inter-Bold.ttf';
 Future<pw.Font> _carregarFonte(String asset) async =>
     pw.Font.ttf(await rootBundle.load(asset));
 
-/// PDF do orçamento que vai para o cliente (Tela 7, RF-40): logo, número,
-/// data, validade, emissor, cliente, itens com quantidade e o valor total.
+/// PDF do orçamento que vai para o cliente (Tela 7, RF-40): logo, código
+/// (com a revisão), data, validade (só se houver), emitente e cliente das
+/// cópias gravadas, produtos com quantidade e o total geral gravado.
 ///
-/// Nunca mostra custos internos (D-16) nem valor por item (D-01).
+/// Versão mínima da F2, sem redesenho (o documento comercial é outra
+/// tarefa, prompt §1). Nunca mostra custos internos (D-16).
 Future<Uint8List> gerarOrcamentoPdf(Orcamento orcamento) async {
   final logo = pw.MemoryImage(
     (await rootBundle.load(_logoAsset)).buffer.asUint8List(),
@@ -34,8 +35,8 @@ Future<Uint8List> gerarOrcamentoPdf(Orcamento orcamento) async {
   );
   final documento =
       pw.Document(
-        title: 'Orçamento Nº ${orcamento.id}',
-        author: AppConstants.emissorNome,
+        title: 'Orçamento Nº ${orcamento.codigoExibicao}',
+        author: orcamento.emitente.nomeRazaoSocial,
         theme: tema,
       )..addPage(
         pw.MultiPage(
@@ -44,13 +45,7 @@ Future<Uint8List> gerarOrcamentoPdf(Orcamento orcamento) async {
           build: (context) => [
             _cabecalho(orcamento, logo),
             pw.SizedBox(height: 24),
-            _secao('EMISSOR', [
-              _negrito(AppConstants.emissorNome),
-              pw.Text('CNPJ: ${AppConstants.emissorCnpj}'),
-              pw.Text(AppConstants.emissorEndereco),
-              pw.Text(AppConstants.emissorCidade),
-              pw.Text(AppConstants.emissorTelefone),
-            ]),
+            _secao('EMISSOR', _linhasEmitente(orcamento)),
             pw.SizedBox(height: 16),
             _secao('CLIENTE', _linhasCliente(orcamento)),
             pw.SizedBox(height: 24),
@@ -75,25 +70,44 @@ pw.Widget _cabecalho(Orcamento orcamento, pw.ImageProvider logo) => pw.Center(
       ),
       pw.SizedBox(height: 4),
       pw.Text(
-        'Nº ${orcamento.id}',
+        'Nº ${orcamento.codigoExibicao}',
         style: const pw.TextStyle(fontSize: 13, color: PdfColors.grey700),
       ),
       pw.SizedBox(height: 8),
       _pequeno('Data: ${formatarData(orcamento.criadoEm)}'),
-      _pequeno('Validade: ${AppConstants.validadeOrcamentoDias} dias'),
+      if (orcamento.dataValidade case final validade?)
+        _pequeno('Validade: até ${formatarData(validade)}'),
     ],
   ),
 );
 
+String _rotuloDocumento(Documento documento) =>
+    documento.ehPessoaJuridica ? 'CNPJ' : 'CPF';
+
+List<pw.Widget> _linhasEmitente(Orcamento orcamento) {
+  final emitente = orcamento.emitente;
+  final email = emitente.email;
+  return [
+    _negrito(emitente.nomeRazaoSocial),
+    pw.Text(
+      '${_rotuloDocumento(emitente.documento)}: '
+      '${emitente.documento.formatado}',
+    ),
+    pw.Text(emitente.endereco.formatado),
+    pw.Text(emitente.telefone),
+    if (email != null && email.isNotEmpty) pw.Text(email),
+  ];
+}
+
 List<pw.Widget> _linhasCliente(Orcamento orcamento) {
   final cliente = orcamento.cliente;
-  final documento = cliente.ehPessoaJuridica ? 'CNPJ' : 'CPF';
-  final email = cliente.email;
   return [
     _negrito(cliente.nome),
-    pw.Text('$documento: ${cliente.cpfCnpj}'),
-    pw.Text(cliente.numero),
-    if (email != null && email.isNotEmpty) pw.Text(email),
+    pw.Text(
+      '${_rotuloDocumento(cliente.documento)}: ${cliente.documento.formatado}',
+    ),
+    pw.Text(cliente.celular),
+    pw.Text(cliente.endereco.formatado),
   ];
 }
 
@@ -119,14 +133,9 @@ pw.Widget _cabecalhoItens() => pw.Container(
   ),
 );
 
-/// Item descritivo (D-01): tipo, medidas e material, especificações e
-/// quantidade em "un".
+/// Produto: descrição, observações e quantidade em "un".
 pw.Widget _linhaItem(ItemOrcamento item) {
-  final detalhes = [
-    item.medidas.formatada,
-    item.materialPrincipal ?? '',
-  ].where((t) => t.isNotEmpty).join(' • ');
-  final especificacoes = item.especificacoes ?? '';
+  final observacoes = item.observacoes ?? '';
   return pw.Container(
     padding: const pw.EdgeInsets.symmetric(vertical: 10),
     decoration: const pw.BoxDecoration(
@@ -139,23 +148,22 @@ pw.Widget _linhaItem(ItemOrcamento item) {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                item.tipoServico,
-                style: const pw.TextStyle(fontSize: 12),
-              ),
-              if (detalhes.isNotEmpty) _pequeno(detalhes),
-              if (especificacoes.isNotEmpty) _pequeno(especificacoes),
+              pw.Text(item.descricao, style: const pw.TextStyle(fontSize: 12)),
+              if (observacoes.isNotEmpty) _pequeno(observacoes),
             ],
           ),
         ),
         pw.SizedBox(width: 16),
-        pw.Text('${item.quantidade}\nun', textAlign: pw.TextAlign.right),
+        pw.Text(
+          '${item.quantidadeProdutos}\nun',
+          textAlign: pw.TextAlign.right,
+        ),
       ],
     ),
   );
 }
 
-/// Único valor do documento (D-01): `Orcamento.valorFinal`.
+/// Total geral gravado (`Orcamento.totalGeral`), sem recalcular.
 pw.Widget _valorTotal(Orcamento orcamento) {
   const estilo = pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold);
   return pw.Container(
@@ -166,7 +174,7 @@ pw.Widget _valorTotal(Orcamento orcamento) {
     child: pw.Row(
       children: [
         pw.Expanded(child: pw.Text('Valor Total', style: estilo)),
-        pw.Text(formatarMoeda(orcamento.valorFinal), style: estilo),
+        pw.Text(orcamento.totalGeral.formatado, style: estilo),
       ],
     ),
   );

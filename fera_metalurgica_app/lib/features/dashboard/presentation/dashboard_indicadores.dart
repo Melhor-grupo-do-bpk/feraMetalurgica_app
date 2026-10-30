@@ -1,46 +1,55 @@
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
+import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'dashboard_indicadores.g.dart';
 
-/// Contagens dos 4 cards do dashboard (D-03).
+/// Valores dos 4 cards do dashboard (D-32).
 typedef IndicadoresDashboard = ({
-  int emAndamento,
-  int aguardandoAprovacao,
-  int aprovados,
+  int criados,
+  int enviadosNoMes,
+  Dinheiro valorEnviadoNoMes,
   int pedidosEmProducao,
 });
 
-/// Conta os indicadores do dashboard conforme D-03. `rascunho` e
-/// `recusado` não entram em nenhum card; tarefas de produção concluídas
-/// também não.
+/// Calcula os indicadores do dashboard conforme a D-32, no mês de [agora]:
+/// - criados: orçamentos com status `criado`;
+/// - enviados no mês e o valor deles: orçamentos `enviado` com `enviadoEm`
+///   no mês (D-37), somando o total geral gravado;
+/// - pedidos em produção: tarefas de produção pendentes.
 IndicadoresDashboard calcularIndicadores(
   List<Orcamento> orcamentos,
   List<Tarefa> tarefas,
+  DateTime agora,
 ) {
-  int contar(StatusOrcamento status) =>
-      orcamentos.where((o) => o.status == status).length;
+  bool noMes(DateTime? data) =>
+      data != null && data.year == agora.year && data.month == agora.month;
 
+  final enviados = [
+    for (final o in orcamentos)
+      if (o.status == StatusOrcamento.enviado && noMes(o.enviadoEm)) o,
+  ];
   return (
-    emAndamento: contar(StatusOrcamento.emAnalise),
-    aguardandoAprovacao: contar(StatusOrcamento.enviado),
-    aprovados: contar(StatusOrcamento.aprovado),
+    criados: orcamentos.where((o) => o.status == StatusOrcamento.criado).length,
+    enviadosNoMes: enviados.length,
+    valorEnviadoNoMes: enviados.fold(
+      Dinheiro.zero,
+      (soma, o) => soma + o.totalGeral,
+    ),
     pedidosEmProducao: tarefas
         .where((t) => t.tipo == TipoTarefa.producao && !t.concluida)
         .length,
   );
 }
 
-/// Os [limite] primeiros orçamentos de [orcamentos] que não são rascunho,
-/// mantendo a ordem recebida (RF-12). Recusados entram.
+/// Os [limite] primeiros de [orcamentos] (que já vêm do `atualizadoEm` mais
+/// recente para o mais antigo), D-32.
 List<Orcamento> selecionarRecentes(
   List<Orcamento> orcamentos, {
   int limite = 2,
-}) => orcamentos
-    .where((o) => o.status != StatusOrcamento.rascunho)
-    .take(limite)
-    .toList();
+}) => orcamentos.take(limite).toList();
 
 /// Contagem exibida no card, com pelo menos 2 dígitos (ex: `8` → `08`).
 String formatarContagem(int valor) => valor.toString().padLeft(2, '0');
@@ -54,6 +63,7 @@ String formatarContagem(int valor) => valor.toString().padLeft(2, '0');
 AsyncValue<IndicadoresDashboard> indicadoresDashboard(Ref ref) {
   final orcamentos = ref.watch(orcamentosProvider);
   final tarefas = ref.watch(tarefasProvider);
+  final agora = ref.watch(agoraProvider);
   return switch ((orcamentos, tarefas)) {
     (AsyncError(:final error, :final stackTrace), _) ||
     (
@@ -61,13 +71,13 @@ AsyncValue<IndicadoresDashboard> indicadoresDashboard(Ref ref) {
       AsyncError(:final error, :final stackTrace),
     ) => AsyncError(error, stackTrace),
     (AsyncData(value: final o), AsyncData(value: final t)) => AsyncData(
-      calcularIndicadores(o, t),
+      calcularIndicadores(o, t, agora),
     ),
     _ => const AsyncLoading(),
   };
 }
 
-/// Os 2 orçamentos mais recentes que não são rascunho (RF-12).
+/// Os 2 orçamentos de `atualizadoEm` mais recente (D-32).
 @riverpod
 AsyncValue<List<Orcamento>> recentesDashboard(Ref ref) =>
     ref.watch(orcamentosProvider).whenData(selecionarRecentes);

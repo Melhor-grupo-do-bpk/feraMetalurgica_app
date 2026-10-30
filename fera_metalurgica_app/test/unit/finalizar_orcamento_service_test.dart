@@ -3,11 +3,11 @@ import 'package:fera_metalurgica_app/core/domain/documento.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/sqlite_orcamento_repository.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/sqlite_unidade_de_trabalho.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/cliente_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/finalizar_orcamento_service.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/finalizar_orcamento_service.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 

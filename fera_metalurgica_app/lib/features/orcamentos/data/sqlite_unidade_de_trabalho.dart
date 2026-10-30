@@ -2,9 +2,9 @@ import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/sqlite_orcamento_repository.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/sqlite_sequencia_repository.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_repository.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/sequencia_repository.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/unidade_de_trabalho.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_repository.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/sequencia_repository.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/unidade_de_trabalho.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sqflite/sqflite.dart';
 

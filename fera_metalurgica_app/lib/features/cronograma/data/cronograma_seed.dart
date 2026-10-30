@@ -4,17 +4,26 @@ import 'package:fera_metalurgica_app/features/cronograma/domain/tipo_tarefa.dart
 /// Tarefas de exemplo (D-17), com os títulos e horários da tela "Cronograma
 /// e Agenda" do Figma, nas datas de hoje e de amanhã a partir de [agora]
 /// (HO-T8-01): assim a agenda não abre vazia.
-List<Tarefa> cronogramaSeed(DateTime agora) {
+///
+/// Com [orcamentoId], a revisão fica vinculada a esse orçamento, e o título
+/// mostra o [codigoOrcamento].
+List<Tarefa> cronogramaSeed(
+  DateTime agora, {
+  String? orcamentoId,
+  String? codigoOrcamento,
+}) {
   DateTime dia(int deslocamento, int hora, [int minuto = 0]) =>
       DateTime(agora.year, agora.month, agora.day + deslocamento, hora, minuto);
   return [
     Tarefa(
-      id: 'tarefa-revisar-00482',
-      titulo: 'Revisar orçamento #00482',
+      id: 'tarefa-revisar-orcamento',
+      titulo: codigoOrcamento == null
+          ? 'Revisar orçamento'
+          : 'Revisar orçamento $codigoOrcamento',
       data: dia(0, 9),
       tipo: TipoTarefa.orcamento,
       descricao: 'Cliente: João da Silva',
-      orcamentoId: '00482',
+      orcamentoId: orcamentoId,
     ),
     Tarefa(
       id: 'tarefa-manutencao-torno',

@@ -5,15 +5,15 @@ import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/core/domain/medida_cm.dart';
 import 'package:fera_metalurgica_app/core/domain/unidade_cobranca.dart';
 import 'package:fera_metalurgica_app/core/utils/linha_sql.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/cliente_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/empresa_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/item_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/material_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_repository.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/peca_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/resultado_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/empresa_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/material_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_repository.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/resultado_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -286,5 +286,5 @@ class SqliteOrcamentoRepository implements OrcamentoRepository {
 /// Provider do [OrcamentoRepository] do app (fora de transação: leituras,
 /// exclusão e mudança de status).
 @riverpod
-OrcamentoRepository orcamentoRepositoryV2(Ref ref) =>
+OrcamentoRepository orcamentoRepository(Ref ref) =>
     SqliteOrcamentoRepository(ref.watch(bancoDeDadosProvider));

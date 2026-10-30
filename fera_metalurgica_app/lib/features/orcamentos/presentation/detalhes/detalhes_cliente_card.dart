@@ -1,4 +1,3 @@
-import 'package:fera_metalurgica_app/core/constants/app_constants.dart';
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
@@ -9,19 +8,12 @@ import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/orcamentos_ui.dart';
 import 'package:flutter/material.dart';
 
-/// Status oferecidos em "Alterar status": todos menos `rascunho` (D-06).
-const List<StatusOrcamento> _statusDoMenu = [
-  StatusOrcamento.emAnalise,
-  StatusOrcamento.enviado,
-  StatusOrcamento.aprovado,
-  StatusOrcamento.recusado,
-];
-
 /// Ações do menu ⋮ do card do cliente.
 enum _AcaoMenu { alterarStatus }
 
-/// Card do cliente nos detalhes (Tela 6, RF-30): nome, PF/PJ, número,
-/// data, prazo e validade, com o menu ⋮ "Alterar status" (RF-33, D-06).
+/// Card do cliente nos detalhes (Tela 6, RF-30): nome, PF/PJ, código,
+/// data e validade (só se houver), com o menu ⋮ "Alterar status" entre
+/// criado e enviado (D-29).
 class DetalhesClienteCard extends StatelessWidget {
   /// Cria o card de [orcamento]; [onAlterarStatus] recebe o status
   /// escolhido no menu (só quando difere do atual).
@@ -89,7 +81,7 @@ class DetalhesClienteCard extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.xxs),
                         Text(
-                          cliente.ehPessoaJuridica
+                          cliente.documento.ehPessoaJuridica
                               ? 'Cliente PJ'
                               : 'Cliente PF',
                           style: AppTextStyles.body.copyWith(
@@ -125,29 +117,22 @@ class DetalhesClienteCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
-                    _Info(
-                      rotulo: 'Orçamento',
-                      valor: orcamento.numeroFormatado,
-                    ),
+                    _Info(rotulo: 'Orçamento', valor: orcamento.codigoExibicao),
                     _Info(
                       rotulo: 'Data',
                       valor: formatarData(orcamento.criadoEm),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    _Info(
-                      rotulo: 'Prazo',
-                      valor: '${orcamento.prazoDiasUteis} dias úteis',
-                    ),
-                    const _Info(
-                      rotulo: 'Validade',
-                      valor: '${AppConstants.validadeOrcamentoDias} dias',
-                    ),
-                  ],
-                ),
+                if (orcamento.dataValidade case final validade?) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    children: [
+                      _Info(rotulo: 'Validade', valor: formatarData(validade)),
+                      const Spacer(),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -199,7 +184,7 @@ class _AlterarStatusDialog extends StatelessWidget {
     return SimpleDialog(
       title: const Text('Alterar status'),
       children: [
-        for (final status in _statusDoMenu)
+        for (final status in StatusOrcamento.values)
           SimpleDialogOption(
             onPressed: () => Navigator.of(context).pop(status),
             padding: const EdgeInsets.symmetric(

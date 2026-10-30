@@ -1,11 +1,11 @@
 import 'package:fera_metalurgica_app/core/domain/consumo.dart';
 import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/core/domain/unidade_cobranca.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/item_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/peca_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/resultado_item.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/resultado_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/resultado_peca.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/resultado_item.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/resultado_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/resultado_peca.dart';
 
 /// 10¹²: a escala do `Consumo`.
 final BigInt _escalaConsumo = BigInt.from(10).pow(Consumo.casasDecimais);

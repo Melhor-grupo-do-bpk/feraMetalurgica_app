@@ -7,8 +7,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'orcamentos_lista_filtro.g.dart';
 
-/// Busca e chip de status da lista de orçamentos (D-22). `status == null`
-/// é o chip "Todos".
+/// Busca e chip de status da lista de orçamentos (D-22, D-29).
+/// `status == null` é o chip "Todos".
 typedef FiltroOrcamentos = ({String busca, StatusOrcamento? status});
 
 /// Estado da busca e do filtro da Tela 8; não é persistido (D-22).
@@ -41,8 +41,8 @@ AsyncValue<List<Orcamento>> orcamentosListaFiltrados(Ref ref) {
 /// Aplica [filtro] a [orcamentos], mantendo a ordem.
 ///
 /// A busca casa com o nome do cliente (sem diferenciar maiúsculas nem
-/// acentos) ou, se tiver dígitos, com o número do orçamento comparado só
-/// pelos dígitos (ex: "482" e "#00482" encontram o #00482).
+/// acentos) ou, se tiver dígitos, com o código do orçamento comparado só
+/// pelos dígitos (ex: "28102603" e "281026-03" encontram o 281026-03).
 List<Orcamento> filtrarOrcamentos(
   List<Orcamento> orcamentos,
   FiltroOrcamentos filtro,
@@ -53,7 +53,7 @@ List<Orcamento> filtrarOrcamentos(
   bool casaBusca(Orcamento o) =>
       busca.isEmpty ||
       normalizarParaBusca(o.cliente.nome).contains(busca) ||
-      (digitos.isNotEmpty && somenteDigitos(o.id).contains(digitos));
+      (digitos.isNotEmpty && somenteDigitos(o.codigo).contains(digitos));
 
   return [
     for (final o in orcamentos)

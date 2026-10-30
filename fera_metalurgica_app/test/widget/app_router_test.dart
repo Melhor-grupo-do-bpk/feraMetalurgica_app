@@ -54,17 +54,17 @@ void main() {
   }
 
   testWidgets('parâmetros chegam às páginas', (tester) async {
-    await abrir(tester, AppRoutes.novoOrcamento(produtoId: 'p1'));
+    await abrir(tester, AppRoutes.novoOrcamento());
     final novo = tester.widget<OrcamentoWizardPage>(
       find.byType(OrcamentoWizardPage),
     );
-    expect((novo.orcamentoId, novo.produtoId), (null, 'p1'));
+    expect(novo.orcamentoId, isNull);
 
     await abrir(tester, AppRoutes.editarOrcamento('00482'));
     final edicao = tester.widget<OrcamentoWizardPage>(
       find.byType(OrcamentoWizardPage),
     );
-    expect((edicao.orcamentoId, edicao.produtoId), ('00482', null));
+    expect(edicao.orcamentoId, '00482');
 
     await abrir(tester, AppRoutes.detalhesOrcamento('00481'));
     expect(
@@ -89,7 +89,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(OrcamentoDetalhesPage), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.arrow_back));
+    // O voltar da top bar (o id não existe: a tela também tem "Voltar").
+    await tester.tap(find.byIcon(Icons.arrow_back).first);
     await tester.pumpAndSettle();
 
     expect(find.byType(OrcamentosListaPage), findsOneWidget);

@@ -1,7 +1,7 @@
 import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/cliente_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/empresa_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/empresa_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'orcamento_em_edicao.freezed.dart';

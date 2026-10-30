@@ -23,11 +23,17 @@ void main() {
 
   setUp(() {
     tarefas = MockTarefaRepository();
-    when(() => tarefas.getAll()).thenAnswer((_) async => tarefasExemplo);
+    // A revisão vinculada ao exemplo C.
+    when(() => tarefas.getAll()).thenAnswer(
+      (_) async => [
+        tarefasExemplo.first.copyWith(orcamentoId: 'orcamento-c'),
+        ...tarefasExemplo.skip(1),
+      ],
+    );
     when(() => tarefas.save(any())).thenAnswer((_) async {});
     when(() => tarefas.delete(any())).thenAnswer((_) async {});
     orcamentos = MockOrcamentoRepository();
-    when(() => orcamentos.getAll()).thenAnswer((_) async => orcamentosSeed);
+    when(orcamentos.listarResumos).thenAnswer((_) async => orcamentosExemplo);
   });
 
   /// Abre o formulário por cima de uma tela "cronograma" de mentira, para
@@ -146,7 +152,7 @@ void main() {
     await escolherNoDropdown(
       tester,
       'orcamento',
-      '#00481 - Metalúrgica ABC Ltda',
+      '051023-02 rev. 2 - Metalúrgica ABC Ltda',
     );
 
     await tester.tap(find.text('Salvar tarefa'));
@@ -160,7 +166,7 @@ void main() {
     expect(salva.tipo, TipoTarefa.visita);
     expect(salva.concluida, isFalse);
     expect(salva.descricao, 'Medir o vão do portão');
-    expect(salva.orcamentoId, '00481');
+    expect(salva.orcamentoId, 'orcamento-e');
     expect(find.text('cronograma'), findsOneWidget);
   });
 
@@ -193,13 +199,13 @@ void main() {
   });
 
   testWidgets('edição mostra o orçamento vinculado', (tester) async {
-    await abrirFormulario(tester, id: 'tarefa-revisar-00482');
+    await abrirFormulario(tester, id: 'tarefa-revisar-orcamento');
 
-    expect(find.text('#00482 - João da Silva'), findsOneWidget);
+    expect(find.text('071023-01 - João da Silva'), findsOneWidget);
   });
 
   testWidgets('excluir pede confirmação', (tester) async {
-    await abrirFormulario(tester, id: 'tarefa-revisar-00482');
+    await abrirFormulario(tester, id: 'tarefa-revisar-orcamento');
 
     await tester.tap(find.text('Excluir tarefa'));
     await tester.pumpAndSettle();
@@ -212,7 +218,7 @@ void main() {
     await tester.tap(find.text('Excluir'));
     await tester.pumpAndSettle();
 
-    verify(() => tarefas.delete('tarefa-revisar-00482')).called(1);
+    verify(() => tarefas.delete('tarefa-revisar-orcamento')).called(1);
     expect(find.text('cronograma'), findsOneWidget);
   });
 

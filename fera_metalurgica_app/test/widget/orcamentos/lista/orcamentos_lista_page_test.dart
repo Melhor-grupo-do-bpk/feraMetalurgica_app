@@ -1,3 +1,4 @@
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/widgets/filter_chips_bar.dart';
@@ -5,25 +6,23 @@ import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/lista/orcamento_list_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../mocks/container_de_teste.dart';
+import '../../../mocks/dados_exemplo.dart';
 import '../../../mocks/mock_orcamento_repository.dart';
 
 void main() {
-  late MockOrcamentoRepository repository;
-
-  setUp(() {
-    repository = MockOrcamentoRepository();
-    when(() => repository.getAll()).thenAnswer((_) async => orcamentosSeed);
-  });
-
   /// Monta a lista num router mínimo: wizard e detalhes viram textos, para
   /// conferir a navegação sem abrir as telas das outras trilhas.
   Future<void> abrirLista(
     WidgetTester tester, {
     ThemeMode themeMode = ThemeMode.light,
+    List<Orcamento>? orcamentos,
+    List<Override>? overrides,
   }) async {
     tester.view
       ..physicalSize = const Size(800, 2400)
@@ -49,9 +48,10 @@ void main() {
     );
     addTearDown(router.dispose);
 
+    final banco = await bancoComOrcamentos(orcamentos ?? orcamentosExemplo);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [orcamentoRepositoryProvider.overrideWithValue(repository)],
+        overrides: overrides ?? [bancoDeDadosProvider.overrideWithValue(banco)],
         child: MaterialApp.router(
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
@@ -69,42 +69,33 @@ void main() {
       find.descendant(of: cartoes(), matching: find.text(texto));
 
   for (final modo in [ThemeMode.light, ThemeMode.dark]) {
-    testWidgets('renderiza os orçamentos do seed (${modo.name})', (
+    testWidgets('renderiza os orçamentos salvos (${modo.name})', (
       tester,
     ) async {
       await abrirLista(tester, themeMode: modo);
 
       expect(find.text('Orçamentos'), findsOneWidget);
-      expect(find.text('Buscar por cliente ou número...'), findsOneWidget);
-      expect(cartoes(), findsNWidgets(orcamentosSeed.length));
+      expect(find.text('Buscar por cliente ou código...'), findsOneWidget);
+      expect(cartoes(), findsNWidgets(3));
 
-      expect(find.text('#00482'), findsOneWidget);
+      expect(find.text('071023-01'), findsOneWidget);
+      expect(find.text('051023-02 rev. 2'), findsOneWidget);
       expect(find.text('João da Silva'), findsOneWidget);
-      expect(noCartao('Em análise'), findsOneWidget);
-      expect(find.text('17/08/2026'), findsOneWidget);
-      expect(find.text(r'R$ 8.450,00'), findsOneWidget);
-      expect(find.text(r'R$ 12.300,00'), findsOneWidget);
-
-      // Só o rascunho (#00480) mostra "Valor Estimado".
-      expect(find.text('Valor Estimado'), findsOneWidget);
-      expect(find.text('Valor Total'), findsNWidgets(4));
-      expect(noCartao('Rascunho'), findsOneWidget);
+      expect(find.text('07/10/2023'), findsOneWidget);
+      expect(find.text(r'R$ 3.630,80'), findsOneWidget);
+      expect(find.text(r'R$ 644,40'), findsNWidgets(2));
+      expect(noCartao('Criado'), findsNWidgets(2));
+      expect(noCartao('Enviado'), findsOneWidget);
     });
   }
 
-  testWidgets('mostra os chips de D-22 na ordem', (tester) async {
+  testWidgets('mostra os chips Todos, Criados e Enviados (D-29)', (
+    tester,
+  ) async {
     await abrirLista(tester);
 
-    final chips = [
-      'Todos',
-      'Rascunhos',
-      'Em análise',
-      'Enviados',
-      'Aprovados',
-      'Recusados',
-    ];
     final xs = [
-      for (final chip in chips)
+      for (final chip in ['Todos', 'Criados', 'Enviados'])
         tester
             .getTopLeft(
               find.descendant(
@@ -120,19 +111,18 @@ void main() {
   testWidgets('filtra por status', (tester) async {
     await abrirLista(tester);
 
-    await tester.tap(find.text('Aprovados'));
+    await tester.tap(find.text('Enviados'));
     await tester.pumpAndSettle();
     expect(cartoes(), findsOneWidget);
     expect(find.text('Metalúrgica ABC Ltda'), findsOneWidget);
 
-    await tester.tap(find.text('Rascunhos'));
+    await tester.tap(find.text('Criados'));
     await tester.pumpAndSettle();
-    expect(cartoes(), findsOneWidget);
-    expect(find.text('Construtora Nova Era'), findsOneWidget);
+    expect(cartoes(), findsNWidgets(2));
 
     await tester.tap(find.text('Todos'));
     await tester.pumpAndSettle();
-    expect(cartoes(), findsNWidgets(orcamentosSeed.length));
+    expect(cartoes(), findsNWidgets(3));
   });
 
   testWidgets('busca por nome sem acento', (tester) async {
@@ -145,14 +135,14 @@ void main() {
     expect(find.text('Metalúrgica ABC Ltda'), findsOneWidget);
   });
 
-  testWidgets('busca por número', (tester) async {
+  testWidgets('busca por código', (tester) async {
     await abrirLista(tester);
 
-    await tester.enterText(find.byType(TextField), '#00479');
+    await tester.enterText(find.byType(TextField), '081023-01');
     await tester.pumpAndSettle();
 
     expect(cartoes(), findsOneWidget);
-    expect(find.text('Construtora Apex'), findsOneWidget);
+    expect(find.text('Construtora Horizonte Ltda'), findsOneWidget);
   });
 
   testWidgets('busca sem resultado mostra o estado vazio com "Novo"', (
@@ -169,26 +159,29 @@ void main() {
   });
 
   testWidgets('sem orçamentos mostra o estado vazio', (tester) async {
-    when(() => repository.getAll()).thenAnswer((_) async => []);
-    await abrirLista(tester);
+    await abrirLista(tester, orcamentos: const []);
 
     expect(find.text('Nenhum orçamento encontrado'), findsOneWidget);
   });
 
   testWidgets('erro ao carregar permite tentar novamente', (tester) async {
-    when(() => repository.getAll()).thenThrow(Exception('falha'));
-    await abrirLista(tester);
+    final repository = MockOrcamentoRepository();
+    when(repository.listarResumos).thenThrow(Exception('falha'));
+    await abrirLista(
+      tester,
+      overrides: [orcamentoRepositoryProvider.overrideWithValue(repository)],
+    );
 
     expect(
       find.text('Não foi possível carregar os orçamentos.'),
       findsOneWidget,
     );
 
-    when(() => repository.getAll()).thenAnswer((_) async => orcamentosSeed);
+    when(repository.listarResumos).thenAnswer((_) async => orcamentosExemplo);
     await tester.tap(find.text('Tentar novamente'));
     await tester.pumpAndSettle();
 
-    expect(cartoes(), findsNWidgets(orcamentosSeed.length));
+    expect(cartoes(), findsNWidgets(3));
   });
 
   testWidgets('tocar no cartão abre os detalhes', (tester) async {
@@ -197,7 +190,7 @@ void main() {
     await tester.tap(find.text('Metalúrgica ABC Ltda'));
     await tester.pumpAndSettle();
 
-    expect(find.text('detalhes 00481'), findsOneWidget);
+    expect(find.text('detalhes orcamento-e'), findsOneWidget);
   });
 
   testWidgets('"Novo" abre o wizard', (tester) async {

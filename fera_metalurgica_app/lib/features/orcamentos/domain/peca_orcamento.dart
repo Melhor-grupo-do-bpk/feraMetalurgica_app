@@ -1,5 +1,5 @@
 import 'package:fera_metalurgica_app/core/domain/medida_cm.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/material_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/material_snapshot.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'peca_orcamento.freezed.dart';

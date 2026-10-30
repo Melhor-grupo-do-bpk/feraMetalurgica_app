@@ -1,3 +1,6 @@
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
+import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/dashboard/presentation/dashboard_indicadores.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
@@ -5,46 +8,93 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../mocks/banco_de_teste.dart';
 import '../mocks/dados_exemplo.dart';
-import '../mocks/mock_orcamento_repository.dart';
 import '../mocks/mock_tarefa_repository.dart';
 
-/// Um orçamento do seed com [status] e [id] trocados.
-Orcamento _orcamento(String id, StatusOrcamento status, DateTime criadoEm) =>
-    orcamentosSeed.first.copyWith(id: id, status: status, criadoEm: criadoEm);
+final DateTime _outubro = DateTime(2023, 10, 20, 9);
 
-/// Uma tarefa do seed com [tipo] e [concluida] trocados.
+/// O exemplo B com id e código próprios, `status` e `enviadoEm`.
+Orcamento _orcamento(
+  String id, {
+  StatusOrcamento status = StatusOrcamento.criado,
+  DateTime? enviadoEm,
+}) => orcamentoExemploB.copyWith(
+  id: id,
+  codigo: 'cod-$id',
+  chaveFinalizacao: 'chave-$id',
+  status: status,
+  enviadoEm: enviadoEm,
+);
+
+/// Uma tarefa de exemplo com [tipo] e [concluida] trocados.
 Tarefa _tarefa(TipoTarefa tipo, {bool concluida = false}) =>
     tarefasExemplo.first.copyWith(tipo: tipo, concluida: concluida);
 
 void main() {
-  group('calcularIndicadores (D-03)', () {
-    test('conta cada status no seu card', () {
-      final indicadores = calcularIndicadores([
-        _orcamento('1', StatusOrcamento.emAnalise, DateTime(2026)),
-        _orcamento('2', StatusOrcamento.emAnalise, DateTime(2026)),
-        _orcamento('3', StatusOrcamento.enviado, DateTime(2026)),
-        _orcamento('4', StatusOrcamento.aprovado, DateTime(2026)),
-        _orcamento('5', StatusOrcamento.aprovado, DateTime(2026)),
-        _orcamento('6', StatusOrcamento.aprovado, DateTime(2026)),
-      ], const []);
+  group('calcularIndicadores (D-32)', () {
+    test('criados contam pelo status', () {
+      final indicadores = calcularIndicadores(
+        [
+          _orcamento('1'),
+          _orcamento('2'),
+          _orcamento(
+            '3',
+            status: StatusOrcamento.enviado,
+            enviadoEm: DateTime(2023, 10, 2),
+          ),
+        ],
+        const [],
+        _outubro,
+      );
 
-      expect(indicadores.emAndamento, 2);
-      expect(indicadores.aguardandoAprovacao, 1);
-      expect(indicadores.aprovados, 3);
-      expect(indicadores.pedidosEmProducao, 0);
+      expect(indicadores.criados, 2);
     });
 
-    test('rascunho e recusado não contam em nenhum card', () {
-      final indicadores = calcularIndicadores([
-        _orcamento('1', StatusOrcamento.rascunho, DateTime(2026)),
-        _orcamento('2', StatusOrcamento.recusado, DateTime(2026)),
-      ], const []);
+    test('enviados no mês contam por enviadoEm, com o valor somado', () {
+      final indicadores = calcularIndicadores(
+        [
+          _orcamento(
+            'outubro-1',
+            status: StatusOrcamento.enviado,
+            enviadoEm: DateTime(2023, 10),
+          ),
+          _orcamento(
+            'outubro-2',
+            status: StatusOrcamento.enviado,
+            enviadoEm: DateTime(2023, 10, 31, 23, 59),
+          ),
+          _orcamento(
+            'setembro',
+            status: StatusOrcamento.enviado,
+            enviadoEm: DateTime(2023, 9, 30, 23, 59),
+          ),
+          _orcamento(
+            'outubro-de-2022',
+            status: StatusOrcamento.enviado,
+            enviadoEm: DateTime(2022, 10, 15),
+          ),
+          // Criado em setembro, enviado em outubro: conta em outubro (D-37).
+          orcamentoExemploC.copyWith(
+            criadoEm: DateTime(2023, 9, 5),
+            atualizadoEm: DateTime(2023, 9, 5),
+            status: StatusOrcamento.enviado,
+            enviadoEm: DateTime(2023, 10, 3),
+          ),
+        ],
+        const [],
+        _outubro,
+      );
 
-      expect(indicadores, (
-        emAndamento: 0,
-        aguardandoAprovacao: 0,
-        aprovados: 0,
+      expect(indicadores.enviadosNoMes, 3);
+      expect(indicadores.valorEnviadoNoMes, Dinheiro.parse('4.919,60'));
+    });
+
+    test('sem orçamentos, os valores são zero', () {
+      expect(calcularIndicadores(const [], const [], _outubro), (
+        criados: 0,
+        enviadosNoMes: 0,
+        valorEnviadoNoMes: Dinheiro.zero,
         pedidosEmProducao: 0,
       ));
     });
@@ -56,58 +106,24 @@ void main() {
         _tarefa(TipoTarefa.producao, concluida: true),
         _tarefa(TipoTarefa.orcamento),
         _tarefa(TipoTarefa.visita),
-      ]);
+      ], _outubro);
 
       expect(indicadores.pedidosEmProducao, 2);
     });
-
-    test('com os dados de exemplo', () {
-      expect(calcularIndicadores(orcamentosSeed, tarefasExemplo), (
-        emAndamento: 1,
-        aguardandoAprovacao: 1,
-        aprovados: 1,
-        pedidosEmProducao: 1,
-      ));
-    });
   });
 
-  group('selecionarRecentes (RF-12)', () {
-    test('pula rascunhos, mantém a ordem e limita a 2', () {
-      final recentes = selecionarRecentes([
-        _orcamento('5', StatusOrcamento.rascunho, DateTime(2026, 5)),
-        _orcamento('4', StatusOrcamento.aprovado, DateTime(2026, 4)),
-        _orcamento('3', StatusOrcamento.rascunho, DateTime(2026, 3)),
-        _orcamento('2', StatusOrcamento.emAnalise, DateTime(2026, 2)),
-        _orcamento('1', StatusOrcamento.enviado, DateTime(2026)),
-      ]);
-
-      expect(recentes.map((o) => o.id), ['4', '2']);
-    });
-
-    test('recusado aparece nos recentes, mas não conta nos cards', () {
-      final orcamentos = [
-        _orcamento('2', StatusOrcamento.recusado, DateTime(2026, 2)),
-        _orcamento('1', StatusOrcamento.rascunho, DateTime(2026)),
+  group('selecionarRecentes', () {
+    test('os 2 primeiros, na ordem recebida, de qualquer status', () {
+      final lista = [
+        _orcamento('1', status: StatusOrcamento.enviado),
+        _orcamento('2'),
+        _orcamento('3'),
       ];
-
-      expect(selecionarRecentes(orcamentos).map((o) => o.id), ['2']);
-      final indicadores = calcularIndicadores(orcamentos, const []);
-      expect(
-        indicadores.emAndamento +
-            indicadores.aguardandoAprovacao +
-            indicadores.aprovados,
-        0,
-      );
+      expect(selecionarRecentes(lista).map((o) => o.id), ['1', '2']);
     });
 
-    test('lista vazia ou só de rascunhos dá nenhum recente', () {
+    test('lista vazia dá nenhum recente', () {
       expect(selecionarRecentes(const []), isEmpty);
-      expect(
-        selecionarRecentes([
-          _orcamento('1', StatusOrcamento.rascunho, DateTime(2026)),
-        ]),
-        isEmpty,
-      );
     });
   });
 
@@ -119,23 +135,26 @@ void main() {
   });
 
   group('providers', () {
-    late MockOrcamentoRepository orcamentos;
     late MockTarefaRepository tarefas;
     late ProviderContainer container;
 
     setUpAll(() => registerFallbackValue(tarefasExemplo.first));
 
-    setUp(() {
-      orcamentos = MockOrcamentoRepository();
+    setUp(() async {
+      final banco = await bancoDeTeste();
+      addTearDown(banco.close);
+      final orcamentos = SqliteOrcamentoRepository(banco);
+      await orcamentos.inserir(orcamentoExemploC);
+      await orcamentos.inserir(orcamentoExemploB);
       tarefas = MockTarefaRepository();
-      when(() => orcamentos.getAll()).thenAnswer((_) async => orcamentosSeed);
       when(() => tarefas.getAll()).thenAnswer((_) async => tarefasExemplo);
       container = ProviderContainer(
         // Sem o retry automático do Riverpod, para o erro aparecer na hora.
         retry: (_, _) => null,
         overrides: [
-          orcamentoRepositoryProvider.overrideWithValue(orcamentos),
+          bancoDeDadosProvider.overrideWithValue(banco),
           tarefaRepositoryProvider.overrideWithValue(tarefas),
+          agoraProvider.overrideWithValue(agoraDosExemplos),
         ],
       );
       addTearDown(container.dispose);
@@ -153,39 +172,28 @@ void main() {
       await carregar();
 
       expect(container.read(indicadoresDashboardProvider).value, (
-        emAndamento: 1,
-        aguardandoAprovacao: 1,
-        aprovados: 1,
+        criados: 2,
+        enviadosNoMes: 0,
+        valorEnviadoNoMes: Dinheiro.zero,
         pedidosEmProducao: 1,
       ));
       expect(
         container.read(recentesDashboardProvider).value?.map((o) => o.id),
-        ['00482', '00481'],
+        ['orcamento-b', 'orcamento-c'],
       );
     });
 
-    test('salvar um orçamento atualiza indicadores e recentes', () async {
+    test('enviar um orçamento atualiza os cards do mês', () async {
       await carregar();
-      final novo = _orcamento(
-        '00483',
-        StatusOrcamento.emAnalise,
-        DateTime(2026, 9),
-      );
-      when(() => orcamentos.save(novo)).thenAnswer((_) async {});
-      when(
-        () => orcamentos.getAll(),
-      ).thenAnswer((_) async => [...orcamentosSeed, novo]);
 
-      await container.read(orcamentosProvider.notifier).salvar(novo);
+      await container
+          .read(orcamentosProvider.notifier)
+          .alterarStatus('orcamento-c', StatusOrcamento.enviado);
 
-      expect(
-        container.read(indicadoresDashboardProvider).value?.emAndamento,
-        2,
-      );
-      expect(
-        container.read(recentesDashboardProvider).value?.map((o) => o.id),
-        ['00483', '00482'],
-      );
+      final indicadores = container.read(indicadoresDashboardProvider).value!;
+      expect(indicadores.criados, 1);
+      expect(indicadores.enviadosNoMes, 1);
+      expect(indicadores.valorEnviadoNoMes, Dinheiro.parse('3.630,80'));
     });
 
     test('concluir uma tarefa de produção atualiza o card', () async {

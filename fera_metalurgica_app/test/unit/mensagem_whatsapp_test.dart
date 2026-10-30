@@ -1,52 +1,41 @@
-import 'package:fera_metalurgica_app/core/utils/currency_format.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/mensagem_whatsapp.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../mocks/dados_exemplo.dart';
+
 void main() {
-  final orcamento = orcamentosSeed.firstWhere((o) => o.id == '00482');
-
-  test('monta o resumo do #00482 (D-15)', () {
+  test('monta o resumo do exemplo C, com a validade (D-15)', () {
     expect(
-      montarMensagemWhatsApp(orcamento),
-      'Olá, João da Silva! Segue o resumo do orçamento Nº 00482 da '
-      'Fera Metalurgica LTDA.\n'
+      montarMensagemWhatsApp(orcamentoExemploC),
+      'Olá, João da Silva! Segue o resumo do orçamento Nº 071023-01 da '
+      'Fera Metalúrgica Ltda.\n'
       '\n'
-      'Projeto: Portão metálico\n'
-      r'Valor total: R$ 8.450,00'
-      '\n'
-      'Prazo: 15 dias úteis após aprovação e sinal\n'
-      'Validade: 15 dias',
+      'Valor total: R\$ 3.630,80\n'
+      'Validade: até 22/10/2023',
     );
   });
 
-  test('usa o prazo do orçamento', () {
+  test('sem validade, não mostra a linha', () {
+    final mensagem = montarMensagemWhatsApp(orcamentoExemploB);
+
+    expect(mensagem, endsWith(r'Valor total: R$ 644,40'));
+    expect(mensagem, isNot(contains('Validade')));
+  });
+
+  test('a partir da 2ª revisão, mostra "rev. N" (D-30)', () {
     final mensagem = montarMensagemWhatsApp(
-      orcamento.copyWith(prazoDiasUteis: 30),
+      orcamentoExemploB.copyWith(revisao: 2),
     );
 
-    expect(mensagem, contains('Prazo: 30 dias úteis'));
+    expect(mensagem, contains('Nº 081023-01 rev. 2'));
   });
 
-  test('não mostra custos internos (D-16)', () {
-    for (final o in orcamentosSeed) {
-      final mensagem = montarMensagemWhatsApp(o);
-      final custos = o.custosOperacionais;
+  test('não mostra custos internos nem adicionais (D-16)', () {
+    final mensagem = montarMensagemWhatsApp(orcamentoExemploC);
 
-      // O único valor em reais é o valor final.
-      expect(RegExp(r'R\$').allMatches(mensagem), hasLength(1));
-      expect(mensagem, contains(formatarMoeda(o.valorFinal)));
-      for (final valor in [
-        custos.materiaPrima,
-        custos.maoDeObra,
-        custos.insumos,
-        custos.combustivel,
-        custos.impostos,
-        calcularTotalCustos(custos),
-      ]) {
-        expect(mensagem, isNot(contains(formatarMoeda(valor))));
-      }
-      expect(mensagem.toLowerCase(), isNot(contains('custo')));
-    }
+    // O único valor em reais é o total geral.
+    expect(RegExp(r'R\$').allMatches(mensagem), hasLength(1));
+    expect(mensagem.toLowerCase(), isNot(contains('custo')));
+    expect(mensagem.toLowerCase(), isNot(contains('desconto')));
   });
 }

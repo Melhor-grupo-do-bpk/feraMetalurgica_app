@@ -16,9 +16,7 @@ final GoRoute orcamentosRoute = GoRoute(
     GoRoute(
       path: 'novo',
       parentNavigatorKey: rootNavigatorKey,
-      builder: (context, state) => OrcamentoWizardPage(
-        produtoId: state.uri.queryParameters['produtoId'],
-      ),
+      builder: (context, state) => const OrcamentoWizardPage(),
     ),
     GoRoute(
       path: ':id',

@@ -13,10 +13,10 @@ import 'package:fera_metalurgica_app/core/domain/unidade_cobranca.dart';
 import 'package:fera_metalurgica_app/core/domain/validacao_comum.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/calculadora_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/item_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/peca_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
 
 /// Peça: descrição, material com nome e preço aplicado maior que zero,
 /// quantidade por produto ≥ 1, comprimento e largura positivos e

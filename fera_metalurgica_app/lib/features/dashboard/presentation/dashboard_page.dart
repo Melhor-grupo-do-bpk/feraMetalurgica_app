@@ -14,7 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Tela inicial do app, raiz da aba "Início" (Tela 1): botão "Criar
-/// orçamento", os 4 indicadores (D-03) e os orçamentos recentes (RF-12).
+/// orçamento", os 4 indicadores (D-32) e os orçamentos recentes.
 class DashboardPage extends ConsumerWidget {
   /// Cria a tela inicial do dashboard.
   const DashboardPage({super.key});
@@ -71,22 +71,22 @@ class _Conteudo extends StatelessWidget {
       children: [
         _LinhaDeCards(
           esquerda: StatCard(
-            label: 'Orçamentos em andamento',
-            valor: formatarContagem(indicadores.emAndamento),
+            label: 'Criados',
+            valor: formatarContagem(indicadores.criados),
             icone: Icons.pending_actions,
           ),
           direita: StatCard(
-            label: 'Aguardando aprovação',
-            valor: formatarContagem(indicadores.aguardandoAprovacao),
-            icone: Icons.hourglass_empty,
+            label: 'Enviados no mês',
+            valor: formatarContagem(indicadores.enviadosNoMes),
+            icone: Icons.send_outlined,
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         _LinhaDeCards(
           esquerda: StatCard(
-            label: 'Aprovados',
-            valor: formatarContagem(indicadores.aprovados),
-            icone: Icons.check_circle_outline,
+            label: 'Valor enviado no mês',
+            valor: indicadores.valorEnviadoNoMes.formatado,
+            icone: Icons.payments_outlined,
           ),
           direita: StatCard(
             label: 'Pedidos em produção',

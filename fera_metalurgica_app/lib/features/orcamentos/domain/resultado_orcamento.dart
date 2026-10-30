@@ -1,5 +1,5 @@
 import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/resultado_item.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/resultado_item.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'resultado_orcamento.freezed.dart';

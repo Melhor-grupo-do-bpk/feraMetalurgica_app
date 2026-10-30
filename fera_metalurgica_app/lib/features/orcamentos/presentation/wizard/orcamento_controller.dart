@@ -5,15 +5,16 @@ import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/finalizar_orcamento_service_provider.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/sqlite_orcamento_repository.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/calculadora_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/cliente_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/empresa_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/finalizar_orcamento_service.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/item_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/peca_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/validacao_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/empresa_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/finalizar_orcamento_service.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/validacao_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/orcamentos_controller.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -99,7 +100,7 @@ class OrcamentoController extends _$OrcamentoController {
   Future<void> iniciarEdicao(String orcamentoId) async {
     final emitente = await _emitenteAtual();
     final salvo = await ref
-        .read(orcamentoRepositoryV2Provider)
+        .read(orcamentoRepositoryProvider)
         .buscarPorId(orcamentoId);
     if (salvo == null) {
       throw StateError('Orçamento $orcamentoId não encontrado');
@@ -295,7 +296,8 @@ class OrcamentoController extends _$OrcamentoController {
   }
 
   /// Grava a sessão pelo `FinalizarOrcamentoService` e devolve o orçamento
-  /// salvo. Só depois do sucesso limpa a sessão.
+  /// salvo. Só depois do sucesso limpa a sessão e recarrega a lista de
+  /// orçamentos salvos.
   ///
   /// - Durante uma gravação, uma nova chamada devolve `null` sem gravar.
   /// - Com a sessão inválida, devolve `null` e deixa os erros em `erros`.
@@ -310,6 +312,7 @@ class OrcamentoController extends _$OrcamentoController {
           .read(finalizarOrcamentoServiceProvider)
           .executar(edicao);
       state = const EstadoEdicaoOrcamento();
+      ref.invalidate(orcamentosProvider);
       return salvo;
     } on OrcamentoInvalidoException catch (e) {
       state = state.copyWith(finalizando: false, erros: e.erros);

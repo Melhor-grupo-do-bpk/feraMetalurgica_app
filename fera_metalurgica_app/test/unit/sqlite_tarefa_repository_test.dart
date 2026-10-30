@@ -1,4 +1,5 @@
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -53,5 +54,37 @@ void main() {
     await repository.delete(tarefasExemplo.first.id);
 
     expect(await repository.getAll(), tarefasExemplo.skip(1).toList());
+  });
+
+  group('vínculo com o orçamento', () {
+    late Tarefa vinculada;
+
+    setUp(() async {
+      await SqliteOrcamentoRepository(banco).inserir(orcamentoExemploC);
+      vinculada = tarefasExemplo.first.copyWith(orcamentoId: 'orcamento-c');
+      await repository.save(vinculada);
+    });
+
+    test('guarda o id do orçamento', () async {
+      expect((await repository.getAll()).single, vinculada);
+    });
+
+    test('excluir o orçamento mantém a tarefa e tira o vínculo', () async {
+      await SqliteOrcamentoRepository(banco).excluir('orcamento-c');
+
+      expect(
+        (await repository.getAll()).single,
+        vinculada.copyWith(orcamentoId: null),
+      );
+    });
+
+    test('não aceita vínculo com orçamento inexistente', () async {
+      expect(
+        () => repository.save(
+          tarefasExemplo.last.copyWith(orcamentoId: 'nao-existe'),
+        ),
+        throwsA(isA<DatabaseException>()),
+      );
+    });
   });
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/widgets/stat_card.dart';
@@ -18,25 +19,47 @@ import '../mocks/dados_exemplo.dart';
 import '../mocks/mock_orcamento_repository.dart';
 import '../mocks/mock_tarefa_repository.dart';
 
-/// Um orçamento do seed com [id], [status] e [dia] (de agosto) trocados.
-Orcamento _orcamento(String id, StatusOrcamento status, int dia) =>
-    orcamentosSeed.first.copyWith(
-      id: id,
-      status: status,
-      criadoEm: DateTime(2026, 8, dia),
-    );
+/// O exemplo B (R$ 644,40) com [id], [status] e salvo em [dia] de
+/// outubro de 2023; enviado, com o `enviadoEm` em [enviadoEm].
+Orcamento _orcamento(
+  String id,
+  StatusOrcamento status,
+  int dia, {
+  DateTime? enviadoEm,
+}) => orcamentoExemploB.copyWith(
+  id: id,
+  codigo: '${dia.toString().padLeft(2, '0')}1023-01',
+  status: status,
+  enviadoEm: enviadoEm,
+  criadoEm: DateTime(2023, 10, dia),
+  atualizadoEm: DateTime(2023, 10, dia),
+);
 
-/// Contagens diferentes em cada card: 3 em análise, 2 enviados, 1
-/// aprovado, além de um rascunho e um recusado que não contam (D-03).
+/// Contagens diferentes em cada card (D-32), no mês de [agoraDosExemplos]
+/// (outubro de 2023): 3 criados e 2 enviados em outubro; o enviado em
+/// setembro não conta. Do `atualizadoEm` mais recente ao mais antigo.
 final List<Orcamento> _orcamentos = [
-  _orcamento('00490', StatusOrcamento.rascunho, 30),
-  _orcamento('00489', StatusOrcamento.recusado, 29),
-  _orcamento('00488', StatusOrcamento.emAnalise, 28),
-  _orcamento('00487', StatusOrcamento.emAnalise, 27),
-  _orcamento('00486', StatusOrcamento.emAnalise, 26),
-  _orcamento('00485', StatusOrcamento.enviado, 25),
-  _orcamento('00484', StatusOrcamento.enviado, 24),
-  _orcamento('00483', StatusOrcamento.aprovado, 23),
+  _orcamento('o8', StatusOrcamento.criado, 8),
+  _orcamento(
+    'o7',
+    StatusOrcamento.enviado,
+    7,
+    enviadoEm: DateTime(2023, 10, 7),
+  ),
+  _orcamento('o6', StatusOrcamento.criado, 6),
+  _orcamento(
+    'o5',
+    StatusOrcamento.enviado,
+    5,
+    enviadoEm: DateTime(2023, 10, 5),
+  ),
+  _orcamento('o4', StatusOrcamento.criado, 4),
+  _orcamento(
+    'o3',
+    StatusOrcamento.enviado,
+    3,
+    enviadoEm: DateTime(2023, 9, 30),
+  ),
 ];
 
 /// 4 tarefas de produção pendentes, mais uma concluída e uma de outro
@@ -54,7 +77,7 @@ void main() {
   setUp(() {
     orcamentos = MockOrcamentoRepository();
     tarefas = MockTarefaRepository();
-    when(() => orcamentos.getAll()).thenAnswer((_) async => _orcamentos);
+    when(orcamentos.listarResumos).thenAnswer((_) async => _orcamentos);
     when(() => tarefas.getAll()).thenAnswer((_) async => _tarefas);
   });
 
@@ -101,6 +124,7 @@ void main() {
         overrides: [
           orcamentoRepositoryProvider.overrideWithValue(orcamentos),
           tarefaRepositoryProvider.overrideWithValue(tarefas),
+          agoraProvider.overrideWithValue(agoraDosExemplos),
         ],
         child: MaterialApp.router(
           theme: AppTheme.light,
@@ -120,33 +144,31 @@ void main() {
       )
       .valor;
 
-  testWidgets('mostra o CTA, os 4 indicadores e as contagens (D-03)', (
+  testWidgets('mostra o CTA, os 4 indicadores e os valores (D-32)', (
     tester,
   ) async {
     await abrirDashboard(tester);
 
     expect(find.text('Criar orçamento'), findsOneWidget);
-    expect(valorDoCard(tester, 'Orçamentos em andamento'), '03');
-    expect(valorDoCard(tester, 'Aguardando aprovação'), '02');
-    expect(valorDoCard(tester, 'Aprovados'), '01');
+    expect(valorDoCard(tester, 'Criados'), '03');
+    expect(valorDoCard(tester, 'Enviados no mês'), '02');
+    expect(valorDoCard(tester, 'Valor enviado no mês'), r'R$ 1.288,80');
     expect(valorDoCard(tester, 'Pedidos em produção'), '04');
-    expect(find.text('03'), findsOneWidget);
-    expect(find.text('04'), findsOneWidget);
   });
 
-  testWidgets('mostra só os 2 recentes, sem rascunho e com recusado', (
+  testWidgets('mostra só os 2 mais recentes, de qualquer status', (
     tester,
   ) async {
     await abrirDashboard(tester);
 
     expect(find.text('Orçamentos Recentes'), findsOneWidget);
     expect(find.byType(OrcamentoRecenteCard), findsNWidgets(2));
-    expect(find.text('#00490'), findsNothing);
-    expect(find.textContaining('#00489'), findsOneWidget);
-    expect(find.textContaining('#00488'), findsOneWidget);
-    expect(find.textContaining('29/08/2026'), findsOneWidget);
-    expect(find.text('Recusado'), findsOneWidget);
-    expect(find.text('Em análise'), findsOneWidget);
+    expect(find.textContaining('081023-01'), findsOneWidget);
+    expect(find.textContaining('071023-01'), findsOneWidget);
+    expect(find.textContaining('061023-01'), findsNothing);
+    expect(find.textContaining('08/10/2023'), findsOneWidget);
+    expect(find.text('Criado'), findsOneWidget);
+    expect(find.text('Enviado'), findsOneWidget);
     expect(find.text('Valor Total'), findsNWidgets(2));
     expect(
       tester
@@ -180,14 +202,14 @@ void main() {
     await tester.tap(find.byType(OrcamentoRecenteCard).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('detalhes 00489'), findsOneWidget);
+    expect(find.text('detalhes o8'), findsOneWidget);
   });
 
   testWidgets('mostra o carregamento enquanto os dados não chegam', (
     tester,
   ) async {
     final pendente = Completer<List<Orcamento>>();
-    when(() => orcamentos.getAll()).thenAnswer((_) => pendente.future);
+    when(orcamentos.listarResumos).thenAnswer((_) => pendente.future);
 
     await abrirDashboard(tester, aguardar: false);
     await tester.pump();
@@ -201,30 +223,19 @@ void main() {
     expect(find.byType(StatCard), findsNWidgets(4));
   });
 
-  testWidgets('sem dados: cards em 00, aviso nos recentes e CTA visível', (
+  testWidgets('sem dados: cards zerados, aviso nos recentes e CTA visível', (
     tester,
   ) async {
-    when(() => orcamentos.getAll()).thenAnswer((_) async => []);
+    when(orcamentos.listarResumos).thenAnswer((_) async => []);
     when(() => tarefas.getAll()).thenAnswer((_) async => []);
 
     await abrirDashboard(tester);
 
-    expect(find.text('00'), findsNWidgets(4));
+    expect(find.text('00'), findsNWidgets(3));
+    expect(valorDoCard(tester, 'Valor enviado no mês'), r'R$ 0,00');
     expect(find.text('Nenhum orçamento ainda.'), findsOneWidget);
     expect(find.byType(OrcamentoRecenteCard), findsNothing);
     expect(find.text('Criar orçamento'), findsOneWidget);
-  });
-
-  testWidgets('só rascunhos: recentes vazios e cards em 00', (tester) async {
-    when(() => orcamentos.getAll()).thenAnswer(
-      (_) async => [_orcamento('00490', StatusOrcamento.rascunho, 30)],
-    );
-    when(() => tarefas.getAll()).thenAnswer((_) async => []);
-
-    await abrirDashboard(tester);
-
-    expect(find.text('00'), findsNWidgets(4));
-    expect(find.text('Nenhum orçamento ainda.'), findsOneWidget);
   });
 
   testWidgets('erro mostra "Tentar novamente", que recarrega', (tester) async {

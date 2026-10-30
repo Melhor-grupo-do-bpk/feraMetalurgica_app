@@ -10,6 +10,9 @@ import 'package:sqflite/sqflite.dart';
 // - enums pelo nome (`TEXT`);
 // - booleanos em 0 ou 1.
 //
+// Excluir um orçamento exclui itens e peças (cascata) e tira o vínculo das
+// tarefas (`SET NULL`), nunca materiais nem clientes.
+//
 // Toda mudança de esquema é uma nova versão, com a migração em
 // `migrarEsquema`.
 
@@ -137,6 +140,6 @@ CREATE TABLE tarefas (
   tipo TEXT NOT NULL,
   concluida INTEGER NOT NULL DEFAULT 0,
   descricao TEXT,
-  orcamento_id TEXT
+  orcamento_id TEXT REFERENCES orcamentos (id) ON DELETE SET NULL
 )''',
 ];

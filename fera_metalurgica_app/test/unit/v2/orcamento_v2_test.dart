@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/calculadora_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'dados_v2.dart';

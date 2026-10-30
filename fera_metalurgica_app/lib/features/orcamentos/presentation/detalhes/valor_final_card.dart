@@ -1,7 +1,7 @@
+import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
-import 'package:fera_metalurgica_app/core/utils/currency_format.dart';
 import 'package:flutter/material.dart';
 
 /// Card escuro "Valor Final" dos detalhes (Tela 6, RF-32), com as ações
@@ -18,8 +18,8 @@ class ValorFinalCard extends StatelessWidget {
     super.key,
   });
 
-  /// Valor final do orçamento (`Orcamento.valorFinal`).
-  final double valorFinal;
+  /// Total geral gravado do orçamento (`Orcamento.totalGeral`).
+  final Dinheiro valorFinal;
 
   /// Ação do botão "Enviar WhatsApp".
   final VoidCallback onEnviarWhatsApp;
@@ -59,7 +59,7 @@ class ValorFinalCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              formatarMoeda(valorFinal),
+              valorFinal.formatado,
               style: AppTextStyles.display.copyWith(
                 fontWeight: FontWeight.w700,
                 color: colors.onBrand,

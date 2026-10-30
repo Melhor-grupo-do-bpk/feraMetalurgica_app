@@ -2,16 +2,25 @@ import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/resultado_item.dart';
 import 'package:flutter/material.dart';
 
-/// "Itens do Orçamento" nos detalhes (Tela 6, RF-31): itens descritivos,
-/// sem valor por item (D-01).
+/// "Itens do Orçamento" nos detalhes: cada produto com as peças, a
+/// quantidade, o preço unitário e o total gravados (D-26). Versão mínima da
+/// F2; o acabamento é da V2-D.
 class DetalhesItensCard extends StatelessWidget {
-  /// Cria o card com [itens].
-  const DetalhesItensCard({required this.itens, super.key});
+  /// Cria o card com [itens] e os [resultados] gravados de cada um.
+  const DetalhesItensCard({
+    required this.itens,
+    required this.resultados,
+    super.key,
+  });
 
-  /// Itens do orçamento, na ordem cadastrada.
+  /// Produtos do orçamento, na ordem cadastrada.
   final List<ItemOrcamento> itens;
+
+  /// Resultado gravado de cada produto, na mesma ordem de [itens].
+  final List<ResultadoItem> resultados;
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +52,9 @@ class DetalhesItensCard extends StatelessWidget {
               ),
             ),
           ),
-          for (final item in itens) ...[
+          for (final (i, item) in itens.indexed) ...[
             Divider(height: 1, color: colors.borderSubtle),
-            _ItemLinha(item: item),
+            _ItemLinha(item: item, resultado: resultados[i]),
           ],
         ],
       ),
@@ -54,9 +63,10 @@ class DetalhesItensCard extends StatelessWidget {
 }
 
 class _ItemLinha extends StatelessWidget {
-  const _ItemLinha({required this.item});
+  const _ItemLinha({required this.item, required this.resultado});
 
   final ItemOrcamento item;
+  final ResultadoItem resultado;
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +74,10 @@ class _ItemLinha extends StatelessWidget {
     final secundario = AppTextStyles.caption.copyWith(
       color: colors.textSecondary,
     );
-    final medidasEMaterial = [
-      item.medidas.formatada,
-      item.materialPrincipal ?? '',
-    ].where((texto) => texto.trim().isNotEmpty).join(' • ');
-    final especificacoes = item.especificacoes?.trim() ?? '';
+    final pecas = item.pecas
+        .map((p) => '${p.quantidadePorProduto}× ${p.descricao}')
+        .join(' • ');
+    final observacoes = item.observacoes?.trim() ?? '';
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -79,17 +88,20 @@ class _ItemLinha extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            item.tipoServico,
+            item.descricao,
             style: AppTextStyles.bodyStrong.copyWith(
               fontWeight: FontWeight.w600,
               color: colors.textPrimary,
             ),
           ),
-          if (medidasEMaterial.isNotEmpty)
-            Text(medidasEMaterial, style: secundario),
-          if (especificacoes.isNotEmpty)
-            Text(especificacoes, style: secundario),
-          Text('Qtd: ${item.quantidade} un', style: secundario),
+          Text(pecas, style: secundario),
+          if (observacoes.isNotEmpty) Text(observacoes, style: secundario),
+          Text(
+            'Qtd: ${item.quantidadeProdutos} × '
+            '${resultado.precoUnitario.formatado} = '
+            '${resultado.totalItem.formatado}',
+            style: secundario,
+          ),
         ],
       ),
     );

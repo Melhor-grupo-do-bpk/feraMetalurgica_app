@@ -1,63 +1,101 @@
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../mocks/fake_local_json_storage.dart';
+import '../mocks/banco_de_teste.dart';
+import '../mocks/dados_exemplo.dart';
 
 void main() {
+  final agora = DateTime(2023, 10, 9, 14, 30);
   late ProviderContainer container;
-  late LocalOrcamentoRepository repository;
+  late SqliteOrcamentoRepository repository;
 
   setUp(() async {
-    repository = LocalOrcamentoRepository(InMemoryJsonStorage());
-    // Fora de ordem de propósito, para testar a ordenação.
-    for (final orcamento in orcamentosSeed.reversed) {
-      await repository.save(orcamento);
-    }
+    final banco = await bancoDeTeste();
+    addTearDown(banco.close);
+    repository = SqliteOrcamentoRepository(banco);
+    await repository.inserir(orcamentoExemploC);
+    await repository.inserir(orcamentoExemploB);
     container = ProviderContainer(
-      overrides: [orcamentoRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        bancoDeDadosProvider.overrideWithValue(banco),
+        agoraProvider.overrideWithValue(agora),
+      ],
     );
     addTearDown(container.dispose);
   });
 
-  test('carrega do mais recente ao mais antigo', () async {
+  Orcamentos notifier() => container.read(orcamentosProvider.notifier);
+
+  test('carrega do atualizadoEm mais recente ao mais antigo', () async {
     final orcamentos = await container.read(orcamentosProvider.future);
 
-    expect(orcamentos.map((o) => o.id), [
-      '00482',
-      '00481',
-      '00480',
-      '00479',
-      '00478',
-    ]);
+    expect(orcamentos, [orcamentoExemploB, orcamentoExemploC]);
+    expect(
+      await container.read(orcamentoPorIdProvider('orcamento-c').future),
+      orcamentoExemploC,
+    );
   });
 
-  test('salvar grava no repositório e atualiza quem está ouvindo', () async {
-    await container.read(orcamentosProvider.future);
-    final novo = orcamentosSeed.first.copyWith(
-      id: '00483',
-      criadoEm: DateTime(2026, 9),
-    );
-
-    await container.read(orcamentosProvider.notifier).salvar(novo);
-
-    expect(container.read(orcamentosProvider).value!.first, novo);
-    expect(await repository.getAll(), contains(novo));
-    expect(await container.read(orcamentoPorIdProvider('00483').future), novo);
-  });
-
-  test('excluir remove do repositório e do estado', () async {
+  test('excluir remove do banco e do estado', () async {
     await container.read(orcamentosProvider.future);
 
-    await container.read(orcamentosProvider.notifier).excluir('00482');
+    await notifier().excluir('orcamento-c');
 
+    expect(container.read(orcamentosProvider).value, [orcamentoExemploB]);
+    expect(await repository.buscarPorId('orcamento-c'), isNull);
     expect(
-      container.read(orcamentosProvider).value!.map((o) => o.id),
-      isNot(contains('00482')),
-    );
-    expect(
-      await container.read(orcamentoPorIdProvider('00482').future),
+      await container.read(orcamentoPorIdProvider('orcamento-c').future),
       isNull,
     );
+  });
+
+  group('alterarStatus (D-29, D-37)', () {
+    test(
+      'enviar grava enviadoEm e não mexe em atualizadoEm nem revisão',
+      () async {
+        await container.read(orcamentosProvider.future);
+
+        await notifier().alterarStatus('orcamento-c', StatusOrcamento.enviado);
+
+        final salvo = (await repository.buscarPorId('orcamento-c'))!;
+        expect(salvo.status, StatusOrcamento.enviado);
+        expect(salvo.enviadoEm, agora);
+        expect(salvo.atualizadoEm, orcamentoExemploC.atualizadoEm);
+        expect(salvo.revisao, 1);
+        expect(salvo.dataValidade, orcamentoExemploC.dataValidade);
+        expect(container.read(orcamentosProvider).value!.last, salvo);
+      },
+    );
+
+    test('voltar para criado limpa o enviadoEm', () async {
+      await notifier().alterarStatus('orcamento-c', StatusOrcamento.enviado);
+      await notifier().alterarStatus('orcamento-c', StatusOrcamento.criado);
+
+      final salvo = (await repository.buscarPorId('orcamento-c'))!;
+      expect(salvo.status, StatusOrcamento.criado);
+      expect(salvo.enviadoEm, isNull);
+    });
+
+    test('reenviar não muda a data do primeiro envio', () async {
+      await notifier().alterarStatus('orcamento-c', StatusOrcamento.enviado);
+      container.updateOverrides([
+        bancoDeDadosProvider.overrideWithValue(
+          container.read(bancoDeDadosProvider),
+        ),
+        agoraProvider.overrideWithValue(agora.add(const Duration(days: 1))),
+      ]);
+
+      await notifier().alterarStatus('orcamento-c', StatusOrcamento.enviado);
+
+      expect((await repository.buscarPorId('orcamento-c'))!.enviadoEm, agora);
+    });
+
+    test('orçamento inexistente não faz nada', () async {
+      await notifier().alterarStatus('nao-existe', StatusOrcamento.enviado);
+      expect(await repository.listarResumos(), hasLength(2));
+    });
   });
 }

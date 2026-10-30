@@ -2,9 +2,9 @@ import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/sqlite_orcamento_repository.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/material_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/material_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
