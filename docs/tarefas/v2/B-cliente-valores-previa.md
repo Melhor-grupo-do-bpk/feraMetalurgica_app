@@ -12,9 +12,9 @@ depende_de: V2-F2
 **Base:** prompt v2 §3.3, §4 e §6 (cliente, adicionais, desconto,
 validade).
 **Decisões:** D-26, D-28, D-29 e D-30.
-**Arquivos:** previstos em `orcamentos/presentation/wizard/` (etapas 1, 3 e
-4, e a página do wizard) e um widget de prévia reaproveitável. Fechados pelo
-orquestrador quando a F2 for integrada.
+**Arquivos:** a linha da V2-B na
+[`orquestracao.md` §3](../../orquestracao.md#3-o-que-cada-trilha-possui),
+com os pontos de contato listados lá.
 
 ## Checklist
 - [ ] Etapa 1, cliente:

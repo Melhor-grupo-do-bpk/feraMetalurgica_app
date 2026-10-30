@@ -13,10 +13,9 @@ depende_de: V2-F2
 **Decisões:** D-26, D-29, D-30 e D-32. O PDF e o WhatsApp só trocam os
 dados de origem; o redesenho do documento comercial é outra tarefa (prompt
 §1).
-**Arquivos:** previstos em `orcamentos/presentation/{lista,detalhes,pdf}/**`,
-`orcamentos/data/{pdf,whatsapp}/**`, `orcamentos/domain/mensagem_whatsapp.dart`
-e `dashboard/presentation/**`. Fechados pelo orquestrador quando a F2 for
-integrada.
+**Arquivos:** a linha da V2-D na
+[`orquestracao.md` §3](../../orquestracao.md#3-o-que-cada-trilha-possui),
+com os pontos de contato listados lá.
 
 ## Checklist
 - [ ] Lista:

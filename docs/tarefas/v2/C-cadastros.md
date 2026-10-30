@@ -11,9 +11,9 @@ depende_de: V2-F2
 
 **Base:** prompt v2 §3.1, §3.2 e §6 (material).
 **Decisões:** D-26 e D-31.
-**Arquivos:** previstos em `materiais/presentation/**` e
-`empresa/presentation/**` (exceto `*_routes.dart` e controllers criados na
-F2). Fechados pelo orquestrador quando a F2 for integrada.
+**Arquivos:** a linha da V2-C na
+[`orquestracao.md` §3](../../orquestracao.md#3-o-que-cada-trilha-possui),
+com os pontos de contato listados lá.
 
 ## Checklist
 - [ ] Materiais, a partir de "Mais":

@@ -1,7 +1,7 @@
 ---
 trilha: V2-F2
 titulo: Persistência SQLite e troca do modelo no app
-status: em revisão     # pendente | em andamento | em revisão | concluída
+status: concluída    # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-f2-persistencia
 depende_de: V2-F1

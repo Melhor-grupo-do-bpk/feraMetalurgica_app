@@ -427,7 +427,7 @@ finalização; o controller não tem nem um nem outro.
 | Card | Conta |
 |---|---|
 | Criados | orçamentos com status `criado` |
-| Enviados no mês | orçamentos `enviado` com `atualizadoEm` no mês atual |
+| Enviados no mês | orçamentos `enviado` com `enviadoEm` no mês atual (D-37) |
 | Valor enviado no mês | soma do total geral desses mesmos orçamentos |
 | Pedidos em produção | tarefas de produção pendentes (como antes) |
 
@@ -498,3 +498,38 @@ O prompt usa `Material` em todo o modelo. Nos arquivos de tela que usam o
 `Material` do domínio, importe o Flutter com
 `import 'package:flutter/material.dart' hide Material;`. Se o arquivo
 precisar dos dois, use um prefixo no barrel de materiais.
+
+### D-37
+**Data de envio** (HO-V2-F2-01, aprovada em 29/10/2026).
+
+- O `Orcamento` guarda `enviadoEm` (`DateTime?`), preenchido com o "agora"
+  quando o status passa para `enviado`, pelo WhatsApp ou à mão.
+- Volta a `null` quando o status volta para `criado`, inclusive na edição
+  de um orçamento enviado (D-30).
+- Reenviar um orçamento já enviado mantém a data do primeiro envio.
+- Mudar o status não altera o `atualizadoEm`; a validade continua contando
+  dele.
+- Os cards de envio do dashboard (D-32) contam por `enviadoEm`.
+
+### D-38
+**Persistência e navegação definidas na F2** (HO-V2-F2-02).
+
+- **Dependências:** `sqflite_common_ffi` fica em `dependencies`, porque o
+  `main.dart` o usa no desktop. No Windows não é preciso DLL.
+- **Tarefas:** `CronogramaRepository` virou `TarefaRepository`, com os
+  mesmos métodos e o mesmo `tarefasProvider`. `tarefas.orcamento_id` tem
+  chave estrangeira com `ON DELETE SET NULL`: excluir o orçamento mantém a
+  tarefa e tira o vínculo.
+- **Exemplos de debug (D-17):** gravados pelo serviço de finalização, com
+  status `criado`, em dias anteriores (o C anteontem, o B ontem). O
+  primeiro orçamento do dia é o `-01`.
+- **Empresa incompleta:** as rotas do wizard, de novo e de edição,
+  redirecionam para "Dados da empresa".
+- **Rotas:** `/agenda` e `/agenda/tarefa?id=&orcamentoId=`; sai
+  `/mais/cronograma`; `novoOrcamento()` sem `produtoId`.
+  `context.push<String>(AppRoutes.material())` devolve o id do material
+  salvo.
+- **Código do dia:** a sequência usa a data local do "agora"
+  (`AAAA-MM-DD`).
+- **Edição:** a chave de finalização da sessão substitui a anterior na
+  mesma linha, para o clique duplo devolver o orçamento atualizado.

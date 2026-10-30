@@ -8,7 +8,7 @@ não editam. A rodada anterior (telas v1) está em
 
 O **quê** desta rodada está em [`v2-plano.md`](v2-plano.md) e em
 [`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md). As
-decisões D-26 a D-33 em [`02-decisoes.md`](02-decisoes.md) valem sobre o
+decisões D-26 a D-38 em [`02-decisoes.md`](02-decisoes.md) valem sobre o
 prompt quando divergem dele (ex: Riverpod, edição, status).
 
 Precedência: nesta rodada, este arquivo vale sobre a seção 6 ("Git e PR")
@@ -32,12 +32,12 @@ trilha" de [`04-plano.md`](04-plano.md). As tarefas da rodada anterior em
 | ID | Tarefa | Branch | Depende de | Situação |
 |---|---|---|---|---|
 | V2-F1 | [Domínio e cálculo](tarefas/v2/F1-dominio-calculo.md) | `feat/v2-f1-dominio` | — | integrada |
-| V2-F2 | [Persistência e troca do modelo](tarefas/v2/F2-persistencia.md) | `feat/v2-f2-persistencia` | F1 integrada | liberada |
-| V2-A | [Wizard: produtos e peças](tarefas/v2/A-produtos-pecas.md) | `feat/v2-a-produtos` | F2 integrada | aguardando |
-| V2-B | [Wizard: cliente, valores e prévia](tarefas/v2/B-cliente-valores-previa.md) | `feat/v2-b-cliente-valores` | F2 integrada | aguardando |
-| V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | aguardando |
-| V2-D | [Orçamentos salvos](tarefas/v2/D-orcamentos-salvos.md) | `feat/v2-d-salvos` | F2 integrada | aguardando |
-| V2-E | [Agenda](tarefas/v2/E-agenda.md) | `feat/v2-e-agenda` | F2 integrada | aguardando |
+| V2-F2 | [Persistência e troca do modelo](tarefas/v2/F2-persistencia.md) | `feat/v2-f2-persistencia` | F1 integrada | integrada |
+| V2-A | [Wizard: produtos e peças](tarefas/v2/A-produtos-pecas.md) | `feat/v2-a-produtos` | F2 integrada | liberada |
+| V2-B | [Wizard: cliente, valores e prévia](tarefas/v2/B-cliente-valores-previa.md) | `feat/v2-b-cliente-valores` | F2 integrada | liberada |
+| V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | liberada |
+| V2-D | [Orçamentos salvos](tarefas/v2/D-orcamentos-salvos.md) | `feat/v2-d-salvos` | F2 integrada | liberada |
+| V2-E | [Agenda](tarefas/v2/E-agenda.md) | `feat/v2-e-agenda` | F2 integrada | liberada |
 | V2-G | [Acabamento](tarefas/v2/G-acabamento.md) | `feat/v2-g-acabamento` | A a E integradas | aguardando |
 
 A worktree de uma trilha só é criada (a partir da `integracao/v2`) quando
@@ -67,8 +67,33 @@ arquivos da sua linha, mais o próprio arquivo em `docs/tarefas/v2/` e
 |---|---|
 | V2-F1 | **Só arquivos novos**: `lib/core/domain/**`; `lib/features/orcamentos/domain/v2/**`; `lib/features/materiais/{materiais.dart,domain/**}`; `lib/features/empresa/{empresa.dart,domain/**}`; `lib/features/clientes/{clientes.dart,domain/**}`; `test/unit/v2/**`. Além disso, a seção "Domínio do negócio" do `CLAUDE.md` e do `.cursorrules` (ver tarefa). |
 | V2-F2 | Qualquer arquivo (roda sozinha, entre a F1 e as trilhas paralelas). |
-| V2-A a V2-E | Definido pelo orquestrador ao integrar a F2, nesta seção. A previsão está em cada tarefa. |
+| V2-A | `lib/features/orcamentos/presentation/wizard/etapa_produtos.dart` e arquivos novos em `wizard/produto/**`; testes novos em `test/widget/orcamentos/wizard/etapa_produtos*_test.dart`. Na `wizard_teste_helpers.dart`, só a linha do produto em `preencherStub` (ver abaixo). |
+| V2-B | Em `lib/features/orcamentos/presentation/wizard/`: `etapa_cliente.dart`, `etapa_valores.dart`, `etapa_previa.dart`, `orcamento_wizard_page.dart`, `wizard_dialogos.dart` e arquivos novos em `wizard/previa/**`. Testes: `test/widget/orcamentos/wizard/{orcamento_wizard_page_test,wizard_fluxo_completo_test}.dart` e testes novos em `test/widget/orcamentos/wizard/etapa_{cliente,valores,previa}*_test.dart`. Na `wizard_teste_helpers.dart`, as etapas 1, 3 e 4 de `preencherStub`. |
+| V2-C | `lib/features/materiais/presentation/{lista,form}/**`, `lib/features/materiais/presentation/materiais_ui.dart` e `lib/features/empresa/presentation/empresa_page.dart`, mais arquivos novos nessas pastas; testes novos em `test/widget/{materiais,empresa}/**`. |
+| V2-D | `lib/features/orcamentos/presentation/{lista,detalhes,pdf}/**`, `lib/features/orcamentos/data/{pdf,whatsapp}/**`, `lib/features/orcamentos/domain/mensagem_whatsapp.dart` e `lib/features/dashboard/presentation/**` (exceto `dashboard_routes.dart`). Testes: `test/widget/orcamentos/{lista,detalhes,pdf}/**`, `test/widget/dashboard_page_test.dart` e `test/unit/{dashboard_indicadores,mensagem_whatsapp,orcamento_pdf_builder,whatsapp_launcher}_test.dart`. |
+| V2-E | `lib/features/cronograma/presentation/**` (exceto `cronograma_controller.dart`, `cronograma_routes.dart` e `cronograma_ui.dart`); `test/widget/cronograma/**`. |
 | V2-G | Qualquer arquivo (roda sozinha, por último). |
+
+Ficam com o orquestrador (pedidos por handoff): `*_controller.dart` (inclui
+`wizard/orcamento_controller*.dart`, `clientes_controller.dart` e
+`empresa_controller.dart`), `*_routes.dart`, `*_ui.dart` (exceto o
+`materiais_ui.dart`, da V2-C), barrels, `domain/**` e `data/**` (exceto o
+que está na linha da V2-D), `core/**`, `main.dart`, `test/mocks/**`,
+`test/unit/**` (exceto o da V2-D), `test/widget/fera_app_de_teste.dart`,
+`test/widget/app_*_test.dart` e `test/widget/telas_pequenas_test.dart`.
+
+**Pontos de contato:**
+- **`wizard_teste_helpers.dart`** é dividido por linha: a V2-A troca só o
+  passo do produto em `preencherStub` (o botão de teste sai), e a V2-B só
+  os passos das etapas 1, 3 e 4. Helpers novos ficam no próprio arquivo de
+  teste da trilha. O orquestrador resolve o conflito no merge.
+- **`telas_pequenas_test.dart`:** a trilha testa as próprias telas a
+  360 dp no próprio teste e pede no handoff as linhas para o
+  `telas_pequenas_test`. O orquestrador acrescenta ao integrar.
+- **Detalhes do orçamento:** a V2-E implementa `TarefasDoOrcamento` e
+  `AgendarTarefaButton`; a V2-D só os posiciona, sem mudar as assinaturas.
+- **"Cadastrar material":** a V2-A chama `AppRoutes.material()`; a V2-C
+  garante que a tela devolve o id ao salvar.
 
 Arquivos de teste novos que não couberem nessas pastas: peça no handoff.
 
@@ -77,15 +102,42 @@ Arquivos de teste novos que não couberem nessas pastas: peça no handoff.
 - **F1 expõe** os tipos e funções puras da seção 7 do prompt, com as
   adaptações da D-26 a D-30. Os nomes exatos estão na tarefa da F1. A F2 os
   consome sem mudar assinaturas; se precisar, pede por handoff.
-- **F2 expõe** o que as trilhas paralelas consomem: providers dos
-  repositórios, o controller da edição (D-28), as rotas novas em
-  `AppRoutes` e os stubs de cada tela. A lista definitiva entra aqui quando a
-  F2 for integrada.
+- **F2 expõe** (lista completa em [`handoffs/v2/F2.md`](handoffs/v2/F2.md),
+  HO-V2-F2-03; tudo pelos barrels das features):
+  - **Banco e repositórios** (congelados): `bancoDeDadosProvider`,
+    `materialRepositoryProvider`, `empresaRepositoryProvider`,
+    `clienteRepositoryProvider`, `orcamentoRepositoryProvider`,
+    `tarefaRepositoryProvider`, `unidadeDeTrabalhoProvider` e
+    `finalizarOrcamentoServiceProvider`. `normalizarParaBusca` e
+    `compararNomes` em `core/utils/texto_busca.dart`.
+  - **Providers** (métodos novos por handoff; não renomear nem remover):
+    `orcamentosProvider` (`excluir`, `alterarStatus`, `recarregar`),
+    `orcamentoPorIdProvider`; `materiaisProvider` (`salvar`, `inativar`,
+    `reativar`), `materiaisAtivosProvider`, `materialPorIdProvider`;
+    `dadosEmpresaProvider` (`salvar`), `empresaCompletaProvider`;
+    `buscaClientesProvider`, `clientePorDocumentoProvider`;
+    `tarefasProvider`, `tarefaPorIdProvider`, `tarefasDoOrcamentoProvider`;
+    `indicadoresDashboardProvider` (D-32 e D-37) e
+    `recentesDashboardProvider`.
+  - **Controller da edição (D-28):** `orcamentoControllerProvider`,
+    congelado. Estado `EstadoEdicaoOrcamento`; operações `iniciar`,
+    `iniciarEdicao`, `selecionarCliente`, `atualizarCliente`, itens e peças
+    (adicionar, editar, remover, duplicar), `atualizarValores`, `avancar`,
+    `voltar`, `finalizar` e `descartar`. As que adicionam ou editam
+    devolvem `List<ErroValidacao>`. Operações novas vão por handoff.
+  - **Rotas (`AppRoutes`):** `dashboard`, `orcamentos`, `agenda`, `mais`,
+    `materiais`, `empresa`, `novoOrcamento()`, `detalhesOrcamento(id)`,
+    `editarOrcamento(id)`, `pdfOrcamento(id)`, `material({id})` (devolve o
+    id ao salvar) e `tarefa({id, orcamentoId})`.
+  - **Stubs:** cada trilha substitui os seus (tabela da seção 3 e os
+    `TODO(V2-x)` no código).
 - **Continuam valendo** os da rodada v1: `AppRoutes.*`, `rootNavigatorKey`,
   `agoraProvider` (nunca chame `DateTime.now()` direto), os widgets de
   `core/widgets/` e os utilitários de `core/utils/`.
-- **Testes:** `pumpThemed` e `feraAppDeTeste()`. A F2 adapta o
-  `feraAppDeTeste()` ao SQLite em memória.
+- **Testes:** `pumpThemed`, `feraAppDeTeste({themeMode, agora,
+  semEmpresa})`, `containerDeTeste`, `overridesDeTeste`,
+  `bancoComOrcamentos`, `orcamentosGravados`, `bancoDeTeste()` e os
+  exemplos de `test/mocks/dados_exemplo.dart`. Banco SQLite em memória.
 
 ## 5. Arquivos compartilhados
 
@@ -197,4 +249,8 @@ Quando o responsável avisa que uma trilha terminou, o orquestrador:
 | HO-V2-F1-02 a 07, 09 e 11 (detalhes do domínio) | Aceitos, registrados na D-34. | ver log |
 | HO-V2-F1-08 (número com ponto) | Aceito, registrado na D-35. | ver log |
 | HO-V2-F1-10 (`Material` colide com o widget do Flutter) | Mantido o nome; `hide Material` no import do Flutter nas telas (D-36). | ver log |
-| HO-V2-F1-11 (`numeroFormatado` no `03-padroes.md` §4) | A F2 troca por `codigoExibicao` ao apagar o modelo antigo. | — |
+| HO-V2-F1-11 (`numeroFormatado` no `03-padroes.md` §4) | Feito pela F2. | merge da F2 |
+| HO-V2-F2-01 (`Orcamento.enviadoEm`) | Aceito, registrado na D-37. | ver log |
+| HO-V2-F2-02 (decisões da revisão do plano da F2) | Aceitos, registrados na D-38. | ver log |
+| HO-V2-F2-03 (contratos e posse sugerida) | Aceito, com a `wizard_teste_helpers.dart` dividida por linha entre A e B e os testes da V2-D listados. Seções 3 e 4. | ver log |
+| HO-V2-F2-04 (avisos) | Registrado nos pontos de contato da seção 3. O cartão da lista com `criadoEm` ou `atualizadoEm` fica com a V2-D. | — |

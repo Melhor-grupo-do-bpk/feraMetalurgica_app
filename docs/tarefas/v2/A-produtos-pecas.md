@@ -12,9 +12,9 @@ depende_de: V2-F2
 **Base:** prompt v2 §3.4, §4 ("Comportamento da etapa 2 e da composição"),
 §5 e §6.
 **Decisões:** D-26 e D-28.
-**Arquivos:** previstos em `orcamentos/presentation/wizard/` (etapa 2 e
-composição), fechados pelo orquestrador na `orquestracao.md` §3 quando a F2
-for integrada.
+**Arquivos:** a linha da V2-A na
+[`orquestracao.md` §3](../../orquestracao.md#3-o-que-cada-trilha-possui),
+com os pontos de contato listados lá.
 
 ## Checklist
 - [ ] Etapa 2:

@@ -11,8 +11,9 @@ depende_de: V2-F2
 
 **Base:** [`v2-plano.md`](../../v2-plano.md) §6, itens 1, 2, 3, 4 e 7.
 **Decisões:** D-05 e D-31.
-**Arquivos:** previstos em `cronograma/presentation/**` (exceto controller,
-routes e ui). Fechados pelo orquestrador quando a F2 for integrada.
+**Arquivos:** a linha da V2-E na
+[`orquestracao.md` §3](../../orquestracao.md#3-o-que-cada-trilha-possui),
+com os pontos de contato listados lá.
 
 A F2 já faz os itens 1 (Agenda como aba) e 2 (exemplos com as datas de
 hoje).
