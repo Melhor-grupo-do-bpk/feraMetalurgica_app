@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/previa/linha_valor.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/previa/previa_orcamento.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
@@ -132,7 +134,12 @@ void main() {
     // Granito (o primeiro ativo) a R$ 300,00/m²: 0,72 m² → R$ 216,00 +
     // R$ 150,00 de base = R$ 366,00 por produto, 3 produtos.
     expect(find.text('Etapa 4 de 4: Prévia'), findsOneWidget);
-    expect(find.text(r'Total geral: R$ 1.098,00'), findsOneWidget);
+    expect(find.byType(PreviaOrcamento), findsOneWidget);
+    expect(
+      find.widgetWithText(LinhaValor, r'R$ 1.098,00'),
+      // O produto, o total dos produtos, o subtotal e o total geral.
+      findsNWidgets(4),
+    );
 
     await tocar(tester, find.text('Finalizar'));
 
@@ -194,7 +201,7 @@ void main() {
       await tocar(tester, continuar);
       await tocar(tester, continuar);
       await tocar(tester, continuar);
-      expect(find.text('Orçamento 241026-01 rev. 2'), findsOneWidget);
+      expect(find.text('Nº 241026-01 rev. 2'), findsOneWidget);
 
       await tocar(tester, find.text('Salvar alterações'));
 
