@@ -1,7 +1,7 @@
 ---
 trilha: V2-A
 titulo: "Wizard: produtos e peças (etapa 2)"
-status: em andamento     # pendente | em andamento | em revisão | concluída
+status: em revisão     # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-a-produtos
 depende_de: V2-F2
@@ -17,26 +17,26 @@ depende_de: V2-F2
 com os pontos de contato listados lá.
 
 ## Checklist
-- [ ] Etapa 2:
+- [x] Etapa 2:
   - lista de produtos com descrição, quantidade, preço base, subtotal e
     total dos produtos;
   - editar, duplicar e remover produto;
   - o rótulo "Preço base de fabricação por produto (sem materiais)" e o
     texto que explica a separação entre preço base e adicionais (prompt
     §6, "Cobrança duplicada").
-- [ ] Composição do produto, com o formulário da peça do prompt §4:
+- [x] Composição do produto, com o formulário da peça do prompt §4:
   - material só entre os ativos, com atalho para cadastrar;
   - preço aplicado copiado, editável, com a unidade, e aviso quando
     difere do cadastro;
   - dimensões desabilitadas até escolher o material, e espessura
     obrigatória só em m³;
   - quantidade por produto.
-- [ ] Resumo ao vivo por peça (consumo, custo unitário e da linha) e por
+- [x] Resumo ao vivo por peça (consumo, custo unitário e da linha) e por
       produto (materiais, preço unitário, total). Os números vêm da
       calculadora, nunca de conta na tela.
-- [ ] Trocar o material: avisa se havia preço ajustado. Se a unidade muda,
+- [x] Trocar o material: avisa se havia preço ajustado. Se a unidade muda,
       exige revisar as dimensões.
-- [ ] Limpar o formulário depois de adicionar. Avisar ao avançar com campos
+- [x] Limpar o formulário depois de adicionar. Avisar ao avançar com campos
       preenchidos que não foram adicionados. Quantidade zero ou peça
       incompleta bloqueiam avançar.
 
