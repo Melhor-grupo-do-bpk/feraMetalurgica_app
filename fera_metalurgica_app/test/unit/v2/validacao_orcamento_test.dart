@@ -2,8 +2,8 @@ import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/core/domain/documento.dart';
 import 'package:fera_metalurgica_app/core/domain/erro_validacao.dart';
 import 'package:fera_metalurgica_app/core/domain/medida_cm.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/calculadora_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/validacao_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/validacao_orcamento.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'dados_v2.dart';

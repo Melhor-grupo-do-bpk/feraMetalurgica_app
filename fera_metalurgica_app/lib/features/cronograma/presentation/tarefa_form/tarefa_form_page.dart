@@ -12,11 +12,15 @@ import 'package:go_router/go_router.dart';
 
 /// Formulário de criação/edição de tarefa (RF-86).
 class TarefaFormPage extends ConsumerWidget {
-  /// Cria o formulário. Com [tarefaId], edita a tarefa existente.
-  const TarefaFormPage({this.tarefaId, super.key});
+  /// Cria o formulário. Com [tarefaId], edita a tarefa existente; com
+  /// [orcamentoId], a tarefa nova já vem vinculada ao orçamento.
+  const TarefaFormPage({this.tarefaId, this.orcamentoId, super.key});
 
   /// Tarefa em edição, ou `null` para uma tarefa nova.
   final String? tarefaId;
+
+  /// Orçamento vinculado a uma tarefa nova ("Agendar" nos detalhes).
+  final String? orcamentoId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +28,7 @@ class TarefaFormPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppTopBar(onBack: () => context.pop()),
       body: id == null
-          ? const TarefaForm()
+          ? TarefaForm(orcamentoIdInicial: orcamentoId)
           : switch (ref.watch(tarefaPorIdProvider(id))) {
               AsyncData(value: final Tarefa tarefa) => TarefaForm(
                 inicial: tarefa,

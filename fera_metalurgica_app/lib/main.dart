@@ -1,9 +1,11 @@
-import 'package:fera_metalurgica_app/core/constants/app_constants.dart';
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
-import 'package:fera_metalurgica_app/core/utils/local_json_storage.dart';
-import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
+import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
+import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
+import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,52 +14,64 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final (:banco, :novo) = await abrirBancoDoApp();
+  final container = ProviderContainer(
+    overrides: [bancoDeDadosProvider.overrideWithValue(banco)],
+  );
   await popularDadosIniciais(
-    const LocalJsonStorage(),
+    container,
+    bancoNovo: novo,
     incluirExemplos: kDebugMode,
   );
-  runApp(const ProviderScope(child: FeraApp()));
+  runApp(
+    UncontrolledProviderScope(container: container, child: const FeraApp()),
+  );
 }
 
-/// Grava os dados iniciais na primeira execução (D-17): o catálogo sempre
-/// (é o catálogo real da empresa) e, se [incluirExemplos] (o app passa
-/// `kDebugMode`), os orçamentos e tarefas de exemplo. Cada arquivo só é
-/// semeado se nunca foi gravado, então apagar tudo pelo app não traz os
-/// exemplos de volta.
+/// Grava os dados de exemplo no banco recém-criado ([bancoNovo]) quando
+/// [incluirExemplos] (o app passa `kDebugMode`, D-17): a empresa, um
+/// material de cada unidade, os orçamentos C (A + B) e B, e tarefas de
+/// hoje e de amanhã (HO-T8-01). Em release, o app começa vazio.
+///
+/// As datas saem do `agoraProvider`. Os orçamentos são gravados pelo
+/// `FinalizarOrcamentoService` em dias anteriores (anteontem e ontem), para
+/// que o primeiro orçamento do dia seja o `-01`.
+///
+/// Como só entram no banco novo, apagar tudo pelo app não traz os exemplos
+/// de volta.
 Future<void> popularDadosIniciais(
-  LocalJsonStorage storage, {
+  ProviderContainer container, {
+  required bool bancoNovo,
   required bool incluirExemplos,
 }) async {
-  await _semear(
-    storage,
-    AppConstants.catalogoFileName,
-    catalogoSeed,
-    LocalCatalogoRepository(storage).save,
-  );
-  if (!incluirExemplos) return;
-  await _semear(
-    storage,
-    AppConstants.orcamentosFileName,
-    orcamentosSeed,
-    LocalOrcamentoRepository(storage).save,
-  );
-  await _semear(
-    storage,
-    AppConstants.tarefasFileName,
-    cronogramaSeed,
-    LocalCronogramaRepository(storage).save,
-  );
-}
+  if (!bancoNovo || !incluirExemplos) return;
 
-Future<void> _semear<T>(
-  LocalJsonStorage storage,
-  String fileName,
-  List<T> itens,
-  Future<void> Function(T) salvar,
-) async {
-  if (await storage.exists(fileName)) return;
-  for (final item in itens) {
-    await salvar(item);
+  final agora = container.read(agoraProvider);
+  await container.read(empresaRepositoryProvider).salvar(empresaExemplo);
+  final materiais = container.read(materialRepositoryProvider);
+  for (final material in materiaisExemplo) {
+    await materiais.salvar(material);
+  }
+
+  DateTime diaAnterior(int dias, int hora) =>
+      DateTime(agora.year, agora.month, agora.day - dias, hora);
+  Future<Orcamento> gravar(OrcamentoEmEdicao edicao, DateTime quando) =>
+      FinalizarOrcamentoService(
+        unidadeDeTrabalho: container.read(unidadeDeTrabalhoProvider),
+        relogio: () => quando,
+        gerarId: gerarId,
+      ).executar(edicao);
+  final orcamentoC = await gravar(edicaoExemploC(gerarId), diaAnterior(2, 10));
+  await gravar(edicaoExemploB(gerarId), diaAnterior(1, 15));
+
+  final tarefas = container.read(tarefaRepositoryProvider);
+  final exemplos = cronogramaSeed(
+    agora,
+    orcamentoId: orcamentoC.id,
+    codigoOrcamento: orcamentoC.codigoExibicao,
+  );
+  for (final tarefa in exemplos) {
+    await tarefas.save(tarefa);
   }
 }
 

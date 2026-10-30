@@ -1,39 +1,23 @@
 import 'package:fera_metalurgica_app/core/widgets/status_chip.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 
-/// Textos e tons de [StatusOrcamento] para a UI.
+/// Textos e tons de [StatusOrcamento] para a UI (D-29).
 extension StatusOrcamentoUi on StatusOrcamento {
-  /// Rótulo do chip de status (ex: "Em análise").
+  /// Rótulo do chip de status (ex: "Criado").
   String get label => switch (this) {
-    StatusOrcamento.rascunho => 'Rascunho',
-    StatusOrcamento.emAnalise => 'Em análise',
+    StatusOrcamento.criado => 'Criado',
     StatusOrcamento.enviado => 'Enviado',
-    StatusOrcamento.aprovado => 'Aprovado',
-    StatusOrcamento.recusado => 'Recusado',
   };
 
-  /// Rótulo do chip de filtro da lista (ex: "Rascunhos"), D-22.
+  /// Rótulo do chip de filtro da lista (ex: "Criados"), D-29.
   String get labelFiltro => switch (this) {
-    StatusOrcamento.rascunho => 'Rascunhos',
-    StatusOrcamento.emAnalise => 'Em análise',
+    StatusOrcamento.criado => 'Criados',
     StatusOrcamento.enviado => 'Enviados',
-    StatusOrcamento.aprovado => 'Aprovados',
-    StatusOrcamento.recusado => 'Recusados',
   };
 
-  /// Tom do [StatusChip] na lista de orçamentos (Tela 8).
+  /// Tom do [StatusChip] na lista de orçamentos.
   StatusTone get tone => switch (this) {
-    StatusOrcamento.rascunho => StatusTone.neutral,
-    StatusOrcamento.emAnalise => StatusTone.info,
+    StatusOrcamento.criado => StatusTone.info,
     StatusOrcamento.enviado => StatusTone.accent,
-    StatusOrcamento.aprovado => StatusTone.success,
-    StatusOrcamento.recusado => StatusTone.danger,
   };
-}
-
-/// Formatações de [Orcamento] para a UI.
-extension OrcamentoUi on Orcamento {
-  /// Número exibido nas telas (ex: "#00482"); no PDF use `Nº $id` (D-09).
-  String get numeroFormatado => '#$id';
 }

@@ -11,7 +11,7 @@ part 'empresa.g.dart';
 /// bloqueado.
 ///
 /// O orçamento guarda uma cópia (`EmpresaSnapshot`, gerada por
-/// `gerarSnapshot()` em `orcamentos/domain/v2/empresa_snapshot.dart`).
+/// `gerarSnapshot()` em `orcamentos/domain/empresa_snapshot.dart`).
 @freezed
 abstract class Empresa with _$Empresa {
   /// Cria uma [Empresa].

@@ -1,3 +1,5 @@
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/whatsapp/whatsapp_launcher.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/mensagem_whatsapp.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
@@ -5,28 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../../../mocks/mock_orcamento_repository.dart';
+import '../../../mocks/container_de_teste.dart';
+import '../../../mocks/dados_exemplo.dart';
 import '../../../mocks/mock_whatsapp_launcher.dart';
 import '../../core/pump_themed.dart';
 
-/// "Enviar WhatsApp" nos detalhes (RF-34, D-06, D-15), com o launcher
-/// mockado. Os demais testes dos detalhes são da T2.
+/// "Enviar WhatsApp" nos detalhes (RF-34, D-15, D-29), com o launcher
+/// mockado.
 void main() {
-  late MockOrcamentoRepository repository;
+  late Database banco;
   late MockWhatsappLauncher launcher;
 
-  setUpAll(() => registerFallbackValue(orcamentosSeed.first));
-
-  setUp(() {
-    // O repositório guarda o que é salvo, para a tela refletir o status novo.
-    var salvos = [...orcamentosSeed];
-    repository = MockOrcamentoRepository();
-    when(() => repository.getAll()).thenAnswer((_) async => salvos);
-    when(() => repository.save(any())).thenAnswer((invocation) async {
-      final orcamento = invocation.positionalArguments.single as Orcamento;
-      salvos = salvos.map((o) => o.id == orcamento.id ? orcamento : o).toList();
-    });
+  setUp(() async {
+    banco = await bancoComOrcamentos(orcamentosExemplo);
     launcher = MockWhatsappLauncher();
   });
 
@@ -40,7 +35,8 @@ void main() {
       tester,
       ProviderScope(
         overrides: [
-          orcamentoRepositoryProvider.overrideWithValue(repository),
+          bancoDeDadosProvider.overrideWithValue(banco),
+          agoraProvider.overrideWithValue(agoraDosExemplos),
           whatsappLauncherProvider.overrideWithValue(launcher),
         ],
         child: OrcamentoDetalhesPage(orcamentoId: id),
@@ -49,14 +45,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Status de [id] como a lista e o dashboard o veem (a Tela 6 não tem
-  /// chip de status; o chip "Enviado" é o da lista).
-  Future<StatusOrcamento?> statusSalvo(WidgetTester tester, String id) async {
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(OrcamentoDetalhesPage)),
-    );
-    return (await container.read(orcamentoPorIdProvider(id).future))?.status;
-  }
+  Future<Orcamento> salvo(String id) async =>
+      (await SqliteOrcamentoRepository(banco).buscarPorId(id))!;
 
   void launcherResponde({required bool abriu}) => when(
     () => launcher.abrirWhatsApp(any(), any()),
@@ -66,45 +56,41 @@ void main() {
     tester,
   ) async {
     launcherResponde(abriu: true);
-    await abrirDetalhes(tester, '00482');
+    await abrirDetalhes(tester, 'orcamento-c');
 
     await tester.tap(find.text('Enviar WhatsApp'));
     await tester.pumpAndSettle();
 
-    final orcamento = orcamentosSeed.firstWhere((o) => o.id == '00482');
     verify(
       () => launcher.abrirWhatsApp(
-        '(99) 99999-9999',
-        montarMensagemWhatsApp(orcamento),
+        '(11) 99999-8888',
+        montarMensagemWhatsApp(orcamentoExemploC),
       ),
     ).called(1);
-    final salvo =
-        verify(() => repository.save(captureAny())).captured.single
-            as Orcamento;
-    expect(salvo, orcamento.copyWith(status: StatusOrcamento.enviado));
-    expect(await statusSalvo(tester, '00482'), StatusOrcamento.enviado);
+    final orcamento = await salvo('orcamento-c');
+    expect(orcamento.status, StatusOrcamento.enviado);
+    expect(orcamento.enviadoEm, agoraDosExemplos);
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  testWidgets('fora de "Em análise", abre mas não muda o status', (
+  testWidgets('reenviar um já enviado abre, mas não muda o envio', (
     tester,
   ) async {
     launcherResponde(abriu: true);
-    await abrirDetalhes(tester, '00481');
+    await abrirDetalhes(tester, 'orcamento-e');
 
     await tester.tap(find.text('Enviar WhatsApp'));
     await tester.pumpAndSettle();
 
     verify(() => launcher.abrirWhatsApp(any(), any())).called(1);
-    verifyNever(() => repository.save(any()));
-    expect(await statusSalvo(tester, '00481'), StatusOrcamento.aprovado);
+    expect(await salvo('orcamento-e'), orcamentoExemploEnviado);
   });
 
   testWidgets('se não abrir, mostra o SnackBar e mantém o status', (
     tester,
   ) async {
     launcherResponde(abriu: false);
-    await abrirDetalhes(tester, '00482');
+    await abrirDetalhes(tester, 'orcamento-c');
 
     await tester.tap(find.text('Enviar WhatsApp'));
     await tester.pumpAndSettle();
@@ -115,7 +101,6 @@ void main() {
       ),
       findsOneWidget,
     );
-    verifyNever(() => repository.save(any()));
-    expect(await statusSalvo(tester, '00482'), StatusOrcamento.emAnalise);
+    expect(await salvo('orcamento-c'), orcamentoExemploC);
   });
 }

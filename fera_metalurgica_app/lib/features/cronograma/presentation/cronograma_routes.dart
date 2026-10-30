@@ -3,17 +3,19 @@ import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma
 import 'package:fera_metalurgica_app/features/cronograma/presentation/tarefa_form/tarefa_form_page.dart';
 import 'package:go_router/go_router.dart';
 
-/// Rotas do cronograma, filhas da aba "Mais" (D-11, D-12); por isso o
-/// caminho é relativo (`/mais` + `cronograma`). Congelado após a F1.
+/// Rotas da aba "Agenda" (o cronograma, D-31) e do formulário de tarefa
+/// (D-11, D-12).
 final GoRoute cronogramaRoute = GoRoute(
-  path: 'cronograma',
+  path: AppRoutes.agenda,
   builder: (context, state) => const CronogramaPage(),
   routes: [
     GoRoute(
       path: 'tarefa',
       parentNavigatorKey: rootNavigatorKey,
-      builder: (context, state) =>
-          TarefaFormPage(tarefaId: state.uri.queryParameters['id']),
+      builder: (context, state) => TarefaFormPage(
+        tarefaId: state.uri.queryParameters['id'],
+        orcamentoId: state.uri.queryParameters['orcamentoId'],
+      ),
     ),
   ],
 );

@@ -33,7 +33,7 @@ class OrcamentoDetalhesPage extends ConsumerWidget {
     final abriu = await ref
         .read(whatsappLauncherProvider)
         .abrirWhatsApp(
-          orcamento.cliente.numero,
+          orcamento.cliente.celular,
           montarMensagemWhatsApp(orcamento),
         );
     if (!abriu) {
@@ -47,12 +47,10 @@ class OrcamentoDetalhesPage extends ConsumerWidget {
       );
       return;
     }
-    // Só sai de emAnalise; os outros status não mudam ao reenviar (D-06).
-    if (orcamento.status == StatusOrcamento.emAnalise) {
-      await ref
-          .read(orcamentosProvider.notifier)
-          .salvar(orcamento.copyWith(status: StatusOrcamento.enviado));
-    }
+    // Enviar marca como enviado (D-29); reenviar não muda nada.
+    await ref
+        .read(orcamentosProvider.notifier)
+        .alterarStatus(orcamento.id, StatusOrcamento.enviado);
   }
 
   @override
@@ -89,13 +87,16 @@ class _Conteudo extends ConsumerWidget {
           orcamento: orcamento,
           onAlterarStatus: (status) => ref
               .read(orcamentosProvider.notifier)
-              .salvar(orcamento.copyWith(status: status)),
+              .alterarStatus(orcamento.id, status),
         ),
         const SizedBox(height: AppSpacing.lg),
-        DetalhesItensCard(itens: orcamento.itens),
+        DetalhesItensCard(
+          itens: orcamento.itens,
+          resultados: orcamento.totais.itens,
+        ),
         const SizedBox(height: AppSpacing.lg),
         ValorFinalCard(
-          valorFinal: orcamento.valorFinal,
+          valorFinal: orcamento.totalGeral,
           onEnviarWhatsApp: onEnviarWhatsApp,
           onGerarPdf: () => context.push(AppRoutes.pdfOrcamento(orcamento.id)),
           onEditar: () => context.push(AppRoutes.editarOrcamento(orcamento.id)),

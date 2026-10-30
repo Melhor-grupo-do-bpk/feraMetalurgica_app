@@ -8,12 +8,15 @@ import 'package:fera_metalurgica_app/core/domain/medida_cm.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
 import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/cliente_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/empresa_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/item_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/material_snapshot.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/orcamento_em_edicao.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/peca_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/empresa_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/item_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/material_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento_em_edicao.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 
 const enderecoTeste = Endereco(
   logradouro: 'Rua das Flores',
@@ -140,4 +143,53 @@ final OrcamentoEmEdicao edicaoC = OrcamentoEmEdicao(
   desconto: Dinheiro.parse('100,00'),
   validadeDias: 15,
   observacoes: 'Prazo combinado na visita.',
+);
+
+/// [edicao] salva como orçamento (revisão 1, `criado`), com os totais da
+/// calculadora, como o serviço de finalização gravaria.
+Orcamento orcamentoSalvo(
+  OrcamentoEmEdicao edicao, {
+  String id = 'orcamento-1',
+  String codigo = '281026-03',
+  DateTime? criadoEm,
+  DateTime? atualizadoEm,
+}) {
+  final criado = criadoEm ?? DateTime(2026, 10, 28, 9, 30);
+  return Orcamento(
+    id: id,
+    codigo: codigo,
+    revisao: 1,
+    chaveFinalizacao: edicao.chaveFinalizacao,
+    criadoEm: criado,
+    atualizadoEm: atualizadoEm ?? criado,
+    status: StatusOrcamento.criado,
+    cliente: edicao.cliente!,
+    emitente: edicao.emitente,
+    itens: edicao.itens,
+    insumos: edicao.insumos,
+    impostos: edicao.impostos,
+    combustivel: edicao.combustivel,
+    outros: edicao.outros,
+    outrosDescricao: edicao.outrosDescricao,
+    desconto: edicao.desconto,
+    validadeDias: edicao.validadeDias,
+    observacoes: edicao.observacoes,
+    totais: const CalculadoraOrcamento().calcularOrcamento(
+      itens: edicao.itens,
+      insumos: edicao.insumos,
+      impostos: edicao.impostos,
+      combustivel: edicao.combustivel,
+      outros: edicao.outros,
+      desconto: edicao.desconto,
+    ),
+    versaoCalculo: CalculadoraOrcamento.versaoCalculo,
+  );
+}
+
+/// Exemplo B sozinho (painel em MDF, R$ 644,40), sem adicionais.
+final OrcamentoEmEdicao edicaoB = OrcamentoEmEdicao(
+  chaveFinalizacao: 'chave-b',
+  emitente: empresaTeste.gerarSnapshot(),
+  cliente: clienteTeste.gerarSnapshot(),
+  itens: [itemB],
 );

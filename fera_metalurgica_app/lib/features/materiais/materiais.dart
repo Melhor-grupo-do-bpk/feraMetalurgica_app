@@ -10,6 +10,13 @@ library;
 
 export 'package:fera_metalurgica_app/core/domain/unidade_cobranca.dart';
 
+export 'data/materiais_seed.dart';
+export 'data/sqlite_material_repository.dart';
 export 'domain/material.dart';
 export 'domain/material_repository.dart';
 export 'domain/validacao_material.dart';
+export 'presentation/form/material_form_page.dart';
+export 'presentation/lista/materiais_page.dart';
+export 'presentation/materiais_controller.dart';
+export 'presentation/materiais_routes.dart';
+export 'presentation/materiais_ui.dart';

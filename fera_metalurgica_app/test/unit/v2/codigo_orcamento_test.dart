@@ -1,4 +1,4 @@
-import 'package:fera_metalurgica_app/features/orcamentos/domain/v2/codigo_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/codigo_orcamento.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

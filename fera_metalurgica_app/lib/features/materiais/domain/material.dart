@@ -9,7 +9,7 @@ part 'material.g.dart';
 /// 2 cm". O nome identifica a variação que muda o preço.
 ///
 /// Ao entrar numa peça, o material é copiado (`MaterialSnapshot`, gerado por
-/// `gerarSnapshot()` em `orcamentos/domain/v2/material_snapshot.dart`):
+/// `gerarSnapshot()` em `orcamentos/domain/material_snapshot.dart`):
 /// mudar o cadastro depois não altera orçamentos. Para trocar a unidade de
 /// uma referência já usada, cadastre outra e inative esta.
 @freezed

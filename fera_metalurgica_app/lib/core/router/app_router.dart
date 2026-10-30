@@ -1,6 +1,6 @@
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_bottom_nav_bar.dart';
-import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
+import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/dashboard/dashboard.dart';
 import 'package:fera_metalurgica_app/features/mais/mais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
@@ -9,11 +9,12 @@ import 'package:go_router/go_router.dart';
 
 export 'app_routes.dart';
 
-/// Abas da navegação inferior, na mesma ordem dos branches do shell.
+/// Abas da navegação inferior (D-31), na mesma ordem dos branches do
+/// shell.
 const List<AppNavItem> _abas = [
   (icone: Icons.home_outlined, label: 'Início'),
   (icone: Icons.request_quote_outlined, label: 'Orçamentos'),
-  (icone: Icons.shopping_cart_outlined, label: 'Catálogo'),
+  (icone: Icons.calendar_month_outlined, label: 'Agenda'),
   (icone: Icons.menu, label: 'Mais'),
 ];
 
@@ -31,7 +32,7 @@ final GoRouter appRouter = GoRouter(
       branches: [
         StatefulShellBranch(routes: [dashboardRoute]),
         StatefulShellBranch(routes: [orcamentosRoute]),
-        StatefulShellBranch(routes: [catalogoRoute]),
+        StatefulShellBranch(routes: [cronogramaRoute]),
         StatefulShellBranch(routes: [maisRoute]),
       ],
     ),

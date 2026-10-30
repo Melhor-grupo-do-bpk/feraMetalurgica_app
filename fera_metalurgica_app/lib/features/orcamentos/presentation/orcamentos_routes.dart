@@ -1,9 +1,24 @@
+import 'dart:async';
+
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
+import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/detalhes/orcamento_detalhes_page.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/lista/orcamentos_lista_page.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/pdf/orcamento_pdf_page.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_wizard_page.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+/// Sem a empresa completa, o wizard (novo ou edição, que copia o emitente
+/// de novo) leva a "Dados da empresa" (prompt §3.2).
+Future<String?> _exigirEmpresa(BuildContext context, GoRouterState _) async {
+  final empresa = await ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(dadosEmpresaProvider.future);
+  return empresa?.estaCompleta ?? false ? null : AppRoutes.empresa;
+}
 
 /// Rotas da feature: a aba "Orçamentos" e as telas cheias abertas a partir
 /// dela (D-11, D-12). Congelado após a F1: as trilhas implementam as
@@ -16,9 +31,8 @@ final GoRoute orcamentosRoute = GoRoute(
     GoRoute(
       path: 'novo',
       parentNavigatorKey: rootNavigatorKey,
-      builder: (context, state) => OrcamentoWizardPage(
-        produtoId: state.uri.queryParameters['produtoId'],
-      ),
+      redirect: _exigirEmpresa,
+      builder: (context, state) => const OrcamentoWizardPage(),
     ),
     GoRoute(
       path: ':id',
@@ -29,8 +43,13 @@ final GoRoute orcamentosRoute = GoRoute(
         GoRoute(
           path: 'editar',
           parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) =>
-              OrcamentoWizardPage(orcamentoId: state.pathParameters['id']),
+          redirect: _exigirEmpresa,
+          // A chave pelo id faz outro orçamento abrir uma sessão nova, em vez
+          // de reaproveitar o estado da página anterior.
+          builder: (context, state) => OrcamentoWizardPage(
+            key: ValueKey('editar-${state.pathParameters['id']}'),
+            orcamentoId: state.pathParameters['id'],
+          ),
         ),
         GoRoute(
           path: 'pdf',

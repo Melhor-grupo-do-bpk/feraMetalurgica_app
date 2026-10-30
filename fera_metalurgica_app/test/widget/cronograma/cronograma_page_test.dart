@@ -10,17 +10,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_cronograma_repository.dart';
+import '../../mocks/dados_exemplo.dart';
+import '../../mocks/mock_tarefa_repository.dart';
 
 void main() {
-  late MockCronogramaRepository repository;
+  late MockTarefaRepository repository;
   late List<Tarefa> salvas;
 
-  setUpAll(() => registerFallbackValue(cronogramaSeed.first));
+  setUpAll(() => registerFallbackValue(tarefasExemplo.first));
 
   setUp(() {
-    salvas = [...cronogramaSeed];
-    repository = MockCronogramaRepository();
+    // A revisão vinculada ao exemplo C.
+    salvas = [
+      tarefasExemplo.first.copyWith(orcamentoId: 'orcamento-c'),
+      ...tarefasExemplo.skip(1),
+    ];
+    repository = MockTarefaRepository();
     when(() => repository.getAll()).thenAnswer((_) async => [...salvas]);
     when(() => repository.save(any())).thenAnswer((invocation) async {
       final tarefa = invocation.positionalArguments.first as Tarefa;
@@ -44,10 +49,10 @@ void main() {
     addTearDown(tester.view.reset);
 
     final router = GoRouter(
-      initialLocation: AppRoutes.cronograma,
+      initialLocation: AppRoutes.agenda,
       routes: [
         GoRoute(
-          path: AppRoutes.cronograma,
+          path: AppRoutes.agenda,
           builder: (_, _) => const CronogramaPage(),
           routes: [
             GoRoute(
@@ -68,7 +73,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          cronogramaRepositoryProvider.overrideWithValue(repository),
+          tarefaRepositoryProvider.overrideWithValue(repository),
           agoraProvider.overrideWithValue(DateTime(2023, 10, 9, 8)),
         ],
         // Sem o retry automático do Riverpod, para o erro aparecer na hora.
@@ -104,7 +109,7 @@ void main() {
       expect(find.text('2 tarefas'), findsOneWidget);
       expect(find.text('Amanhã'), findsOneWidget);
       expect(find.text('1 tarefa'), findsOneWidget);
-      expect(find.text('Revisar orçamento #00482'), findsOneWidget);
+      expect(find.text('Revisar orçamento'), findsOneWidget);
       expect(find.text('Manutenção preventiva Torno CNC'), findsOneWidget);
       expect(find.text('Iniciar produção do pedido #00124'), findsOneWidget);
       expect(find.text('09:00'), findsOneWidget);
@@ -133,7 +138,7 @@ void main() {
 
     expect(find.text('Manutenção preventiva Torno CNC'), findsNothing);
     expect(find.text('Iniciar produção do pedido #00124'), findsNothing);
-    expect(find.text('Revisar orçamento #00482'), findsOneWidget);
+    expect(find.text('Revisar orçamento'), findsOneWidget);
     expect(find.text('1 tarefa'), findsOneWidget);
     expect(find.text('0 tarefas'), findsOneWidget);
     expect(find.text('Nenhuma tarefa neste dia'), findsOneWidget);
@@ -145,7 +150,7 @@ void main() {
 
     await tester.tap(
       find.descendant(
-        of: tarefa('tarefa-revisar-00482'),
+        of: tarefa('tarefa-revisar-orcamento'),
         matching: find.byKey(const ValueKey('timeline-marcador')),
       ),
     );
@@ -153,10 +158,10 @@ void main() {
 
     final salva =
         verify(() => repository.save(captureAny())).captured.single as Tarefa;
-    expect((salva.id, salva.concluida), ('tarefa-revisar-00482', true));
+    expect((salva.id, salva.concluida), ('tarefa-revisar-orcamento', true));
     final tile = tester.widget<TimelineTile>(
       find.descendant(
-        of: tarefa('tarefa-revisar-00482'),
+        of: tarefa('tarefa-revisar-orcamento'),
         matching: find.byType(TimelineTile),
       ),
     );
@@ -221,7 +226,7 @@ void main() {
     await tester.tap(find.text('Ver Detalhes'));
     await tester.pumpAndSettle();
 
-    expect(find.text('detalhes 00482'), findsOneWidget);
+    expect(find.text('detalhes orcamento-c'), findsOneWidget);
   });
 
   testWidgets('"+" abre uma tarefa nova', (tester) async {
@@ -248,7 +253,7 @@ void main() {
 
     expect(find.text('Não foi possível carregar as tarefas.'), findsOneWidget);
 
-    when(() => repository.getAll()).thenAnswer((_) async => cronogramaSeed);
+    when(() => repository.getAll()).thenAnswer((_) async => tarefasExemplo);
     await tester.tap(find.text('Tentar novamente'));
     await tester.pumpAndSettle();
 
@@ -257,7 +262,7 @@ void main() {
 
   test('montarAgenda e rótulos', () {
     final agenda = montarAgenda(
-      cronogramaSeed,
+      tarefasExemplo,
       diaSelecionado: DateTime(2023, 10, 9, 15),
       tipos: TipoTarefa.values.toSet(),
     );

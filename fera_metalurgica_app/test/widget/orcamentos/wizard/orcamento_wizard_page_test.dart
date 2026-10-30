@@ -1,34 +1,45 @@
 import 'dart:async';
 
-import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
-import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
-import 'package:fera_metalurgica_app/core/widgets/item_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
-import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../mocks/fake_local_json_storage.dart';
+import '../../../mocks/container_de_teste.dart';
 import 'wizard_teste_helpers.dart';
 
+/// Unidade de trabalho que sempre falha, para simular erro de gravação.
+class _UnidadeQueFalha implements UnidadeDeTrabalho {
+  @override
+  Future<T> executarEmTransacao<T>(
+    Future<T> Function(RepositoriosTransacao repos) operacao,
+  ) async => throw StateError('disco cheio');
+}
+
+/// Wizard em stub da F2 sobre os dados de exemplo (empresa, materiais,
+/// clientes e os orçamentos C de 24/10 e B de 25/10/2026). "Agora" é
+/// 26/10/2026, 10h.
 void main() {
-  late InMemoryJsonStorage storage;
+  final agora = DateTime(2026, 10, 26, 10);
+  late List<Override> overrides;
+  late List<Orcamento> exemplos;
 
   setUp(() async {
-    storage = InMemoryJsonStorage();
-    await popularDadosIniciais(storage, incluirExemplos: true);
+    overrides = await overridesDeTeste(agora: agora);
+    exemplos = await orcamentosGravados(overrides);
   });
 
   /// Abre [rota] num router mínimo: a lista e os detalhes viram textos, e
-  /// o wizard é a tela real, sobre dados semeados em memória.
+  /// o wizard é a tela real.
   Future<GoRouter> abrir(
     WidgetTester tester,
     String rota, {
     ThemeMode themeMode = ThemeMode.light,
+    List<Override> extras = const [],
   }) async {
     tester.view
       ..physicalSize = const Size(800, 2400)
@@ -44,9 +55,7 @@ void main() {
           routes: [
             GoRoute(
               path: 'novo',
-              builder: (_, state) => OrcamentoWizardPage(
-                produtoId: state.uri.queryParameters['produtoId'],
-              ),
+              builder: (_, _) => const OrcamentoWizardPage(),
             ),
             GoRoute(
               path: ':id',
@@ -69,10 +78,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          localJsonStorageProvider.overrideWithValue(storage),
-          agoraProvider.overrideWithValue(DateTime(2026, 10, 26)),
-        ],
+        overrides: [...overrides, ...extras],
         child: MaterialApp.router(
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
@@ -82,12 +88,17 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    // Empilha sobre a lista, como o app faz, para o voltar ter para onde ir.
-    // `push` só completa quando a rota sai da pilha: não espere.
-    for (final parte in _empilhar(rota)) {
-      unawaited(router.push(parte));
+    // Empilha sobre a lista (e os detalhes, na edição), como o app faz,
+    // para o voltar ter para onde ir. `push` só completa quando a rota sai
+    // da pilha: não espere.
+    const sufixoEdicao = '/editar';
+    if (rota.endsWith(sufixoEdicao)) {
+      unawaited(
+        router.push(rota.substring(0, rota.length - sufixoEdicao.length)),
+      );
       await tester.pumpAndSettle();
     }
+    unawaited(router.push(rota));
     await tester.pumpAndSettle();
     return router;
   }
@@ -97,210 +108,110 @@ void main() {
       await abrir(tester, AppRoutes.novoOrcamento(), themeMode: modo);
 
       expect(find.text('Novo Orçamento'), findsOneWidget);
-      expect(find.text('Etapa 1 de 4: Dados do cliente'), findsOneWidget);
-      expect(find.text('CPF/CNPJ do cliente *'), findsOneWidget);
+      expect(find.text('Etapa 1 de 4: Cliente'), findsOneWidget);
+      expect(find.text('João da Silva'), findsOneWidget);
       expect(find.text('Voltar'), findsNothing);
     });
   }
 
-  testWidgets('etapa 1 bloqueia o avanço com CPF inválido', (tester) async {
+  testWidgets('sem cliente, não avança e avisa', (tester) async {
     await abrir(tester, AppRoutes.novoOrcamento());
 
-    await preencherCliente(tester, cpf: '12345678900');
     await tocar(tester, continuar);
 
-    expect(find.text('Etapa 1 de 4: Dados do cliente'), findsOneWidget);
-    expect(find.text('CPF inválido'), findsOneWidget);
-
-    await digitar(tester, 'campo-cpf-cnpj', '52998224725');
-    await tocar(tester, continuar);
-
-    expect(find.text('Etapa 2 de 4: Detalhes do item(s)'), findsOneWidget);
+    expect(find.text('Etapa 1 de 4: Cliente'), findsOneWidget);
+    expect(find.text('Informe o cliente'), findsOneWidget);
   });
 
-  testWidgets('voltar mantém o que foi digitado', (tester) async {
-    await abrir(tester, AppRoutes.novoOrcamento());
-    await preencherCliente(tester);
-    await tocar(tester, continuar);
-
-    await tocar(tester, find.text('Voltar'));
-
-    expect(find.text('Etapa 1 de 4: Dados do cliente'), findsOneWidget);
-    expect(find.text('João da Silva'), findsOneWidget);
-    expect(find.text('529.982.247-25'), findsOneWidget);
-  });
-
-  testWidgets('etapa 2 exige pelo menos 1 item', (tester) async {
-    await abrir(tester, AppRoutes.novoOrcamento());
-    await preencherCliente(tester);
-    await tocar(tester, continuar);
-
-    await tocar(tester, continuar);
-
-    expect(find.text('Adicione pelo menos 1 item.'), findsOneWidget);
-    expect(find.text('Etapa 2 de 4: Detalhes do item(s)'), findsOneWidget);
-  });
-
-  testWidgets('etapa 2 adiciona, edita e exclui itens', (tester) async {
-    await abrir(tester, AppRoutes.novoOrcamento());
-    await preencherCliente(tester);
-    await tocar(tester, continuar);
-
-    await escolherTipoServico(tester, 'Outro');
-    await digitar(tester, 'campo-outro-servico', 'Escada metálica');
-    await digitar(tester, 'campo-medida-A', '2,5');
-    await digitar(tester, 'campo-medida-L', '1.2');
-    await digitar(tester, 'campo-material', 'Aço Carbono');
-    await tocar(tester, find.text('Adicionar Item'));
-
-    expect(find.text('Itens Adicionados (1)'), findsOneWidget);
-    expect(find.text('Escada metálica'), findsOneWidget);
-    expect(find.text('2.50m x 1.20m'), findsOneWidget);
-    expect(find.text('Qtd: 1 un'), findsOneWidget);
-
-    await tocar(tester, find.byTooltip('Editar'));
-    expect(find.text('Salvar Item'), findsOneWidget);
-    await digitar(tester, 'campo-quantidade', '3');
-    await tocar(tester, find.text('Salvar Item'));
-
-    expect(find.text('Qtd: 3 un'), findsOneWidget);
-    expect(find.text('Adicionar Item'), findsOneWidget);
-
-    await tocar(tester, find.byTooltip('Excluir'));
-    expect(find.text('Excluir item?'), findsOneWidget);
-    await tocar(tester, find.text('Excluir'));
-
-    expect(find.byType(ItemCard), findsNothing);
-  });
-
-  testWidgets('medida inválida mostra erro no campo', (tester) async {
-    await abrir(tester, AppRoutes.novoOrcamento());
-    await preencherCliente(tester);
-    await tocar(tester, continuar);
-
-    await escolherTipoServico(tester, 'Portão Basculante');
-    await digitar(tester, 'campo-medida-A', '2,5,1');
-    await tocar(tester, find.text('Adicionar Item'));
-
-    expect(find.text('Inválida'), findsOneWidget);
-    expect(find.byType(ItemCard), findsNothing);
-  });
-
-  testWidgets('vindo do catálogo, já começa com o produto (RF-27)', (
+  testWidgets('cria um orçamento novo com o código do dia (-01)', (
     tester,
   ) async {
+    await abrir(tester, AppRoutes.novoOrcamento());
+
+    await preencherStub(tester);
+    // Granito (o primeiro ativo) a R$ 300,00/m²: 0,72 m² → R$ 216,00 +
+    // R$ 150,00 de base = R$ 366,00 por produto, 3 produtos.
+    expect(find.text('Etapa 4 de 4: Prévia'), findsOneWidget);
+    expect(find.text(r'Total geral: R$ 1.098,00'), findsOneWidget);
+
+    await tocar(tester, find.text('Finalizar'));
+
+    final novo = (await orcamentosGravados(overrides)).first;
+    expect(novo.codigo, '261026-01');
+    expect(novo.cliente.nome, 'João da Silva');
+    expect(find.text('detalhes ${novo.id}'), findsOneWidget);
+  });
+
+  testWidgets('voltar entre etapas não perde dados', (tester) async {
+    await abrir(tester, AppRoutes.novoOrcamento());
+    await preencherStub(tester);
+
+    await tocar(tester, find.text('Voltar'));
+    await tocar(tester, find.text('Voltar'));
+
+    expect(find.text('Etapa 2 de 4: Produtos'), findsOneWidget);
+    expect(find.text('Produto de teste'), findsOneWidget);
+  });
+
+  testWidgets('sair na etapa 1 pede confirmação de descarte', (tester) async {
+    await abrir(tester, AppRoutes.novoOrcamento());
+
+    await tocar(tester, find.byIcon(Icons.arrow_back));
+    expect(find.text('Descartar orçamento?'), findsOneWidget);
+    await tocar(tester, find.text('Cancelar'));
+    expect(find.text('Novo Orçamento'), findsOneWidget);
+
+    await tocar(tester, find.byIcon(Icons.arrow_back));
+    await tocar(tester, find.text('Descartar'));
+    expect(find.text('lista'), findsOneWidget);
+  });
+
+  testWidgets('falha de gravação avisa e mantém a sessão', (tester) async {
     await abrir(
       tester,
-      AppRoutes.novoOrcamento(produtoId: 'produto-portao-basculante'),
+      AppRoutes.novoOrcamento(),
+      extras: [unidadeDeTrabalhoProvider.overrideWithValue(_UnidadeQueFalha())],
     );
-    await preencherCliente(tester);
-    await tocar(tester, continuar);
+    await preencherStub(tester);
 
-    expect(find.text('Itens Adicionados (1)'), findsOneWidget);
+    await tocar(tester, find.text('Finalizar'));
+
     expect(
-      find.descendant(
-        of: find.byType(ItemCard),
-        matching: find.text('Portão Basculante'),
-      ),
+      find.text('Não foi possível salvar o orçamento. Tente novamente.'),
       findsOneWidget,
     );
+    expect(find.text('Etapa 4 de 4: Prévia'), findsOneWidget);
+    expect(find.text('Finalizar'), findsOneWidget);
   });
 
-  testWidgets('etapa 3 atualiza o total ao digitar', (tester) async {
-    await abrir(
-      tester,
-      AppRoutes.novoOrcamento(produtoId: 'produto-portao-basculante'),
-    );
-    await preencherCliente(tester);
-    await tocar(tester, continuar);
-    await tocar(tester, continuar);
-    expect(find.text('Etapa 3 de 4: Custos Operacionais'), findsOneWidget);
-
-    Text total() =>
-        tester.widget<Text>(find.byKey(const Key('total-previsto')));
-    expect(total().data, r'R$ 0,00');
-
-    await digitarCusto(tester, 'Matéria-prima', '245000');
-    expect(total().data, r'R$ 2.450,00');
-
-    await digitarCusto(tester, 'Mão de obra', '180000');
-    expect(total().data, r'R$ 4.250,00');
-  });
-
-  group('sair do wizard (D-07)', () {
-    testWidgets('sem alterações, sai direto', (tester) async {
-      await abrir(tester, AppRoutes.novoOrcamento());
-
-      await tocar(tester, find.byTooltip('Voltar'));
-
-      expect(find.text('lista'), findsOneWidget);
-    });
-
-    testWidgets('com alterações, pede confirmação', (tester) async {
-      await abrir(tester, AppRoutes.novoOrcamento());
-      await digitar(tester, 'campo-nome', 'João');
-
-      await tocar(tester, find.byTooltip('Voltar'));
-      expect(find.text('Descartar orçamento?'), findsOneWidget);
-      await tocar(tester, find.text('Cancelar'));
-      expect(find.text('João'), findsOneWidget);
-
-      await tocar(tester, find.byTooltip('Voltar'));
-      await tocar(tester, find.text('Descartar'));
-      expect(find.text('lista'), findsOneWidget);
-    });
-
-    testWidgets('voltar do sistema volta uma etapa', (tester) async {
-      await abrir(tester, AppRoutes.novoOrcamento());
-      await preencherCliente(tester);
-      await tocar(tester, continuar);
-
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-
-      expect(find.text('Etapa 1 de 4: Dados do cliente'), findsOneWidget);
-    });
-  });
-
-  group('edição', () {
-    testWidgets('carrega os dados e volta aos detalhes ao concluir', (
-      tester,
-    ) async {
-      await abrir(tester, AppRoutes.editarOrcamento('00478'));
+  group('edição (D-30)', () {
+    testWidgets('salvar grava a rev. 2 e volta aos detalhes', (tester) async {
+      final c = exemplos.last;
+      expect(c.codigo, '241026-01');
+      await abrir(tester, AppRoutes.editarOrcamento(c.id));
 
       expect(find.text('Editar Orçamento'), findsOneWidget);
-      expect(find.text('Maria Souza'), findsOneWidget);
-
-      await digitar(tester, 'campo-nome', 'Maria Souza Lima');
-      for (var i = 0; i < 3; i++) {
-        await tocar(tester, continuar);
-      }
       await tocar(tester, continuar);
+      await tocar(tester, continuar);
+      await tocar(tester, continuar);
+      expect(find.text('Orçamento 241026-01 rev. 2'), findsOneWidget);
 
-      expect(find.text('detalhes 00478'), findsOneWidget);
-      final salvo = (await LocalOrcamentoRepository(
-        storage,
-      ).getAll()).firstWhere((o) => o.id == '00478');
-      expect(salvo.cliente.nome, 'Maria Souza Lima');
-      expect(salvo.status, StatusOrcamento.recusado);
+      await tocar(tester, find.text('Salvar alterações'));
+
+      final revisado = (await orcamentosGravados(overrides)).first;
+      expect(revisado.id, c.id);
+      expect(revisado.codigoExibicao, '241026-01 rev. 2');
+      expect(revisado.atualizadoEm, agora);
+      expect(revisado.totais, c.totais);
+      expect(find.text('detalhes ${c.id}'), findsOneWidget);
     });
 
-    testWidgets('orçamento inexistente mostra "não encontrado"', (
-      tester,
-    ) async {
-      await abrir(tester, AppRoutes.editarOrcamento('99999'));
+    testWidgets('orçamento inexistente mostra o erro e volta', (tester) async {
+      await abrir(tester, AppRoutes.editarOrcamento('nao-existe'));
 
-      expect(find.text('Orçamento não encontrado'), findsOneWidget);
+      expect(find.text('Não foi possível abrir o orçamento.'), findsOneWidget);
+      await tocar(tester, find.text('Voltar'));
+      expect(find.text('detalhes nao-existe'), findsOneWidget);
     });
   });
-}
-
-/// Rotas a empilhar até [rota], a partir da lista (ex: a edição empilha os
-/// detalhes e depois o wizard).
-List<String> _empilhar(String rota) {
-  final caminho = Uri.parse(rota).path;
-  if (caminho.endsWith('/editar')) {
-    return [caminho.substring(0, caminho.length - '/editar'.length), rota];
-  }
-  return [rota];
 }

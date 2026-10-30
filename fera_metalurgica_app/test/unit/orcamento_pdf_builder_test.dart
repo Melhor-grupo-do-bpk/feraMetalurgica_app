@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:fera_metalurgica_app/features/orcamentos/data/pdf/orcamento_pdf_builder.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf/pdf.dart';
+
+import '../mocks/dados_exemplo.dart';
 
 void main() {
   // O logo vem do bundle de assets.
@@ -31,8 +32,8 @@ void main() {
   });
 
   group('gerarOrcamentoPdf', () {
-    test('gera um PDF não vazio para cada orçamento do seed', () async {
-      for (final orcamento in orcamentosSeed) {
+    test('gera um PDF não vazio para cada orçamento de exemplo', () async {
+      for (final orcamento in [orcamentoExemploC, orcamentoExemploB]) {
         final bytes = await gerarOrcamentoPdf(orcamento);
 
         expect(bytes, isNotEmpty, reason: orcamento.id);
@@ -43,21 +44,18 @@ void main() {
     test('desenha "•", aspas curvas e travessão sem trocar nada', () async {
       // O `pdf` avisa por `print` cada caractere que nenhuma fonte desenha.
       final semFonte = <String>[];
-      final orcamento = orcamentosSeed.first;
+      final orcamento = orcamentoExemploC;
       final bytes = await runZoned(
         () => gerarOrcamentoPdf(
           orcamento.copyWith(
-            cliente: orcamento.cliente.copyWith(
-              nome: 'José “Zé” – Obras',
-              email: 'ze@obras.com',
-            ),
+            cliente: orcamento.cliente.copyWith(nome: 'José “Zé” – Obras'),
             itens: [
               orcamento.itens.first.copyWith(
-                tipoServico: 'Grade • proteção',
-                especificacoes: 'Pintura… ‘epóxi’ — 2 demãos',
-                quantidade: 12,
+                descricao: 'Grade • proteção',
+                observacoes: 'Pintura… ‘epóxi’ — 2 demãos',
+                quantidadeProdutos: 12,
               ),
-              const ItemOrcamento(id: 'sem-detalhes', tipoServico: 'Visita'),
+              orcamento.itens.last,
             ],
           ),
         ),
@@ -72,7 +70,7 @@ void main() {
 
     test('não falha com emoji, que a Inter não desenha', () async {
       final semFonte = <String>[];
-      final orcamento = orcamentosSeed.first;
+      final orcamento = orcamentoExemploC;
       final bytes = await runZoned(
         () => gerarOrcamentoPdf(
           orcamento.copyWith(
@@ -90,7 +88,7 @@ void main() {
 
     test('gera mesmo sem itens', () async {
       final bytes = await gerarOrcamentoPdf(
-        orcamentosSeed.first.copyWith(itens: []),
+        orcamentoExemploB.copyWith(itens: []),
       );
 
       expect(bytes, isNotEmpty);

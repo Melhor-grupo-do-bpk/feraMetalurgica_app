@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:printing/printing.dart';
 
+import '../../../mocks/dados_exemplo.dart';
 import '../../../mocks/mock_orcamento_repository.dart';
 
 /// Prévia do PDF (Tela 7, RF-40 a RF-42). Os testes não têm a parte nativa
@@ -23,7 +24,7 @@ void main() {
 
   setUp(() {
     repository = MockOrcamentoRepository();
-    when(() => repository.getAll()).thenAnswer((_) async => orcamentosSeed);
+    when(repository.listarResumos).thenAnswer((_) async => orcamentosExemplo);
   });
 
   /// Abre a prévia de [id] por cima de uma tela de detalhes de mentira.
@@ -109,11 +110,11 @@ void main() {
 
   for (final modo in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets(
-      'mostra a prévia do #00482 com Voltar e Baixar (${modo.name})',
+      'mostra a prévia do exemplo C com Voltar e Baixar (${modo.name})',
       (tester) async {
         await abrirPrevia(
           tester,
-          '00482',
+          'orcamento-c',
           previaDisponivel: true,
           themeMode: modo,
         );
@@ -123,7 +124,7 @@ void main() {
         expect(previa.allowSharing, isFalse);
         expect(previa.allowPrinting, isFalse);
         expect(previa.canChangePageFormat, isFalse);
-        expect(previa.pdfFileName, 'orcamento-00482.pdf');
+        expect(previa.pdfFileName, 'orcamento-071023-01.pdf');
         expect(find.text('Voltar'), findsOneWidget);
         expect(find.text('Baixar'), findsOneWidget);
       },
@@ -133,25 +134,25 @@ void main() {
   testWidgets('sem prévia na plataforma, avisa e mantém o Baixar', (
     tester,
   ) async {
-    await abrirPrevia(tester, '00482');
+    await abrirPrevia(tester, 'orcamento-c');
 
     expect(find.byType(PdfPreview), findsNothing);
     expect(find.textContaining('prévia não está disponível'), findsOneWidget);
     expect(find.text('Baixar'), findsOneWidget);
   });
 
-  testWidgets('"Baixar" compartilha orcamento-00482.pdf (RF-42)', (
+  testWidgets('"Baixar" compartilha orcamento-071023-01.pdf (RF-42)', (
     tester,
   ) async {
     final chamadas = simularCompartilhamento(tester);
-    await abrirPrevia(tester, '00482');
+    await abrirPrevia(tester, 'orcamento-c');
 
     await tester.tap(find.text('Baixar'));
     await tester.pumpAndSettle();
 
     final compartilhar = chamadas.singleWhere((c) => c.method == 'sharePdf');
     final argumentos = compartilhar.arguments as Map<Object?, Object?>;
-    expect(argumentos['name'], 'orcamento-00482.pdf');
+    expect(argumentos['name'], 'orcamento-071023-01.pdf');
     final bytes = argumentos['doc']! as Uint8List;
     expect(latin1.decode(bytes.sublist(0, 5)), '%PDF-');
     expect(find.byType(SnackBar), findsNothing);
@@ -161,7 +162,7 @@ void main() {
     tester,
   ) async {
     simularCompartilhamento(tester, falhar: true);
-    await abrirPrevia(tester, '00482');
+    await abrirPrevia(tester, 'orcamento-c');
 
     await tester.tap(find.text('Baixar'));
     await tester.pumpAndSettle();
@@ -170,28 +171,28 @@ void main() {
   });
 
   testWidgets('"Voltar" do rodapé volta aos detalhes', (tester) async {
-    await abrirPrevia(tester, '00482');
+    await abrirPrevia(tester, 'orcamento-c');
 
     await tester.tap(find.text('Voltar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('detalhes 00482'), findsOneWidget);
+    expect(find.text('detalhes orcamento-c'), findsOneWidget);
   });
 
   testWidgets('id inexistente mostra "não encontrado"', (tester) async {
-    await abrirPrevia(tester, '99999');
+    await abrirPrevia(tester, 'nao-existe');
 
     expect(find.text('Orçamento não encontrado'), findsOneWidget);
     expect(find.text('Baixar'), findsNothing);
   });
 
   testWidgets('erro ao carregar oferece "Tentar novamente"', (tester) async {
-    when(() => repository.getAll()).thenThrow(Exception('falhou'));
-    await abrirPrevia(tester, '00482');
+    when(repository.listarResumos).thenThrow(Exception('falhou'));
+    await abrirPrevia(tester, 'orcamento-c');
 
     expect(find.text('Não foi possível carregar o orçamento.'), findsOneWidget);
 
-    when(() => repository.getAll()).thenAnswer((_) async => orcamentosSeed);
+    when(repository.listarResumos).thenAnswer((_) async => orcamentosExemplo);
     await tester.tap(find.text('Tentar novamente'));
     await tester.pumpAndSettle();
 
