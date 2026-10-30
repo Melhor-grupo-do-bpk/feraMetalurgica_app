@@ -50,10 +50,10 @@ void main() {
     addTearDown(tester.view.reset);
 
     final router = GoRouter(
-      initialLocation: AppRoutes.cronograma,
+      initialLocation: AppRoutes.agenda,
       routes: [
         GoRoute(
-          path: AppRoutes.cronograma,
+          path: AppRoutes.agenda,
           builder: (_, _) => const Text('cronograma'),
           routes: [
             GoRoute(

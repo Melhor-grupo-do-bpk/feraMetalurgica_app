@@ -21,10 +21,14 @@ import 'package:go_router/go_router.dart';
 /// vazios; com ele, edita e oferece "Excluir".
 class TarefaForm extends ConsumerStatefulWidget {
   /// Cria o formulário.
-  const TarefaForm({this.inicial, super.key});
+  const TarefaForm({this.inicial, this.orcamentoIdInicial, super.key});
 
   /// Tarefa em edição, ou `null` para uma tarefa nova.
   final Tarefa? inicial;
+
+  /// Orçamento já vinculado a uma tarefa nova (ignorado na edição).
+  // TODO(V2-E): preencher também o título (ex: "Produção 281026-03").
+  final String? orcamentoIdInicial;
 
   @override
   ConsumerState<TarefaForm> createState() => _TarefaFormState();
@@ -57,7 +61,9 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
       text: inicial == null ? null : formatarHora(inicial.data),
     );
     _tipo = inicial?.tipo;
-    _orcamentoId = inicial?.orcamentoId;
+    _orcamentoId = inicial == null
+        ? widget.orcamentoIdInicial
+        : inicial.orcamentoId;
   }
 
   @override

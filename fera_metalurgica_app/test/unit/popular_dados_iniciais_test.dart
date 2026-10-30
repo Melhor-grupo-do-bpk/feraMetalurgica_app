@@ -1,8 +1,6 @@
 import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
-import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
-import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
@@ -13,20 +11,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../mocks/banco_de_teste.dart';
-import '../mocks/fake_local_json_storage.dart';
 
 void main() {
   final agora = DateTime(2026, 10, 29, 16, 45);
-  late InMemoryJsonStorage storage;
   late ProviderContainer container;
 
   setUp(() async {
-    storage = InMemoryJsonStorage();
     final banco = await bancoDeTeste();
     container = ProviderContainer(
       overrides: [
         bancoDeDadosProvider.overrideWithValue(banco),
-        localJsonStorageProvider.overrideWithValue(storage),
         agoraProvider.overrideWithValue(agora),
       ],
     );
@@ -122,10 +116,6 @@ void main() {
         expect(revisao.titulo, 'Revisar orçamento 271026-01');
       },
     );
-
-    test('o catálogo continua semeado', () async {
-      expect(await LocalCatalogoRepository(storage).getAll(), catalogoSeed);
-    });
   });
 
   test('sem exemplos (release), o banco fica vazio', () async {
@@ -134,7 +124,6 @@ void main() {
     expect(await container.read(empresaRepositoryProvider).obter(), isNull);
     expect(await orcamentos(), isEmpty);
     expect(await container.read(tarefaRepositoryProvider).getAll(), isEmpty);
-    expect(await LocalCatalogoRepository(storage).getAll(), catalogoSeed);
   });
 
   test('banco que já existia não recebe os exemplos de novo', () async {

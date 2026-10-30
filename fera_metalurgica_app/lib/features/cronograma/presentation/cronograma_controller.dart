@@ -41,6 +41,21 @@ class Tarefas extends _$Tarefas {
       [...tarefas]..sort((a, b) => a.data.compareTo(b.data));
 }
 
+/// Tarefas vinculadas ao orçamento [orcamentoId], em ordem cronológica
+/// (detalhes do orçamento, D-05).
+///
+/// Síncrono de propósito, como os filtros das listas: concluir uma tarefa
+/// não volta a tela para o estado de carregamento.
+@riverpod
+AsyncValue<List<Tarefa>> tarefasDoOrcamento(Ref ref, String orcamentoId) => ref
+    .watch(tarefasProvider)
+    .whenData(
+      (tarefas) => [
+        for (final t in tarefas)
+          if (t.orcamentoId == orcamentoId) t,
+      ],
+    );
+
 /// Tarefa de identificador [id], ou `null` se não existir.
 @riverpod
 Future<Tarefa?> tarefaPorId(Ref ref, String id) async {

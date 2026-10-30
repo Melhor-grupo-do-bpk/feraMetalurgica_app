@@ -31,7 +31,8 @@ class CronogramaPage extends ConsumerWidget {
     final agenda = ref.watch(agendaProvider);
 
     return Scaffold(
-      appBar: AppTopBar(onBack: () => context.pop()),
+      // Raiz da aba "Agenda" (D-31): sem voltar.
+      appBar: const AppTopBar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.tarefa()),
         tooltip: 'Nova tarefa',

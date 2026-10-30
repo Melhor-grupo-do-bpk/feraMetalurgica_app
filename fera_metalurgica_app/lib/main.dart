@@ -1,12 +1,8 @@
-import 'package:fera_metalurgica_app/core/constants/app_constants.dart';
 import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
-import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
-import 'package:fera_metalurgica_app/core/utils/local_json_storage.dart';
-import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
 import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
@@ -32,32 +28,23 @@ Future<void> main() async {
   );
 }
 
-/// Grava os dados iniciais na primeira execução (D-17): o catálogo sempre
-/// (é o catálogo real da empresa) e, se [incluirExemplos] (o app passa
-/// `kDebugMode`), os exemplos: a empresa, um material de cada unidade, os
-/// orçamentos C (A + B) e B, e tarefas de hoje e de amanhã (HO-T8-01).
+/// Grava os dados de exemplo no banco recém-criado ([bancoNovo]) quando
+/// [incluirExemplos] (o app passa `kDebugMode`, D-17): a empresa, um
+/// material de cada unidade, os orçamentos C (A + B) e B, e tarefas de
+/// hoje e de amanhã (HO-T8-01). Em release, o app começa vazio.
 ///
 /// As datas saem do `agoraProvider`. Os orçamentos são gravados pelo
 /// `FinalizarOrcamentoService` em dias anteriores (anteontem e ontem), para
 /// que o primeiro orçamento do dia seja o `-01`.
 ///
-/// Os exemplos do banco só entram quando ele acabou de ser criado
-/// ([bancoNovo]), e o catálogo, quando o arquivo nunca foi gravado. Assim,
-/// apagar tudo pelo app não traz os exemplos de volta.
+/// Como só entram no banco novo, apagar tudo pelo app não traz os exemplos
+/// de volta.
 Future<void> popularDadosIniciais(
   ProviderContainer container, {
   required bool bancoNovo,
   required bool incluirExemplos,
 }) async {
-  final storage = container.read(localJsonStorageProvider);
-  await _semear(
-    storage,
-    AppConstants.catalogoFileName,
-    catalogoSeed,
-    LocalCatalogoRepository(storage).save,
-  );
-  if (!incluirExemplos) return;
-  if (!bancoNovo) return;
+  if (!bancoNovo || !incluirExemplos) return;
 
   final agora = container.read(agoraProvider);
   await container.read(empresaRepositoryProvider).salvar(empresaExemplo);
@@ -85,18 +72,6 @@ Future<void> popularDadosIniciais(
   );
   for (final tarefa in exemplos) {
     await tarefas.save(tarefa);
-  }
-}
-
-Future<void> _semear<T>(
-  LocalJsonStorage storage,
-  String fileName,
-  List<T> itens,
-  Future<void> Function(T) salvar,
-) async {
-  if (await storage.exists(fileName)) return;
-  for (final item in itens) {
-    await salvar(item);
   }
 }
 

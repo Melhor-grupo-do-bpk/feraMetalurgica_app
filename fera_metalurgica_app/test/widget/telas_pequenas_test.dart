@@ -1,5 +1,4 @@
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
-import 'package:fera_metalurgica_app/features/catalogo/presentation/produto_card.dart';
 import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,9 +20,11 @@ void main() {
   final rotas = <String>[
     AppRoutes.dashboard,
     AppRoutes.orcamentos,
-    AppRoutes.catalogo,
+    AppRoutes.agenda,
     AppRoutes.mais,
-    AppRoutes.cronograma,
+    AppRoutes.materiais,
+    AppRoutes.material(),
+    AppRoutes.empresa,
     AppRoutes.novoOrcamento(),
     AppRoutes.detalhesOrcamento(_c),
     AppRoutes.detalhesOrcamento(_b),
@@ -88,11 +89,6 @@ void main() {
 
   // Folhas e diálogos não têm rota: abre cada um a partir da tela dona.
   final sobreposicoes = <(String, String, List<Finder> Function())>[
-    (
-      'folha do produto',
-      AppRoutes.catalogo,
-      () => [find.byType(ProdutoCard).first],
-    ),
     (
       'diálogo "Alterar status"',
       AppRoutes.detalhesOrcamento(_c),

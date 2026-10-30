@@ -1,7 +1,7 @@
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_bottom_nav_bar.dart';
-import 'package:fera_metalurgica_app/features/catalogo/catalogo.dart';
+import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/dashboard/dashboard.dart';
 import 'package:fera_metalurgica_app/features/mais/mais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
@@ -23,7 +23,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final nav = find.byType(AppBottomNavBar);
-      for (final aba in ['Início', 'Orçamentos', 'Catálogo', 'Mais']) {
+      for (final aba in ['Início', 'Orçamentos', 'Agenda', 'Mais']) {
         expect(
           find.descendant(of: nav, matching: find.text(aba)),
           findsOneWidget,
@@ -40,7 +40,7 @@ void main() {
 
       for (final (aba, rota, pagina) in [
         ('Orçamentos', AppRoutes.orcamentos, OrcamentosListaPage),
-        ('Catálogo', AppRoutes.catalogo, CatalogoPage),
+        ('Agenda', AppRoutes.agenda, CronogramaPage),
         ('Mais', AppRoutes.mais, MaisPage),
       ]) {
         await tester.tap(find.descendant(of: nav, matching: find.text(aba)));

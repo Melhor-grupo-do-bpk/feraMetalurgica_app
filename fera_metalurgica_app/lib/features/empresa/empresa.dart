@@ -9,3 +9,5 @@ export 'domain/empresa.dart';
 export 'domain/empresa_repository.dart';
 export 'domain/validacao_empresa.dart';
 export 'presentation/empresa_controller.dart';
+export 'presentation/empresa_page.dart';
+export 'presentation/empresa_routes.dart';

@@ -12,4 +12,6 @@ export 'presentation/cronograma_controller.dart';
 export 'presentation/cronograma_page.dart';
 export 'presentation/cronograma_routes.dart';
 export 'presentation/cronograma_ui.dart';
+export 'presentation/orcamento/agendar_tarefa_button.dart';
+export 'presentation/orcamento/tarefas_do_orcamento.dart';
 export 'presentation/tarefa_form/tarefa_form_page.dart';

@@ -28,7 +28,7 @@ void main() {
         .valor;
     final antes = producao();
 
-    appRouter.go(AppRoutes.cronograma);
+    appRouter.go(AppRoutes.agenda);
     await tester.pumpAndSettle();
     expect(find.text('0 tarefas'), findsNothing);
 

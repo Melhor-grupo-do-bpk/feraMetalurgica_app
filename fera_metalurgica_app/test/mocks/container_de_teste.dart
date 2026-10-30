@@ -13,11 +13,15 @@ import 'fake_local_json_storage.dart';
 
 /// Overrides do app em modo debug: banco SQLite novo, em memória, com os
 /// dados de exemplo já gravados por `popularDadosIniciais`. Com [agora],
-/// fixa o `agoraProvider` (e as datas dos exemplos).
+/// fixa o `agoraProvider` (e as datas dos exemplos); com [semEmpresa], tira
+/// a empresa de exemplo (o "Novo orçamento" fica bloqueado).
 ///
 /// Chame dentro de um teste ou de um `setUp`: o banco é fechado no fim do
 /// teste.
-Future<List<Override>> overridesDeTeste({DateTime? agora}) async {
+Future<List<Override>> overridesDeTeste({
+  DateTime? agora,
+  bool semEmpresa = false,
+}) async {
   final banco = await bancoDeTeste();
   addTearDown(banco.close);
   final overrides = [
@@ -35,6 +39,7 @@ Future<List<Override>> overridesDeTeste({DateTime? agora}) async {
   } finally {
     semeador.dispose();
   }
+  if (semEmpresa) await banco.delete('empresa');
   return overrides;
 }
 
