@@ -55,12 +55,38 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
         : _controller.iniciarEdicao(id);
   }
 
+  /// Formulários das etapas 1 e 3, por etapa: validam o texto digitado que
+  /// ainda não é um valor válido (e por isso não chegou ao controller).
+  final Map<int, GlobalKey<FormState>> _formularios = {
+    1: GlobalKey<FormState>(),
+    3: GlobalKey<FormState>(),
+  };
+
+  /// Ponto único de saída de uma etapa, para frente ou para trás
+  /// ("Continuar", "Voltar", a seta da barra do topo e o voltar do
+  /// sistema). Devolve se pode sair; se não puder, já avisou.
+  ///
+  /// Nas etapas 1 e 3, barra texto inválido nos campos (sair perderia o
+  /// que foi digitado). A etapa 2 é da V2-A: o orquestrador liga o
+  /// `podeSairDaEtapaProdutos` aqui ao integrar A e B.
+  Future<bool> _podeSairDaEtapa(int etapa) async {
+    switch (etapa) {
+      case 1 || 3:
+        final valido = _formularios[etapa]!.currentState?.validate() ?? true;
+        if (!valido) _avisar('Corrija os campos destacados.');
+        return valido;
+      default:
+        return true;
+    }
+  }
+
   /// Voltar da top bar, do botão e do sistema: volta uma etapa; na etapa 1,
   /// sai do wizard depois de confirmar o descarte (prompt §4).
   Future<void> _voltar() async {
     final estado = ref.read(orcamentoControllerProvider);
     if (estado.finalizando) return;
     if (estado.etapaAtual > 1) {
+      if (!await _podeSairDaEtapa(estado.etapaAtual) || !mounted) return;
       _controller.voltar();
       return;
     }
@@ -79,7 +105,9 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
 
   Future<void> _continuar() async {
     final estado = ref.read(orcamentoControllerProvider);
+    if (estado.finalizando) return;
     if (estado.etapaAtual < EstadoEdicaoOrcamento.totalEtapas) {
+      if (!await _podeSairDaEtapa(estado.etapaAtual) || !mounted) return;
       if (!_controller.avancar()) _avisarErros();
       return;
     }
@@ -176,9 +204,15 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
                       StepProgressBar(etapaAtual: etapa),
                       const SizedBox(height: AppSpacing.lg),
                       switch (etapa) {
-                        1 => const EtapaCliente(),
+                        1 => Form(
+                          key: _formularios[1],
+                          child: const EtapaCliente(),
+                        ),
                         2 => const EtapaProdutos(),
-                        3 => const EtapaValores(),
+                        3 => Form(
+                          key: _formularios[3],
+                          child: const EtapaValores(),
+                        ),
                         _ => const EtapaPrevia(),
                       },
                     ],
