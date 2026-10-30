@@ -1,5 +1,4 @@
 import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
-import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:fera_metalurgica_app/main.dart';
@@ -9,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'banco_de_teste.dart';
-import 'fake_local_json_storage.dart';
 
 /// Overrides do app em modo debug: banco SQLite novo, em memória, com os
 /// dados de exemplo já gravados por `popularDadosIniciais`. Com [agora],
@@ -26,7 +24,6 @@ Future<List<Override>> overridesDeTeste({
   addTearDown(banco.close);
   final overrides = [
     bancoDeDadosProvider.overrideWithValue(banco),
-    localJsonStorageProvider.overrideWithValue(InMemoryJsonStorage()),
     if (agora != null) agoraProvider.overrideWithValue(agora),
   ];
   final semeador = ProviderContainer(overrides: overrides);
