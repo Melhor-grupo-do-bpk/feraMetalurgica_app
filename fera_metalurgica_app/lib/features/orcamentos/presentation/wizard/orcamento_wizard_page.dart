@@ -13,6 +13,7 @@ import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/eta
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/etapa_valores.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller_state.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/sair_etapa_produtos.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_dialogos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,6 +79,8 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
         final valido = _formularios[etapa]!.currentState?.validate() ?? true;
         if (!valido) _avisar('Corrija os campos destacados.');
         return valido;
+      case 2:
+        return await podeSairDaEtapaProdutos(context, ref);
       default:
         return true;
     }

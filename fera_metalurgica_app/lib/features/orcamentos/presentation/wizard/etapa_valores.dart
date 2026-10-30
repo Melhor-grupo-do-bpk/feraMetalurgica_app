@@ -4,6 +4,7 @@ import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/utils/date_format.dart';
+import 'package:fera_metalurgica_app/core/widgets/campo_dinheiro.dart';
 import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller.dart';
@@ -118,28 +119,28 @@ class _EtapaValoresState extends ConsumerState<EtapaValores> {
           style: AppTextStyles.body.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.md),
-        _CampoDinheiro(
+        CampoDinheiro(
           key: const ValueKey('valores-insumos'),
           rotulo: 'Insumos',
           valorInicial: inicial(_insumos),
           onChanged: _aoMudar((v) => _insumos = v),
           errorText: erro('insumos'),
         ),
-        _CampoDinheiro(
+        CampoDinheiro(
           key: const ValueKey('valores-impostos'),
           rotulo: 'Impostos',
           valorInicial: inicial(_impostos),
           onChanged: _aoMudar((v) => _impostos = v),
           errorText: erro('impostos'),
         ),
-        _CampoDinheiro(
+        CampoDinheiro(
           key: const ValueKey('valores-combustivel'),
           rotulo: 'Combustível',
           valorInicial: inicial(_combustivel),
           onChanged: _aoMudar((v) => _combustivel = v),
           errorText: erro('combustivel'),
         ),
-        _CampoDinheiro(
+        CampoDinheiro(
           key: const ValueKey('valores-outros'),
           rotulo: 'Outros',
           valorInicial: inicial(_outros),
@@ -160,7 +161,7 @@ class _EtapaValoresState extends ConsumerState<EtapaValores> {
             onChanged: (_) => _enviar(),
           ),
         ),
-        _CampoDinheiro(
+        CampoDinheiro(
           key: const ValueKey('valores-desconto'),
           rotulo: 'Desconto',
           valorInicial: inicial(_desconto),
@@ -246,76 +247,6 @@ class _EtapaValoresState extends ConsumerState<EtapaValores> {
                 ),
         ),
       ],
-    );
-  }
-}
-
-/// Campo de valor em reais, lido de texto pt-BR por `Dinheiro.tryParse`
-/// (D-26, D-35; nunca `double`). [onChanged] recebe o valor lido, ou
-/// `null` com o campo vazio. Texto inválido não chama [onChanged]: o campo
-/// mostra o erro, e o `Form` em volta não valida.
-//
-// Provisório: o orquestrador junta este campo e o igual da V2-A num
-// `CampoDinheiro` de `core/widgets/` na integração (HO-V2-B-01), com esta
-// mesma interface.
-class _CampoDinheiro extends StatefulWidget {
-  const _CampoDinheiro({
-    required this.rotulo,
-    required this.onChanged,
-    this.valorInicial,
-    this.errorText,
-    super.key,
-  });
-
-  final String rotulo;
-  final Dinheiro? valorInicial;
-  final ValueChanged<Dinheiro?> onChanged;
-  final String? errorText;
-
-  @override
-  State<_CampoDinheiro> createState() => _CampoDinheiroState();
-}
-
-class _CampoDinheiroState extends State<_CampoDinheiro> {
-  late final TextEditingController _controller = TextEditingController(
-    text: widget.valorInicial?.formatadoSemSimbolo ?? '',
-  );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FormCampo(
-      rotulo: widget.rotulo,
-      child: TextFormField(
-        controller: _controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
-        textAlign: TextAlign.right,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        decoration: InputDecoration(
-          prefixText: r'R$ ',
-          prefixStyle: AppTextStyles.body.copyWith(
-            color: context.colors.textSecondary,
-          ),
-          hintText: '0,00',
-          errorText: widget.errorText,
-        ),
-        validator: (texto) {
-          final valor = texto?.trim() ?? '';
-          if (valor.isEmpty || Dinheiro.tryParse(valor) != null) return null;
-          return 'Valor inválido: use até 2 casas (ex: 1.234,56)';
-        },
-        onChanged: (texto) {
-          if (texto.trim().isEmpty) return widget.onChanged(null);
-          final valor = Dinheiro.tryParse(texto);
-          if (valor != null) widget.onChanged(valor);
-        },
-      ),
     );
   }
 }

@@ -35,3 +35,4 @@ export 'presentation/pdf/orcamento_pdf_page.dart';
 export 'presentation/wizard/orcamento_controller.dart';
 export 'presentation/wizard/orcamento_controller_state.dart';
 export 'presentation/wizard/orcamento_wizard_page.dart';
+export 'presentation/wizard/previa/previa_orcamento.dart';

@@ -1,7 +1,7 @@
 ---
 trilha: V2-B
 titulo: "Wizard: cliente, valores e prévia (etapas 1, 3 e 4)"
-status: em revisão   # pendente | em andamento | em revisão | concluída
+status: concluída    # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-b-cliente-valores
 depende_de: V2-F2
