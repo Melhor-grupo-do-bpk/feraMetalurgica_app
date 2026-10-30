@@ -23,22 +23,13 @@ class SqliteEmpresaRepository implements EmpresaRepository {
     return linhas.isEmpty ? null : _deLinha(linhas.single);
   }
 
-  /// Apaga o emitente anterior e grava [empresa], numa transação quando
-  /// recebe o banco, para garantir um emitente só.
+  /// Apaga o emitente anterior e grava [empresa], de forma atômica, para
+  /// garantir um emitente só.
   @override
-  Future<void> salvar(Empresa empresa) async {
-    Future<void> gravar(DatabaseExecutor executor) async {
-      await executor.delete(_tabela);
-      await executor.insert(_tabela, _paraLinha(empresa));
-    }
-
-    final executor = _executor;
-    if (executor is Database) {
-      await executor.transaction(gravar);
-    } else {
-      await gravar(executor);
-    }
-  }
+  Future<void> salvar(Empresa empresa) => emTransacao(_executor, (e) async {
+    await e.delete(_tabela);
+    await e.insert(_tabela, _paraLinha(empresa));
+  });
 
   static Map<String, Object?> _paraLinha(Empresa empresa) => {
     'id': empresa.id,

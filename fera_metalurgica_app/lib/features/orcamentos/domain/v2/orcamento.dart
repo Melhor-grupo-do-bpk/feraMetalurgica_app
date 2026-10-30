@@ -81,6 +81,11 @@ abstract class Orcamento with _$Orcamento {
 
     /// Observações gerais.
     String? observacoes,
+
+    /// Quando o status passou para `enviado` (pelo WhatsApp ou à mão);
+    /// `null` enquanto `criado`. Os cards "Enviados no mês" contam por aqui
+    /// (D-32, D-37). Mudar o status não mexe em [atualizadoEm].
+    DateTime? enviadoEm,
   }) = _Orcamento;
 
   const Orcamento._();

@@ -1,4 +1,5 @@
 import 'package:fera_metalurgica_app/core/domain/endereco.dart';
+import 'package:sqflite/sqflite.dart';
 
 // Conversões entre objetos do domínio e linhas do SQLite usadas por mais de
 // um repositório (convenções em `core/di/esquema_banco.dart`).
@@ -32,3 +33,11 @@ int dataParaLinha(DateTime data) => data.microsecondsSinceEpoch;
 /// Inverso de [dataParaLinha], no fuso local.
 DateTime dataDaLinha(Object? valor) =>
     DateTime.fromMicrosecondsSinceEpoch(valor! as int);
+
+/// Roda [operacao] numa transação quando [executor] é o banco; se já for
+/// uma transação, roda nela (o SQLite não aninha transações). Assim um
+/// repositório grava vários registros de forma atômica nos dois casos.
+Future<T> emTransacao<T>(
+  DatabaseExecutor executor,
+  Future<T> Function(DatabaseExecutor executor) operacao,
+) => executor is Database ? executor.transaction(operacao) : operacao(executor);
