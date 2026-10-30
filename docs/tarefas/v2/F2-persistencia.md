@@ -1,7 +1,7 @@
 ---
 trilha: V2-F2
 titulo: Persistência SQLite e troca do modelo no app
-status: em andamento     # pendente | em andamento | em revisão | concluída
+status: em revisão     # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-f2-persistencia
 depende_de: V2-F1
@@ -23,29 +23,29 @@ mínima descrita abaixo.
 ## Checklist
 
 ### Persistência (D-27)
-- [ ] Dependências `sqflite` (app) e `sqflite_common_ffi` (dev; também usada
-      no `main.dart` quando a plataforma for desktop, para rodar no
-      Windows).
-- [ ] Banco único, aberto por um provider em `core/di/`, com esquema
+- [x] Dependências `sqflite` e `sqflite_common_ffi`, as duas em
+      `dependencies` (aprovado na revisão do plano: o `main.dart` usa a
+      segunda no desktop, para rodar no Windows).
+- [x] Banco único, aberto por um provider em `core/di/`, com esquema
       versionado (`onCreate` e `onUpgrade`). Versão do esquema separada da
       `versaoCalculo`.
-- [ ] Tabelas:
+- [x] Tabelas:
   - `materiais`, `empresa`, `clientes`, `tarefas`;
   - `orcamentos` (com `codigo`, `chave_finalizacao` e as cópias de cliente
     e emitente serializadas);
   - `itens_orcamento` e `pecas_orcamento` (com a ordem, e o material
     copiado em cada peça);
   - `sequencias` (contador por dia, D-30).
-- [ ] Unicidade de `codigo`, `chave_finalizacao` e documento normalizado do
+- [x] Unicidade de `codigo`, `chave_finalizacao` e documento normalizado do
       cliente.
-- [ ] Excluir um orçamento exclui os itens e as peças dele (cascata), nunca
+- [x] Excluir um orçamento exclui os itens e as peças dele (cascata), nunca
       materiais nem clientes.
-- [ ] Repositórios: os contratos da F1, mais `TarefaRepository` no SQLite.
+- [x] Repositórios: os contratos da F1, mais `TarefaRepository` no SQLite.
       `UnidadeDeTrabalho` com transação real. Testes de cada repositório
       com `sqflite_common_ffi` em memória (regra 7 do `CLAUDE.md`).
 
 ### Serviços e estado
-- [ ] Serviço de finalização com as dependências do prompt §7 (`Relogio` é
+- [x] Serviço de finalização com as dependências do prompt §7 (`Relogio` é
       o `agoraProvider`). Faz o algoritmo do prompt §8, mais a edição da
       D-30:
   - revalida e recalcula;
@@ -55,61 +55,61 @@ mínima descrita abaixo.
     para `criado`;
   - grava tudo em transação;
   - é idempotente pela `chaveFinalizacao`.
-- [ ] Controller da edição (D-28): Notifier com o estado e as operações da
+- [x] Controller da edição (D-28): Notifier com o estado e as operações da
       D-28. `iniciar()` para novo e `iniciarEdicao(orcamentoId)` para
       editar. Sem fórmulas, que ficam na calculadora, e sem SQL, que fica
       nos repositórios.
-- [ ] Providers de leitura para as telas: lista de orçamentos salvos (com
+- [x] Providers de leitura para as telas: lista de orçamentos salvos (com
       os totais gravados), orçamento por id, materiais ativos e todos,
       empresa, busca de clientes e tarefas. Mantenha o padrão síncrono de
       `AsyncValue` usado hoje nas listas.
 
 ### Troca do modelo no app
-- [ ] Mover os tipos de `orcamentos/domain/v2/` para `orcamentos/domain/`
+- [x] Mover os tipos de `orcamentos/domain/v2/` para `orcamentos/domain/`
       (com `git mv`) e apagar o modelo antigo: `CustosOperacionais`,
       `Medidas`, `calculo_orcamento.dart` e o `Cliente` do orçamento.
-- [ ] Remover o catálogo (D-31): feature, rotas, seed, assets
+- [x] Remover o catálogo (D-31): feature, rotas, seed, assets
       `assets/images/catalogo/`, testes e a entrada no `pubspec.yaml`.
-- [ ] Navegação (D-31):
+- [x] Navegação (D-31):
   - abas Início, Orçamentos, Agenda e Mais;
   - em "Mais": "Materiais" e "Dados da empresa";
   - rotas novas em `AppRoutes`: materiais, material (novo/editar), empresa
     e `tarefa(orcamentoId:)`;
   - um stub por tela nova.
-- [ ] "Novo orçamento" bloqueado sem empresa completa (prompt §3.2): leva
+- [x] "Novo orçamento" bloqueado sem empresa completa (prompt §3.2): leva
       a "Dados da empresa".
-- [ ] Telas existentes, o mínimo para compilar e mostrar o modelo novo, sem
+- [x] Telas existentes, o mínimo para compilar e mostrar o modelo novo, sem
       redesenhar (o acabamento é das trilhas):
   - lista: código, cliente, data, total e status;
   - detalhes: leitura;
   - dashboard: D-32;
   - PDF e WhatsApp: totais e cópias gravados; sem prazo; validade só se
     houver; emissor da cópia.
-- [ ] Wizard: o antigo sai; as 4 etapas novas viram stubs ligados ao
+- [x] Wizard: o antigo sai; as 4 etapas novas viram stubs ligados ao
       controller, com navegação entre etapas e "Finalizar" funcionando.
       O formulário completo é das trilhas A e B.
-- [ ] Cronograma: tarefas no SQLite e vínculo pelo `id` do orçamento,
+- [x] Cronograma: tarefas no SQLite e vínculo pelo `id` do orçamento,
       exibindo o código. Stub do widget de tarefas do orçamento e do botão
       "Agendar" para a E implementar e a D posicionar.
-- [ ] Exemplos em debug (D-17), gravados a partir de `agoraProvider`:
+- [x] Exemplos em debug (D-17), gravados a partir de `agoraProvider`:
   - empresa de exemplo;
   - materiais granito (m²), madeira (m³) e MDF (m²);
   - os orçamentos A+B (cenário C) e B sozinho;
   - tarefas de hoje e de amanhã (HO-T8-01).
-- [ ] Remover o `LocalJsonStorage`, o `InMemoryJsonStorage` e as constantes
+- [x] Remover o `LocalJsonStorage`, o `InMemoryJsonStorage` e as constantes
       antigas de `AppConstants`.
-- [ ] Testes: reescrever os que dependiam do modelo antigo. Adaptar o
+- [x] Testes: reescrever os que dependiam do modelo antigo. Adaptar o
       `feraAppDeTeste()` para SQLite em memória com os exemplos; o
       `app_router_test`, o `app_shell_test` e o `telas_pequenas_test`
       continuam passando.
 
 ### Documentação
-- [ ] Em `03-padroes.md` §4, trocar `numeroFormatado` por `codigoExibicao`
+- [x] Em `03-padroes.md` §4, trocar `numeroFormatado` por `codigoExibicao`
       (HO-V2-F1-11).
-- [ ] Atualizar `CLAUDE.md` e `.cursorrules`: tirar as marcas "em
+- [x] Atualizar `CLAUDE.md` e `.cursorrules`: tirar as marcas "em
       substituição", trocar `LocalJsonStorage` por SQLite e remover o
       catálogo.
-- [ ] No handoff: a lista dos contratos expostos às trilhas A a E (providers,
+- [x] No handoff: a lista dos contratos expostos às trilhas A a E (providers,
       controller e rotas), para o orquestrador fechar a `orquestracao.md`
       §3 e §4.
 

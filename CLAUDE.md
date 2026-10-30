@@ -34,23 +34,23 @@ de fases com trilhas paralelas e uma tarefa por trilha. Comece por
 
 FERA é um app de gestão de orçamentos para uma empresa de estruturas
 metálicas (portões basculantes, estruturas treliçadas, grades de proteção).
-Permite montar, calcular e enviar orçamentos B2B, com catálogo de produtos e
-cronograma de tarefas. Android e iOS. Sem backend: persistência local em
-SQLite (D-27), atrás dos repositórios de cada feature. Até a F2 da rodada
-v2, o app ainda grava em arquivos JSON (`LocalJsonStorage`, em
-`lib/core/utils/`), que será removido.
+Permite montar, calcular e enviar orçamentos B2B, com cadastro de materiais
+e da empresa e agenda de tarefas. Android e iOS (e Windows, para
+desenvolvimento). Sem backend: persistência local em SQLite (D-27), num
+banco único aberto em `lib/core/di/banco_de_dados.dart`, atrás dos
+repositórios de cada feature.
 
 ## Estrutura de pastas (feature-first)
 
 ```
 lib/
   core/
-    di/         # providers riverpod compartilhados entre features
+    di/          # providers compartilhados (banco SQLite e esquema, agora)
     domain/      # objetos de valor compartilhados (Dinheiro, MedidaCm, Documento...)
     router/      # AppRouter (go_router) — única fonte de rotas do app
     theme/       # AppTheme + tokens (AppColors, AppTextStyles, AppSpacing)
     widgets/     # componentes visuais compartilhados (AppTopBar, StatCard...)
-    utils/       # utilitários genéricos (ex: LocalJsonStorage)
+    utils/       # utilitários genéricos (ex: formatação, linha_sql)
     constants/   # constantes globais (ex: AppConstants)
   features/
     dashboard/
@@ -58,8 +58,7 @@ lib/
     materiais/   # cadastro de materiais (D-26)
     empresa/     # dados da empresa emitente (D-26)
     clientes/    # cadastro de clientes (D-26)
-    catalogo/    # em substituição na rodada v2: sai na F2 (D-31)
-    cronograma/
+    cronograma/  # aba "Agenda" (D-31)
     mais/        # só presentation: menu da aba "Mais" (D-13)
 ```
 
@@ -67,9 +66,10 @@ Cada feature em `features/<nome>/` tem exatamente:
 
 - `domain/` — modelos (freezed) e contratos de repositório (`abstract class
   XRepository`). Sem I/O, sem Flutter widgets.
-- `data/` — implementações de repositório (ex: `LocalXRepository`) e os
-  providers riverpod que as expõem. Aqui, e só aqui, entra I/O
-  (`LocalJsonStorage`, `path_provider`, etc).
+- `data/` — implementações de repositório (ex: `SqliteXRepository`, que
+  recebe o executor do sqflite, banco ou transação, no construtor) e os
+  providers riverpod que as expõem. Aqui, e só aqui, entra I/O (SQL,
+  `path_provider`, etc).
 - `presentation/` — widgets, telas, controllers/notifiers riverpod da UI.
 - `<nome>.dart` — barrel: único ponto de import público da feature. Código
   fora da feature importa `features/<nome>/<nome>.dart`, nunca arquivos
@@ -171,11 +171,10 @@ As decisões D-26 a D-30 valem sobre o prompt.
   `celular`, `endereco`, todos obrigatórios.
   `ClienteRepository`: `buscarPorDocumento`, `pesquisar(termo)`, `salvar`.
 
-### Orçamentos (`lib/features/orcamentos/domain/v2/`)
+### Orçamentos (`lib/features/orcamentos/domain/`)
 
-A F2 move estes tipos para `orcamentos/domain/`. Um orçamento é composto
-por produtos (`ItemOrcamento`), e cada produto, por peças. Cada peça tem um
-material copiado.
+Um orçamento é composto por produtos (`ItemOrcamento`), e cada produto, por
+peças. Cada peça tem um material copiado.
 
 - **Snapshots** — `MaterialSnapshot` (`nome`, `unidade`,
   `precoReferenciaCopiado`, `precoAplicado`, `materialOrigemId?`; getter
@@ -195,7 +194,9 @@ material copiado.
 - **`Orcamento`** (D-30) — campos:
   - identificação: `id` (UUID), `codigo` (`DDMMAA-NN`, ex: `281026-03`),
     `revisao`, `chaveFinalizacao`;
-  - datas: `criadoEm`, `atualizadoEm`;
+  - datas: `criadoEm`, `atualizadoEm` e `enviadoEm?` (preenchida ao
+    passar para `enviado`, limpa ao voltar para `criado`; mudar o status
+    não mexe no `atualizadoEm`, HO-V2-F2-01/D-37);
   - `status`, `cliente`, `emitente`, `itens`;
   - adicionais: `insumos`, `impostos`, `combustivel`, `outros`,
     `outrosDescricao?`, `desconto`;
@@ -214,7 +215,8 @@ material copiado.
   total zero, que é permitido.
 - **Código** — `formatarCodigoOrcamento(data, sequenciaDoDia)` e
   `lerCodigoOrcamento(codigo)`, em `codigo_orcamento.dart`.
-- **Contratos de persistência** (a F2 implementa em SQLite):
+- **Contratos de persistência** (implementados em SQLite em
+  `orcamentos/data/`):
   - `OrcamentoRepository`: `listarResumos` (por `atualizadoEm`
     decrescente), `buscarPorId`, `buscarPorChaveFinalizacao`, `inserir`,
     `atualizar`, `excluir`;
@@ -222,6 +224,10 @@ material copiado.
   - `UnidadeDeTrabalho.executarEmTransacao((RepositoriosTransacao repos)
     async => ...)`, em que `repos` dá acesso a `clientes`, `orcamentos` e
     `sequencias` ligados à transação.
+- **`FinalizarOrcamentoService`** — o único lugar que grava um orçamento
+  (criação e edição, D-30), numa transação e idempotente pela
+  `chaveFinalizacao`. As telas usam o `OrcamentoController` (D-28), que o
+  chama em `finalizar()`.
 
 **Valor final: nunca é digitado nem gravado à mão.** É sempre o
 `ResultadoOrcamento` calculado pela `CalculadoraOrcamento`
@@ -243,21 +249,12 @@ As validações (`validarPeca`, `validarItem`, `validarOrcamento`, além de
 `validarMaterial`, `validarEmpresa`, `validarCliente` e `validarDocumento`)
 devolvem `List<ErroValidacao>` e nunca alteram os dados.
 
-### Em substituição na rodada v2 (F2)
-
-O modelo antigo continua no código até a F2, que o remove. Não crie código
-novo em cima dele:
-- `Orcamento` com `projeto`, `custosOperacionais` e `prazoDiasUteis`;
-- `Cliente`, `ItemOrcamento` e `Medidas`;
-- `CustosOperacionais` e a margem de `calculo_orcamento.dart`;
-- `StatusOrcamento` de 5 valores;
-- `ProdutoCatalogo` (D-31).
-
 ### Cronograma (`lib/features/cronograma/domain/`)
 
 - **`Tarefa`** — `id`, `titulo`, `data` (`DateTime`, inclui a hora), `tipo`
   (`TipoTarefa`), `concluida` (`bool = false`), `descricao?`,
-  `orcamentoId?` (id de um `Orcamento`, D-05).
+  `orcamentoId?` (id de um `Orcamento`, D-05; excluir o orçamento limpa
+  o vínculo). `TarefaRepository`: `getAll`, `save`, `delete`.
 - **`TipoTarefa`** — `orcamento`, `producao`, `visita`.
 
 Não invente campos, entidades ou relações fora do que está descrito aqui sem

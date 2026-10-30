@@ -40,9 +40,9 @@ features/orcamentos/presentation/
   @riverpod
   class Orcamentos extends _$Orcamentos {
     @override
-    Future<List<Orcamento>> build() async { ... }   // ordenado por criadoEm desc
-    Future<void> salvar(Orcamento orcamento) async { ... }
+    Future<List<Orcamento>> build() async { ... }   // por atualizadoEm desc
     Future<void> excluir(String id) async { ... }
+    Future<void> alterarStatus(String id, StatusOrcamento status) async { ... }
   }
 
   @riverpod
@@ -50,7 +50,8 @@ features/orcamentos/presentation/
   ```
 
   Nomes fixos: `orcamentosProvider`, `orcamentoPorIdProvider`,
-  `produtosCatalogoProvider`, `tarefasProvider`. As trilhas **podem
+  `orcamentoControllerProvider`, `materiaisProvider`, `dadosEmpresaProvider`,
+  `tarefasProvider` (lista completa em `handoffs/v2/F2.md`). As trilhas **podem
   adicionar** métodos a esses controllers, mas **não podem renomear nem
   remover** os que existem, porque outras trilhas dependem deles.
 - **Estado de uma tela** (filtro, busca, etapa do wizard): provider próprio
@@ -84,9 +85,11 @@ features/orcamentos/presentation/
   colors.x)`, espaçamentos via `AppSpacing`. Nada de `Color(0x...)`, nem
   números mágicos de padding fora de `AppSpacing`.
 - Strings em pt-BR direto no código (sem i18n por enquanto).
-- Dinheiro: `formatarMoeda`. Datas: `formatarData` (`dd/MM/yyyy`) e
-  `formatarHora` (`HH:mm`), de `core/utils/date_format.dart` (F1). Número do
-  orçamento: `orcamento.numeroFormatado` (`#00482`).
+- Dinheiro: `dinheiro.formatado` (`R$ 1.234,56`). Datas: `formatarData`
+  (`dd/MM/yyyy`) e `formatarHora` (`HH:mm`), de
+  `core/utils/date_format.dart` (F1). Código do orçamento:
+  `orcamento.codigoExibicao` (`281026-03`, ou `281026-03 rev. 2` a partir da
+  2ª revisão, D-30).
 - Rótulos de enum (status, tipo de tarefa) ficam em **extensões** na
   `presentation/` da feature (ex: `extension StatusOrcamentoUi on
   StatusOrcamento { String get label; StatusTone get tone; ... }`), criadas
