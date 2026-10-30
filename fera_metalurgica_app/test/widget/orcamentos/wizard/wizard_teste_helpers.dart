@@ -18,7 +18,18 @@ Future<void> preencherStub(
   WidgetTester tester, {
   String cliente = 'João da Silva',
 }) async {
-  await tocar(tester, find.text(cliente));
+  await tester.enterText(
+    find.byKey(const ValueKey('wizard-busca-cliente')),
+    cliente,
+  );
+  await tester.pumpAndSettle();
+  await tocar(
+    tester,
+    find.descendant(
+      of: find.byKey(const ValueKey('wizard-resultados-cliente')),
+      matching: find.text(cliente),
+    ),
+  );
   await tocar(tester, continuar);
   // Etapa 2 (V2-A): 3 produtos, base R$ 150,00, uma peça de 120 × 60 cm
   // em granito (R$ 300,00/m²): R$ 366,00 por produto, R$ 1.098,00 no item.
