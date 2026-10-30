@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Rola até [finder], toca e espera as animações.
@@ -17,7 +18,18 @@ Future<void> preencherStub(
   WidgetTester tester, {
   String cliente = 'João da Silva',
 }) async {
-  await tocar(tester, find.text(cliente));
+  await tester.enterText(
+    find.byKey(const ValueKey('wizard-busca-cliente')),
+    cliente,
+  );
+  await tester.pumpAndSettle();
+  await tocar(
+    tester,
+    find.descendant(
+      of: find.byKey(const ValueKey('wizard-resultados-cliente')),
+      matching: find.text(cliente),
+    ),
+  );
   await tocar(tester, continuar);
   await tocar(tester, find.text('Adicionar produto de teste'));
   await tocar(tester, continuar);

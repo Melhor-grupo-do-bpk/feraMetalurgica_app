@@ -111,7 +111,8 @@ void main() {
 
       expect(find.text('Novo Orçamento'), findsOneWidget);
       expect(find.text('Etapa 1 de 4: Cliente'), findsOneWidget);
-      expect(find.text('João da Silva'), findsOneWidget);
+      expect(find.byKey(const ValueKey('wizard-busca-cliente')), findsOne);
+      expect(find.text('Dados do cliente'.toUpperCase()), findsOneWidget);
       expect(find.text('Voltar'), findsNothing);
     });
   }
