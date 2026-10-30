@@ -210,6 +210,8 @@ Custos operacionais e total de custos aparecem **só** na etapa 3 do wizard.
 Resumo (etapa 4), detalhes, PDF e mensagem do WhatsApp mostram apenas o
 valor final.
 
+> **Substituída pela D-39 na rodada v2** para os adicionais do orçamento.
+
 ### D-17
 **Dados de exemplo só no primeiro uso em modo debug.**
 
@@ -533,3 +535,17 @@ precisar dos dois, use um prefixo no barrel de materiais.
   (`AAAA-MM-DD`).
 - **Edição:** a chave de finalização da sessão substitui a anterior na
   mesma linha, para o clique duplo devolver o orçamento atualizado.
+
+### D-39
+**Adicionais no documento do cliente** (30/10/2026; substitui a D-16 na v2).
+
+A prévia comercial (etapa 4), o PDF e os detalhes mostram, nesta ordem:
+- os produtos, com quantidade, preço unitário e total;
+- o total dos produtos;
+- cada adicional maior que zero numa linha própria: insumos, impostos,
+  combustível e outros (com a descrição);
+- o subtotal, o desconto (se houver) e o total geral.
+
+O custo das peças e dos materiais **não** vai para o documento do cliente;
+aparece só no detalhe interno das peças (prompt §4). A mensagem do WhatsApp
+continua só com o total geral.
