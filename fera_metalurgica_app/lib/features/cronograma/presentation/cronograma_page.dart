@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Cronograma e agenda (Tela 10), aberto pela aba "Mais".
+/// Cronograma e agenda (Tela 10): raiz da aba "Agenda" (D-31).
 class CronogramaPage extends ConsumerWidget {
   /// Cria a tela.
   const CronogramaPage({super.key});
@@ -47,6 +47,11 @@ class CronogramaPage extends ConsumerWidget {
           AppSpacing.xl * 3,
         ),
         children: [
+          Text(
+            'Agenda',
+            style: AppTextStyles.headline.copyWith(color: colors.textPrimary),
+          ),
+          const SizedBox(height: AppSpacing.md),
           SectionCard(
             child: CalendarioMensal(
               mesExibido: filtro.mesExibido,

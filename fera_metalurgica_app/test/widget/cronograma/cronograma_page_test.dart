@@ -99,6 +99,9 @@ void main() {
     ) async {
       await abrirCronograma(tester, themeMode: modo);
 
+      // Raiz da aba "Agenda" (D-31): título, sem voltar.
+      expect(find.text('Agenda'), findsOneWidget);
+      expect(find.byTooltip('Voltar'), findsNothing);
       expect(find.text('Outubro 2023'), findsOneWidget);
       expect(find.text('FILTROS DE TAREFAS'), findsOneWidget);
       expect(find.text('Hoje, 9 Out'), findsOneWidget);
