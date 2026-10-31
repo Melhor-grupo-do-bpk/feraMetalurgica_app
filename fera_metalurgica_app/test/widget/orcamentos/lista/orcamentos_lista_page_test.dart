@@ -23,9 +23,10 @@ void main() {
     ThemeMode themeMode = ThemeMode.light,
     List<Orcamento>? orcamentos,
     List<Override>? overrides,
+    Size tamanho = const Size(800, 2400),
   }) async {
     tester.view
-      ..physicalSize = const Size(800, 2400)
+      ..physicalSize = tamanho
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -201,4 +202,30 @@ void main() {
 
     expect(find.text('wizard'), findsOneWidget);
   });
+
+  testWidgets('o cartão mostra a data da revisão atual (HO-V2-F2-04)', (
+    tester,
+  ) async {
+    await abrirLista(tester);
+
+    // O enviado foi criado em 05/10 (o código) e revisado em 09/10.
+    final cartao = find.ancestor(
+      of: find.text('051023-02 rev. 2'),
+      matching: cartoes(),
+    );
+    expect(
+      find.descendant(of: cartao, matching: find.text('09/10/2023')),
+      findsOneWidget,
+    );
+    expect(find.text('05/10/2023'), findsNothing);
+  });
+
+  for (final modo in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets('cabe em 360 dp sem overflow (${modo.name})', (tester) async {
+      await abrirLista(tester, themeMode: modo, tamanho: const Size(360, 800));
+
+      expect(tester.takeException(), isNull);
+      expect(cartoes(), findsWidgets);
+    });
+  }
 }

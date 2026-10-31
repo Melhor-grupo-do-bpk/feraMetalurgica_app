@@ -45,8 +45,10 @@ class OrcamentoRecenteCard extends StatelessWidget {
                   text: orcamento.codigoExibicao,
                   style: AppTextStyles.label,
                   children: [
+                    // A data da revisão atual, como na lista de orçamentos
+                    // (HO-V2-F2-04): os recentes são ordenados por ela.
                     TextSpan(
-                      text: ' • ${formatarData(orcamento.criadoEm)}',
+                      text: ' • ${formatarData(orcamento.atualizadoEm)}',
                       style: AppTextStyles.caption,
                     ),
                   ],
