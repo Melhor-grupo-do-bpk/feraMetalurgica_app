@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
+import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,18 +26,19 @@ void main() {
     WidgetTester tester,
     String id, {
     ThemeMode themeMode = ThemeMode.light,
+    Size tamanho = const Size(800, 3000),
   }) async {
     tester.view
-      ..physicalSize = const Size(800, 2400)
+      ..physicalSize = tamanho
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     final router = GoRouter(
-      initialLocation: AppRoutes.detalhesOrcamento(id),
+      initialLocation: AppRoutes.orcamentos,
       routes: [
         GoRoute(
           path: AppRoutes.orcamentos,
-          builder: (_, _) => const Text('lista'),
+          builder: (_, _) => const Scaffold(body: Text('lista')),
           routes: [
             GoRoute(
               path: ':id',
@@ -74,11 +78,23 @@ void main() {
         ),
       ),
     );
+    // Empilhado sobre a lista, para o "voltar" ter para onde ir.
+    unawaited(router.push(AppRoutes.detalhesOrcamento(id)));
     await tester.pumpAndSettle();
   }
 
-  Future<Orcamento> salvo(String id) async =>
-      (await SqliteOrcamentoRepository(banco).buscarPorId(id))!;
+  Future<Orcamento?> salvo(String id) =>
+      SqliteOrcamentoRepository(banco).buscarPorId(id);
+
+  Future<void> tocarNoMenu(WidgetTester tester, String opcao) async {
+    await tester.tap(find.byTooltip('Mais opções'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(opcao));
+    await tester.pumpAndSettle();
+  }
+
+  Finder noDialogo(String texto) =>
+      find.descendant(of: find.byType(AlertDialog), matching: find.text(texto));
 
   for (final modo in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets('renderiza o exemplo C com os totais gravados (${modo.name})', (
@@ -86,51 +102,88 @@ void main() {
     ) async {
       await abrirDetalhes(tester, 'orcamento-c', themeMode: modo);
 
-      expect(find.text('João da Silva'), findsOneWidget);
-      expect(find.text('Cliente PF'), findsOneWidget);
       expect(find.text('071023-01'), findsOneWidget);
-      expect(find.text('07/10/2023'), findsOneWidget);
-      expect(find.text('22/10/2023'), findsOneWidget);
+      expect(find.text('Criado'), findsOneWidget);
+      expect(find.text('Ainda não enviado'), findsOneWidget);
+      expect(find.text('Nº 071023-01'), findsOneWidget);
+      expect(find.text('Emissão: 07/10/2023'), findsOneWidget);
+      expect(find.text('Válido até 22/10/2023'), findsOneWidget);
+      expect(find.text('João da Silva'), findsOneWidget);
 
-      expect(find.text('Itens do Orçamento'), findsOneWidget);
+      // Produtos com quantidade, preço unitário e total (D-39).
       expect(find.text('Mesa de jantar sob medida'), findsOneWidget);
-      expect(find.text('1× Tampo • 4× Perna'), findsOneWidget);
-      expect(find.text(r'Qtd: 2 × R$ 1.353,20 = R$ 2.706,40'), findsOneWidget);
+      expect(find.text(r'2 × R$ 1.353,20'), findsOneWidget);
+      expect(find.text(r'R$ 2.706,40'), findsOneWidget);
       expect(find.text('Painel em MDF'), findsOneWidget);
-      expect(find.text(r'Qtd: 3 × R$ 214,80 = R$ 644,40'), findsOneWidget);
+      expect(find.text(r'3 × R$ 214,80'), findsOneWidget);
+      expect(find.text(r'R$ 644,40'), findsOneWidget);
 
-      expect(find.text('Valor Final'), findsOneWidget);
+      // Totais gravados, na ordem da D-39.
+      for (final (rotulo, valor) in [
+        ('Total dos produtos', r'R$ 3.350,80'),
+        ('Insumos', r'R$ 100,00'),
+        ('Impostos', r'R$ 200,00'),
+        ('Combustível', r'R$ 50,00'),
+        ('Outros: Frete', r'R$ 30,00'),
+        ('Subtotal', r'R$ 3.730,80'),
+        ('Desconto', r'− R$ 100,00'),
+      ]) {
+        expect(find.text(rotulo), findsOneWidget, reason: rotulo);
+        expect(find.text(valor), findsOneWidget, reason: rotulo);
+      }
+      expect(find.text('Total geral'), findsOneWidget);
+      // Só no card "Totais": o card das ações não repete o total.
       expect(find.text(r'R$ 3.630,80'), findsOneWidget);
+      expect(
+        find.text('Prazo de entrega a combinar na aprovação.'),
+        findsOneWidget,
+      );
+
       expect(find.text('Enviar WhatsApp'), findsOneWidget);
       expect(find.text('Gerar PDF'), findsOneWidget);
       expect(find.text('Editar'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   }
 
-  testWidgets('não mostra o custo de material de cada peça (D-16)', (
-    tester,
-  ) async {
-    await abrirDetalhes(tester, 'orcamento-c');
+  testWidgets(
+    'as peças e os custos começam recolhidos e abrem no interruptor',
+    (tester) async {
+      await abrirDetalhes(tester, 'orcamento-c');
 
-    // Tampo: R$ 486,00; pernas: R$ 67,20; materiais da mesa: R$ 553,20.
-    for (final valor in ['486,00', '67,20', '553,20']) {
-      expect(find.textContaining(valor), findsNothing);
-    }
-    expect(find.textContaining('Custo'), findsNothing);
-  });
+      // Tampo: R$ 486,00; pernas: R$ 67,20; materiais da mesa: R$ 553,20.
+      expect(find.text('PEÇAS (USO INTERNO)'), findsNothing);
+      for (final valor in ['486,00', '67,20', '553,20']) {
+        expect(find.textContaining(valor), findsNothing);
+      }
+
+      await tester.tap(find.text('Mostrar peças e custos'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PEÇAS (USO INTERNO)'), findsNWidgets(2));
+      for (final valor in ['486,00', '67,20', '553,20']) {
+        expect(find.textContaining(valor), findsWidgets, reason: valor);
+      }
+    },
+  );
 
   testWidgets('sem validade, não mostra a linha', (tester) async {
     await abrirDetalhes(tester, 'orcamento-b');
 
     expect(find.text('Construtora Horizonte Ltda'), findsOneWidget);
-    expect(find.text('Cliente PJ'), findsOneWidget);
-    expect(find.text('Validade'), findsNothing);
+    expect(find.textContaining('Válido até'), findsNothing);
   });
 
-  testWidgets('a partir da 2ª revisão, mostra "rev. N"', (tester) async {
+  testWidgets('a 2ª revisão mostra "rev. N", o envio e a criação', (
+    tester,
+  ) async {
     await abrirDetalhes(tester, 'orcamento-e');
 
+    expect(find.text('Nº 051023-02 rev. 2'), findsOneWidget);
     expect(find.text('051023-02 rev. 2'), findsOneWidget);
+    expect(find.text('Enviado'), findsOneWidget);
+    expect(find.text('Enviado em 09/10/2023'), findsOneWidget);
+    expect(find.text('Criado em 05/10/2023'), findsOneWidget);
   });
 
   testWidgets('id inexistente mostra "não encontrado" e volta', (tester) async {
@@ -144,47 +197,114 @@ void main() {
     expect(find.text('lista'), findsOneWidget);
   });
 
-  testWidgets('"Alterar status" alterna entre criado e enviado (D-29)', (
+  testWidgets('"Marcar como enviado" muda o status sem confirmar (D-29)', (
     tester,
   ) async {
     await abrirDetalhes(tester, 'orcamento-c');
 
-    await tester.tap(find.byTooltip('Mais opções'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Alterar status'));
-    await tester.pumpAndSettle();
+    await tocarNoMenu(tester, 'Marcar como enviado');
 
-    final dialogo = find.byType(SimpleDialog);
-    for (final status in ['Criado', 'Enviado']) {
-      expect(
-        find.descendant(of: dialogo, matching: find.text(status)),
-        findsOneWidget,
-      );
-    }
-
-    await tester.tap(
-      find.descendant(of: dialogo, matching: find.text('Enviado')),
-    );
-    await tester.pumpAndSettle();
-
-    final orcamento = await salvo('orcamento-c');
+    expect(find.byType(AlertDialog), findsNothing);
+    final orcamento = (await salvo('orcamento-c'))!;
     expect(orcamento.status, StatusOrcamento.enviado);
     expect(orcamento.enviadoEm, agoraDosExemplos);
     expect(orcamento.atualizadoEm, orcamentoExemploC.atualizadoEm);
-    expect(find.byType(SimpleDialog), findsNothing);
+    expect(find.text('Enviado'), findsOneWidget);
+    expect(find.text('Enviado em 09/10/2023'), findsOneWidget);
   });
 
-  testWidgets('escolher o status atual não muda nada', (tester) async {
+  testWidgets('"Voltar para criado" confirma antes e limpa o envio (D-37)', (
+    tester,
+  ) async {
+    await abrirDetalhes(tester, 'orcamento-e');
+
+    await tocarNoMenu(tester, 'Voltar para criado');
+    expect(noDialogo('Voltar para criado?'), findsOneWidget);
+    expect(
+      find.textContaining('perde a data de envio (09/10/2023)'),
+      findsOneWidget,
+    );
+    await tester.tap(noDialogo('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(await salvo('orcamento-e'), orcamentoExemploEnviado);
+
+    await tocarNoMenu(tester, 'Voltar para criado');
+    await tester.tap(noDialogo('Voltar para criado'));
+    await tester.pumpAndSettle();
+
+    final orcamento = (await salvo('orcamento-e'))!;
+    expect(orcamento.status, StatusOrcamento.criado);
+    expect(orcamento.enviadoEm, isNull);
+    expect(orcamento.atualizadoEm, orcamentoExemploEnviado.atualizadoEm);
+    expect(find.text('Ainda não enviado'), findsOneWidget);
+  });
+
+  testWidgets('"Excluir" confirma, exclui e volta à tela anterior', (
+    tester,
+  ) async {
     await abrirDetalhes(tester, 'orcamento-c');
 
-    await tester.tap(find.byTooltip('Mais opções'));
+    await tocarNoMenu(tester, 'Excluir');
+    expect(noDialogo('Excluir o orçamento?'), findsOneWidget);
+    await tester.tap(noDialogo('Cancelar'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Alterar status'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Criado'));
+    expect(await salvo('orcamento-c'), isNotNull);
+    expect(find.text('Nº 071023-01'), findsOneWidget);
+
+    await tocarNoMenu(tester, 'Excluir');
+    await tester.tap(noDialogo('Excluir'));
     await tester.pumpAndSettle();
 
-    expect(await salvo('orcamento-c'), orcamentoExemploC);
+    expect(await salvo('orcamento-c'), isNull);
+    expect(find.text('lista'), findsOneWidget);
+    expect(find.text('Orçamento 071023-01 excluído.'), findsOneWidget);
+  });
+
+  testWidgets('excluir mantém a tarefa na agenda, sem o vínculo (D-38)', (
+    tester,
+  ) async {
+    final tarefa = Tarefa(
+      id: 'tarefa-c',
+      titulo: 'Produção 071023-01',
+      data: DateTime(2023, 10, 12, 9),
+      tipo: TipoTarefa.producao,
+      orcamentoId: 'orcamento-c',
+    );
+    await SqliteTarefaRepository(banco).save(tarefa);
+    await abrirDetalhes(tester, 'orcamento-c');
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(OrcamentoDetalhesPage)),
+    );
+    // A agenda já carregada guarda o vínculo antigo até ser recarregada.
+    final assinatura = container.listen(tarefasProvider, (_, _) {});
+    addTearDown(assinatura.close);
+    expect(
+      (await container.read(tarefasProvider.future)).single.orcamentoId,
+      'orcamento-c',
+    );
+
+    await tocarNoMenu(tester, 'Excluir');
+    await tester.tap(noDialogo('Excluir'));
+    await tester.pumpAndSettle();
+
+    final tarefas = await container.read(tarefasProvider.future);
+    expect(tarefas, [tarefa.copyWith(orcamentoId: null)]);
+  });
+
+  testWidgets('posiciona as tarefas do orçamento e o "Agendar" (V2-E)', (
+    tester,
+  ) async {
+    await abrirDetalhes(tester, 'orcamento-c');
+
+    final tarefas = tester.widget<TarefasDoOrcamento>(
+      find.byType(TarefasDoOrcamento),
+    );
+    final agendar = tester.widget<AgendarTarefaButton>(
+      find.byType(AgendarTarefaButton),
+    );
+    expect(tarefas.orcamentoId, 'orcamento-c');
+    expect(agendar.orcamentoId, 'orcamento-c');
   });
 
   testWidgets('"Editar" abre o wizard de edição', (tester) async {
@@ -204,4 +324,23 @@ void main() {
 
     expect(find.text('pdf orcamento-c'), findsOneWidget);
   });
+
+  for (final modo in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets('cabe em 360 dp, com as peças abertas (${modo.name})', (
+      tester,
+    ) async {
+      await abrirDetalhes(
+        tester,
+        'orcamento-c',
+        themeMode: modo,
+        tamanho: const Size(360, 800),
+      );
+      await tester.tap(find.text('Mostrar peças e custos'));
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(ListView), const Offset(0, -3000));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

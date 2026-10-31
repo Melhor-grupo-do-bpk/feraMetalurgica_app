@@ -148,9 +148,19 @@ void main() {
       () => [find.byTooltip('Voltar')],
     ),
     (
-      'diálogo "Alterar status"',
+      'diálogo "Excluir o orçamento?"',
       AppRoutes.detalhesOrcamento(_c),
-      () => [find.byTooltip('Mais opções'), find.text('Alterar status')],
+      () => [find.byTooltip('Mais opções'), find.text('Excluir')],
+    ),
+    (
+      'diálogo "Voltar para criado?"',
+      AppRoutes.detalhesOrcamento(_c),
+      () => [
+        find.byTooltip('Mais opções'),
+        find.text('Marcar como enviado'),
+        find.byTooltip('Mais opções'),
+        find.text('Voltar para criado'),
+      ],
     ),
     (
       'formulário de produto (etapa 2)',

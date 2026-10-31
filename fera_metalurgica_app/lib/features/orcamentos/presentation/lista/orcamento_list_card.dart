@@ -8,7 +8,7 @@ import 'package:fera_metalurgica_app/features/orcamentos/presentation/orcamentos
 import 'package:flutter/material.dart';
 
 /// Cartão de um orçamento na lista (Tela 8): código (com a revisão),
-/// cliente, status, data e o total geral gravado (D-30).
+/// cliente, status, data da revisão atual e o total geral gravado (D-30).
 class OrcamentoListCard extends StatelessWidget {
   /// Cria o cartão de [orcamento].
   const OrcamentoListCard({
@@ -74,8 +74,11 @@ class OrcamentoListCard extends StatelessWidget {
                     color: colors.textSecondary,
                   ),
                   const SizedBox(width: AppSpacing.xxs),
+                  // A data da revisão atual (`atualizadoEm`, HO-V2-F2-04): a
+                  // lista é ordenada por ela e a validade conta dela; a
+                  // data de criação já está no código (`DDMMAA`).
                   Text(
-                    formatarData(orcamento.criadoEm),
+                    formatarData(orcamento.atualizadoEm),
                     style: AppTextStyles.label.copyWith(
                       color: colors.textSecondary,
                     ),

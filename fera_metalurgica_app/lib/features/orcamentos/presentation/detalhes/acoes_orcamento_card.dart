@@ -1,25 +1,20 @@
-import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
-import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Card escuro "Valor Final" dos detalhes (Tela 6, RF-32), com as ações
-/// Enviar WhatsApp, Gerar PDF e Editar.
+/// Card escuro com as ações dos detalhes (Tela 6, RF-32 a RF-34): Enviar
+/// WhatsApp, Gerar PDF e Editar.
 ///
-/// Só mostra o valor final; custos internos nunca aparecem aqui (D-16).
-class ValorFinalCard extends StatelessWidget {
-  /// Cria o card com [valorFinal] e as três ações.
-  const ValorFinalCard({
-    required this.valorFinal,
+/// Não repete o total: o total geral fica só no card "Totais" da prévia
+/// (D-39), logo acima.
+class AcoesOrcamentoCard extends StatelessWidget {
+  /// Cria o card com as três ações.
+  const AcoesOrcamentoCard({
     required this.onEnviarWhatsApp,
     required this.onGerarPdf,
     required this.onEditar,
     super.key,
   });
-
-  /// Total geral gravado do orçamento (`Orcamento.totalGeral`).
-  final Dinheiro valorFinal;
 
   /// Ação do botão "Enviar WhatsApp".
   final VoidCallback onEnviarWhatsApp;
@@ -39,7 +34,7 @@ class ValorFinalCard extends StatelessWidget {
     );
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg + AppSpacing.xs),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: colors.brand,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -47,26 +42,6 @@ class ValorFinalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Valor Final',
-            style: AppTextStyles.title.copyWith(
-              fontWeight: FontWeight.w400,
-              color: colors.onBrand.withValues(alpha: 0.8),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              valorFinal.formatado,
-              style: AppTextStyles.display.copyWith(
-                fontWeight: FontWeight.w700,
-                color: colors.onBrand,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
           FilledButton.icon(
             onPressed: onEnviarWhatsApp,
             icon: const Icon(Icons.chat_outlined, size: 20),

@@ -5,7 +5,8 @@ import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
 /// (RF-34, D-15): saudação, código (com a revisão, D-30), emitente da
 /// cópia, total geral gravado e a validade, só se houver.
 ///
-/// É um documento do cliente: nunca inclui custos internos (D-16).
+/// É um documento do cliente: só o total geral, sem adicionais nem custos
+/// internos (D-39).
 String montarMensagemWhatsApp(Orcamento orcamento) {
   final validade = orcamento.dataValidade;
   return 'Olá, ${orcamento.cliente.nome}! Segue o resumo do orçamento '
