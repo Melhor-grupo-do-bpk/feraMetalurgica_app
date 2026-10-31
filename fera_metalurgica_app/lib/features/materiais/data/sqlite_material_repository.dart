@@ -54,6 +54,18 @@ class SqliteMaterialRepository implements MaterialRepository {
   @override
   Future<void> reativar(String id) => _marcarAtivo(id, ativo: true);
 
+  /// Consulta direto a tabela `pecas_orcamento`, sem importar a feature de
+  /// orçamentos (que já importa a de materiais).
+  @override
+  Future<bool> estaEmUso(String id) async {
+    final linhas = await _executor.rawQuery(
+      'SELECT EXISTS (SELECT 1 FROM pecas_orcamento '
+      'WHERE material_origem_id = ?) AS em_uso',
+      [id],
+    );
+    return linhas.single['em_uso'] == 1;
+  }
+
   Future<void> _marcarAtivo(String id, {required bool ativo}) =>
       _executor.update(
         _tabela,

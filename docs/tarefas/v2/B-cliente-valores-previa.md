@@ -1,8 +1,8 @@
 ---
 trilha: V2-B
 titulo: "Wizard: cliente, valores e prévia (etapas 1, 3 e 4)"
-status: pendente     # pendente | em andamento | em revisão | concluída
-responsavel: —
+status: concluída    # pendente | em andamento | em revisão | concluída
+responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-b-cliente-valores
 depende_de: V2-F2
 ---
@@ -17,28 +17,28 @@ validade).
 com os pontos de contato listados lá.
 
 ## Checklist
-- [ ] Etapa 1, cliente:
+- [x] Etapa 1, cliente:
   - busca por nome, celular ou documento;
   - selecionar preenche uma cópia editável;
   - nome, celular, documento e endereço obrigatórios;
   - mudar o documento de um cliente já selecionado resolve a identidade
     de novo e avisa que pode ser outro cadastro;
   - o cadastro só é criado ou atualizado ao salvar.
-- [ ] Etapa 3, valores:
+- [x] Etapa 3, valores:
   - insumos, impostos, combustível, outros (com descrição obrigatória se
     maior que zero), desconto (no máximo o subtotal), validade opcional em
     dias (mostra a data-limite) e observações;
   - total geral não editável;
   - total zero destacado.
-- [ ] Etapa 4, prévia: widget separado alimentado só pelos dados do
+- [x] Etapa 4, prévia: widget separado alimentado só pelos dados do
       orçamento (prompt §4), para o PDF reaproveitar depois.
   - Comercial por produto, com o detalhe das peças disponível na tela.
   - Na edição, mostra o código e a próxima revisão.
-- [ ] "Finalizar" (ou "Salvar alterações" na edição):
+- [x] "Finalizar" (ou "Salvar alterações" na edição):
   - bloqueia o clique duplo e mostra o progresso;
   - se falhar, mantém os dados e permite tentar de novo;
   - se der certo, vai para os detalhes.
-- [ ] Sair do wizard pede confirmação de descarte. Voltar entre as etapas
+- [x] Sair do wizard pede confirmação de descarte. Voltar entre as etapas
       não perde dados.
 
 ## Testes

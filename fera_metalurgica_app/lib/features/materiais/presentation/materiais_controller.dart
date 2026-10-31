@@ -47,6 +47,12 @@ Future<Material?> materialPorId(Ref ref, String id) async {
   return materiais.where((m) => m.id == id).firstOrNull;
 }
 
+/// Se o material [id] já foi copiado para alguma peça de orçamento salvo
+/// (D-40). Consulta o banco a cada vez que a tela que o usa abre.
+@riverpod
+Future<bool> materialEmUso(Ref ref, String id) =>
+    ref.watch(materialRepositoryProvider).estaEmUso(id);
+
 /// Só os materiais ativos, para novas seleções na peça (prompt §3.1).
 ///
 /// Síncrono de propósito, como os filtros das listas: gravar um material

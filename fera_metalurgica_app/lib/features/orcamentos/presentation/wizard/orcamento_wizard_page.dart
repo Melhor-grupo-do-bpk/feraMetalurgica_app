@@ -13,6 +13,7 @@ import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/eta
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/etapa_valores.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller_state.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/sair_etapa_produtos.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_dialogos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,10 +23,13 @@ const List<String> _subtitulos = ['Cliente', 'Produtos', 'Valores', 'Prévia'];
 
 /// Wizard de criação/edição de orçamento (prompt §4, D-28, D-30): as 4
 /// etapas sobre o `OrcamentoController`, com a navegação entre elas, o
-/// descarte com confirmação e o "Finalizar".
+/// descarte com confirmação e o "Finalizar" ("Salvar alterações" na
+/// edição).
 ///
-/// Na F2 as etapas são stubs mínimos; os formulários são da V2-A (etapa 2)
-/// e da V2-B (etapas 1, 3 e 4, e o acabamento desta página).
+/// Ao salvar, o botão fica bloqueado e mostra o progresso (o controller
+/// também ignora a chamada repetida); se a gravação falhar, a sessão
+/// continua e dá para tentar de novo. Um orçamento novo abre nos detalhes;
+/// a edição volta para os detalhes, que já estão embaixo na pilha.
 class OrcamentoWizardPage extends ConsumerStatefulWidget {
   /// Cria o wizard. Com [orcamentoId], edita o orçamento salvo (D-30).
   const OrcamentoWizardPage({this.orcamentoId, super.key});
@@ -55,12 +59,40 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
         : _controller.iniciarEdicao(id);
   }
 
+  /// Formulários das etapas 1 e 3, por etapa: validam o texto digitado que
+  /// ainda não é um valor válido (e por isso não chegou ao controller).
+  final Map<int, GlobalKey<FormState>> _formularios = {
+    1: GlobalKey<FormState>(),
+    3: GlobalKey<FormState>(),
+  };
+
+  /// Ponto único de saída de uma etapa, para frente ou para trás
+  /// ("Continuar", "Voltar", a seta da barra do topo e o voltar do
+  /// sistema). Devolve se pode sair; se não puder, já avisou.
+  ///
+  /// Nas etapas 1 e 3, barra texto inválido nos campos (sair perderia o
+  /// que foi digitado). A etapa 2 é da V2-A: o orquestrador liga o
+  /// `podeSairDaEtapaProdutos` aqui ao integrar A e B.
+  Future<bool> _podeSairDaEtapa(int etapa) async {
+    switch (etapa) {
+      case 1 || 3:
+        final valido = _formularios[etapa]!.currentState?.validate() ?? true;
+        if (!valido) _avisar('Corrija os campos destacados.');
+        return valido;
+      case 2:
+        return await podeSairDaEtapaProdutos(context, ref);
+      default:
+        return true;
+    }
+  }
+
   /// Voltar da top bar, do botão e do sistema: volta uma etapa; na etapa 1,
   /// sai do wizard depois de confirmar o descarte (prompt §4).
   Future<void> _voltar() async {
     final estado = ref.read(orcamentoControllerProvider);
     if (estado.finalizando) return;
     if (estado.etapaAtual > 1) {
+      if (!await _podeSairDaEtapa(estado.etapaAtual) || !mounted) return;
       _controller.voltar();
       return;
     }
@@ -69,7 +101,10 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
       titulo: estado.ehEdicao
           ? 'Descartar alterações?'
           : 'Descartar orçamento?',
-      mensagem: 'Os dados preenchidos serão perdidos.',
+      mensagem: estado.ehEdicao
+          ? 'As alterações feitas aqui serão perdidas. O orçamento salvo '
+                'não muda.'
+          : 'Os dados preenchidos serão perdidos.',
       acao: 'Descartar',
     );
     if (!descartar || !mounted) return;
@@ -79,7 +114,9 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
 
   Future<void> _continuar() async {
     final estado = ref.read(orcamentoControllerProvider);
+    if (estado.finalizando) return;
     if (estado.etapaAtual < EstadoEdicaoOrcamento.totalEtapas) {
+      if (!await _podeSairDaEtapa(estado.etapaAtual) || !mounted) return;
       if (!_controller.avancar()) _avisarErros();
       return;
     }
@@ -146,87 +183,88 @@ class _OrcamentoWizardPageState extends ConsumerState<OrcamentoWizardPage> {
       },
       child: Scaffold(
         appBar: AppTopBar(onBack: _voltar),
-        body: SafeArea(
-          top: false,
+        body: SingleChildScrollView(
+          // Cada etapa começa do topo.
+          key: ValueKey('etapa-$etapa'),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  // Cada etapa começa do topo.
-                  key: ValueKey('etapa-$etapa'),
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        estado.ehEdicao ? 'Editar Orçamento' : 'Novo Orçamento',
-                        style: AppTextStyles.display.copyWith(
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        'Etapa $etapa de ${EstadoEdicaoOrcamento.totalEtapas}: '
-                        '${_subtitulos[etapa - 1]}',
-                        style: AppTextStyles.body.copyWith(
-                          color: colors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      StepProgressBar(etapaAtual: etapa),
-                      const SizedBox(height: AppSpacing.lg),
-                      switch (etapa) {
-                        1 => const EtapaCliente(),
-                        2 => const EtapaProdutos(),
-                        3 => const EtapaValores(),
-                        _ => const EtapaPrevia(),
+              Text(
+                estado.ehEdicao ? 'Editar Orçamento' : 'Novo Orçamento',
+                style: AppTextStyles.display.copyWith(
+                  color: colors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                'Etapa $etapa de ${EstadoEdicaoOrcamento.totalEtapas}: '
+                '${_subtitulos[etapa - 1]}',
+                style: AppTextStyles.body.copyWith(color: colors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              StepProgressBar(etapaAtual: etapa),
+              const SizedBox(height: AppSpacing.lg),
+              switch (etapa) {
+                1 => Form(key: _formularios[1], child: const EtapaCliente()),
+                2 => const EtapaProdutos(),
+                3 => Form(key: _formularios[3], child: const EtapaValores()),
+                _ => const EtapaPrevia(),
+              },
+            ],
+          ),
+        ),
+        // Fora do corpo: o SnackBar aparece acima do rodapé, sem cobrir
+        // os botões.
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.xs,
+              AppSpacing.md,
+              AppSpacing.md,
+            ),
+            child: Row(
+              children: [
+                if (etapa > 1)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: colors.textSecondary,
+                    ),
+                    onPressed: estado.finalizando ? null : _voltar,
+                    icon: const Icon(Icons.arrow_back, size: 16),
+                    label: const Text('Voltar'),
+                  ),
+                // O espaço que sobra é do botão principal, que corta o
+                // texto com reticências se não couber.
+                if (estado.finalizando)
+                  const Padding(
+                    padding: EdgeInsets.only(left: AppSpacing.xs),
+                    child: SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    // Só a altura do botão: no `bottomNavigationBar`, o
+                    // Align ocuparia a tela toda.
+                    heightFactor: 1,
+                    child: PrimaryButton(
+                      label: switch ((ultima, estado.finalizando)) {
+                        (_, true) => 'Salvando...',
+                        (true, _) when estado.ehEdicao => 'Salvar alterações',
+                        (true, _) => 'Finalizar',
+                        _ => 'Continuar',
                       },
-                    ],
+                      trailingIcon: ultima ? Icons.check : Icons.arrow_forward,
+                      onPressed: estado.finalizando ? null : _continuar,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.xs,
-                  AppSpacing.md,
-                  AppSpacing.md,
-                ),
-                child: Row(
-                  children: [
-                    if (etapa > 1)
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          foregroundColor: colors.textSecondary,
-                        ),
-                        onPressed: estado.finalizando ? null : _voltar,
-                        icon: const Icon(Icons.arrow_back, size: 16),
-                        label: const Text('Voltar'),
-                      ),
-                    // O espaço que sobra é do botão principal, que corta o
-                    // texto com reticências se não couber.
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: PrimaryButton(
-                          label: switch ((ultima, estado.finalizando)) {
-                            (_, true) => 'Salvando...',
-                            (true, _) when estado.ehEdicao =>
-                              'Salvar alterações',
-                            (true, _) => 'Finalizar',
-                            _ => 'Continuar',
-                          },
-                          trailingIcon: ultima
-                              ? Icons.check
-                              : Icons.arrow_forward,
-                          onPressed: estado.finalizando ? null : _continuar,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

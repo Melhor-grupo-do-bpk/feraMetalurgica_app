@@ -85,14 +85,72 @@ void main() {
       }
       semantics.dispose();
     });
+
+    testWidgets('etapa 1 com busca e aviso em 360 dp, ${tema.name}', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await abrir(
+        tester,
+        AppRoutes.editarOrcamento(_c),
+        tamanho: tamanhos['360 dp']!,
+        tema: tema,
+      );
+      await tester.enterText(
+        find.descendant(
+          of: find.byKey(const ValueKey('cliente-documento')),
+          matching: find.byType(EditableText),
+        ),
+        '11.222.333/0001-81',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('wizard-busca-cliente')),
+        'Silva',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('cliente-aviso-outro-cadastro')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      semantics.dispose();
+    });
   }
 
   // Folhas e diálogos não têm rota: abre cada um a partir da tela dona.
   final sobreposicoes = <(String, String, List<Finder> Function())>[
     (
+      'diálogo "Descartar orçamento?"',
+      AppRoutes.novoOrcamento(),
+      () => [find.byTooltip('Voltar')],
+    ),
+    (
+      'diálogo "Descartar alterações?"',
+      AppRoutes.editarOrcamento(_c),
+      () => [find.byTooltip('Voltar')],
+    ),
+    (
       'diálogo "Alterar status"',
       AppRoutes.detalhesOrcamento(_c),
       () => [find.byTooltip('Mais opções'), find.text('Alterar status')],
+    ),
+    (
+      'formulário de produto (etapa 2)',
+      AppRoutes.editarOrcamento(_c),
+      () => [continuar, find.text('Novo produto')],
+    ),
+    (
+      'seletor de material (etapa 2)',
+      AppRoutes.editarOrcamento(_c),
+      () => [
+        continuar,
+        find.text('Novo produto'),
+        find.byKey(const ValueKey('peca-material')),
+      ],
     ),
   ];
   for (final (nome, rota, toques) in sobreposicoes) {

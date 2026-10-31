@@ -162,7 +162,7 @@ As decisões D-26 a D-30 valem sobre o prompt.
 - **`Material`** — `id`, `nome`, `unidade`, `precoReferencia`
   (`Dinheiro`), `ativo` (`= true`). Inativar substitui excluir.
   `MaterialRepository`: `listarAtivos({filtro})`, `listarTodos`,
-  `buscarPorId`, `salvar`, `inativar`, `reativar`. Atenção: o nome colide
+  `buscarPorId`, `salvar`, `inativar`, `reativar`, `estaEmUso` (D-40). Atenção: o nome colide
   com o widget `Material` do Flutter.
 - **`Empresa`** — `id`, `nomeRazaoSocial`, `documento`, `telefone`,
   `endereco`, `email?`. Getter `estaCompleta`.

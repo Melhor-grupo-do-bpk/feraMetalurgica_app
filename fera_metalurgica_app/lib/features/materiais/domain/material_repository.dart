@@ -27,4 +27,8 @@ abstract class MaterialRepository {
 
   /// Marca o material [id] como ativo de novo.
   Future<void> reativar(String id);
+
+  /// Se alguma peça de orçamento salvo copiou o material [id] (D-40). Um
+  /// material em uso não troca de unidade (prompt §3.1).
+  Future<bool> estaEmUso(String id);
 }
