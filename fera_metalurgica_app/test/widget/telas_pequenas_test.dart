@@ -24,6 +24,7 @@ void main() {
     AppRoutes.mais,
     AppRoutes.materiais,
     AppRoutes.material(),
+    AppRoutes.material(id: 'material-granito'),
     AppRoutes.empresa,
     AppRoutes.novoOrcamento(),
     AppRoutes.detalhesOrcamento(_c),
@@ -123,6 +124,19 @@ void main() {
 
   // Folhas e diálogos não têm rota: abre cada um a partir da tela dona.
   final sobreposicoes = <(String, String, List<Finder> Function())>[
+    (
+      'diálogo "Inativar material?"',
+      AppRoutes.materiais,
+      () => [
+        find.byTooltip('Ações do material MDF 15 mm'),
+        find.text('Inativar'),
+      ],
+    ),
+    (
+      'diálogo "A unidade não pode mudar" (material em uso)',
+      AppRoutes.material(id: 'material-granito'),
+      () => [find.text('m³')],
+    ),
     (
       'diálogo "Descartar orçamento?"',
       AppRoutes.novoOrcamento(),

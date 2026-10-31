@@ -35,7 +35,7 @@ trilha" de [`04-plano.md`](04-plano.md). As tarefas da rodada anterior em
 | V2-F2 | [Persistência e troca do modelo](tarefas/v2/F2-persistencia.md) | `feat/v2-f2-persistencia` | F1 integrada | integrada |
 | V2-A | [Wizard: produtos e peças](tarefas/v2/A-produtos-pecas.md) | `feat/v2-a-produtos` | F2 integrada | integrada |
 | V2-B | [Wizard: cliente, valores e prévia](tarefas/v2/B-cliente-valores-previa.md) | `feat/v2-b-cliente-valores` | F2 integrada | integrada |
-| V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | liberada |
+| V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | integrada |
 | V2-D | [Orçamentos salvos](tarefas/v2/D-orcamentos-salvos.md) | `feat/v2-d-salvos` | F2 integrada | liberada |
 | V2-E | [Agenda](tarefas/v2/E-agenda.md) | `feat/v2-e-agenda` | F2 integrada | liberada |
 | V2-G | [Acabamento](tarefas/v2/G-acabamento.md) | `feat/v2-g-acabamento` | A a E integradas | aguardando |
@@ -263,3 +263,6 @@ Quando o responsável avisa que uma trilha terminou, o orquestrador:
 | HO-V2-B-02 (linhas do `telas_pequenas_test`) | Aplicado: os dois diálogos de descarte e a etapa 1 com busca e aviso. | ver log |
 | HO-V2-B-03 (exportar a `PreviaOrcamento`) | Aplicado no barrel de `orcamentos`. | ver log |
 | HO-V2-B-04 (avisos) | Registrados. O contraste do `TextButton` padrão nos diálogos (`AppTheme`) e o `abrirWizard` comum ficam para a V2-G. | — |
+| Revisão do plano da V2-C (material em uso, maiúsculas) | `estaEmUso`/`materialEmUsoProvider` (D-40) e `MaiusculasInputFormatter` no core antes da trilha codar; merge da integração autorizado na branch da C e da D. | `bdee6e6` |
+| HO-V2-C-01 (linhas do `telas_pequenas_test`) | Aplicado: a rota do material em edição, o diálogo de inativar e o bloqueio da unidade. | ver log |
+| HO-V2-C-02 (avisos) | Registrados. `confirmarAcao` no core e helpers de teste comuns ficam para a V2-G. | — |

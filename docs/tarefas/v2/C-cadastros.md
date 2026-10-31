@@ -1,7 +1,7 @@
 ---
 trilha: V2-C
 titulo: Cadastros de materiais e da empresa
-status: em revisão     # pendente | em andamento | em revisão | concluída
+status: concluída    # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-c-cadastros
 depende_de: V2-F2
