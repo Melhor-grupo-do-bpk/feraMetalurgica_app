@@ -137,6 +137,20 @@ void main() {
     );
   });
 
+  testWidgets('destaca a atrasada (agoraProvider: 09/10)', (tester) async {
+    await abrir(tester);
+
+    expect(
+      find.descendant(
+        of: linha('visita-ontem'),
+        matching: find.text('ATRASADA'),
+      ),
+      findsOneWidget,
+    );
+    // A de hoje, às 09:00, não está atrasada.
+    expect(find.text('ATRASADA'), findsOneWidget);
+  });
+
   testWidgets('sem tarefas mostra "Nenhuma tarefa agendada."', (tester) async {
     await abrir(tester, orcamentoId: 'orcamento-e');
 

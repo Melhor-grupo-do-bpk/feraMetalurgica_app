@@ -1,3 +1,4 @@
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
@@ -8,6 +9,7 @@ import 'package:fera_metalurgica_app/core/widgets/status_chip.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma_controller.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma_ui.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/tarefas_atrasadas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,9 +19,11 @@ import 'package:go_router/go_router.dart';
 /// "Agenda" dela; a V2-E implementa.
 ///
 /// Pendentes primeiro, depois as concluídas, cada grupo em ordem
-/// cronológica. Tocar na tarefa abre a edição; o marcador a conclui (ou a
-/// volta para pendente). Sem título próprio, sem rolagem e sem `Expanded`
-/// na vertical: fica dentro da rolagem da página de detalhes.
+/// cronológica. As atrasadas (de [agoraProvider]) aparecem em vermelho, com
+/// a etiqueta "ATRASADA". Tocar na tarefa abre a edição; o marcador a
+/// conclui (ou a volta para pendente). Sem título próprio, sem rolagem e
+/// sem `Expanded` na vertical: fica dentro da rolagem da página de
+/// detalhes.
 class TarefasDoOrcamento extends ConsumerWidget {
   /// Cria a lista das tarefas de [orcamentoId].
   const TarefasDoOrcamento({required this.orcamentoId, super.key});
@@ -31,6 +35,7 @@ class TarefasDoOrcamento extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final mensagem = AppTextStyles.body.copyWith(color: colors.textSecondary);
+    final agora = ref.watch(agoraProvider);
 
     return switch (ref.watch(tarefasDoOrcamentoProvider(orcamentoId))) {
       AsyncData(value: []) => Text('Nenhuma tarefa agendada.', style: mensagem),
@@ -42,6 +47,7 @@ class TarefasDoOrcamento extends ConsumerWidget {
             _LinhaTarefa(
               key: ValueKey('tarefa-orcamento-${tarefa.id}'),
               tarefa: tarefa,
+              atrasada: estaAtrasada(tarefa, agora),
               onTap: () => context.push(AppRoutes.tarefa(id: tarefa.id)),
               onAlternarConcluida: () => ref
                   .read(tarefasProvider.notifier)
@@ -82,12 +88,14 @@ List<Tarefa> _pendentesPrimeiro(List<Tarefa> tarefas) => [
 class _LinhaTarefa extends StatelessWidget {
   const _LinhaTarefa({
     required this.tarefa,
+    required this.atrasada,
     required this.onTap,
     required this.onAlternarConcluida,
     super.key,
   });
 
   final Tarefa tarefa;
+  final bool atrasada;
   final VoidCallback onTap;
   final VoidCallback onAlternarConcluida;
 
@@ -112,6 +120,8 @@ class _LinhaTarefa extends StatelessWidget {
                 concluida ? Icons.check_circle : Icons.radio_button_unchecked,
                 color: concluida
                     ? colors.textMuted
+                    : atrasada
+                    ? colors.error
                     : tarefa.tipo.corDestaque(colors),
               ),
             ),
@@ -140,7 +150,7 @@ class _LinhaTarefa extends StatelessWidget {
                     '${formatarData(tarefa.data)} • '
                     '${formatarHora(tarefa.data)}',
                     style: AppTextStyles.caption.copyWith(
-                      color: colors.textSecondary,
+                      color: atrasada ? colors.error : colors.textSecondary,
                     ),
                   ),
                 ],
@@ -148,11 +158,18 @@ class _LinhaTarefa extends StatelessWidget {
             ),
             if (!concluida) ...[
               const SizedBox(width: AppSpacing.sm),
-              StatusChip(
-                label: tarefa.tipo.label,
-                tone: tarefa.tipo.tone,
-                uppercase: true,
-              ),
+              if (atrasada)
+                const StatusChip(
+                  label: 'Atrasada',
+                  tone: StatusTone.danger,
+                  uppercase: true,
+                )
+              else
+                StatusChip(
+                  label: tarefa.tipo.label,
+                  tone: tarefa.tipo.tone,
+                  uppercase: true,
+                ),
             ],
           ],
         ),

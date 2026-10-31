@@ -7,6 +7,7 @@ import 'package:fera_metalurgica_app/core/widgets/timeline_tile.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma_ui.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/tarefas_atrasadas.dart';
 import 'package:flutter/material.dart';
 
 /// Uma seção da linha do tempo (RF-83): "Hoje" + "N tarefas" e as
@@ -25,7 +26,8 @@ class AgendaSecao extends StatelessWidget {
   /// Dia e tarefas visíveis.
   final SecaoAgenda secao;
 
-  /// "Hoje", para o título "Hoje"/"Amanhã".
+  /// "Hoje", para o título "Hoje"/"Amanhã" e para o destaque das tarefas
+  /// atrasadas (faixa vermelha e etiqueta "ATRASADA" no lugar do tipo).
   final DateTime hoje;
 
   /// Toque no marcador da tarefa (RF-84).
@@ -75,17 +77,25 @@ class AgendaSecao extends StatelessWidget {
                 horario: formatarHora(tarefa.data),
                 titulo: tarefa.titulo,
                 descricao: tarefa.descricao,
-                tag: StatusChip(
-                  label: tarefa.tipo.label,
-                  tone: tarefa.tipo.tone,
-                  uppercase: true,
-                ),
+                tag: estaAtrasada(tarefa, hoje)
+                    ? const StatusChip(
+                        label: 'Atrasada',
+                        tone: StatusTone.danger,
+                        uppercase: true,
+                      )
+                    : StatusChip(
+                        label: tarefa.tipo.label,
+                        tone: tarefa.tipo.tone,
+                        uppercase: true,
+                      ),
                 acao: tarefa.orcamentoId == null
                     ? null
                     : _VerDetalhes(
                         onPressed: () => onVerOrcamento(tarefa.orcamentoId!),
                       ),
-                corDestaque: tarefa.tipo.corDestaque(colors),
+                corDestaque: estaAtrasada(tarefa, hoje)
+                    ? colors.error
+                    : tarefa.tipo.corDestaque(colors),
                 concluida: tarefa.concluida,
                 ultimo: i == tarefas.length - 1,
                 onMarcadorPressed: () => onAlternarConcluida(tarefa),
