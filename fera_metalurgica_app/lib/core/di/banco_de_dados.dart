@@ -27,13 +27,15 @@ Database bancoDeDados(Ref ref) => throw UnimplementedError(
 /// para gravar os dados iniciais só no primeiro uso (D-17).
 Future<({Database banco, bool novo})> abrirBancoDeDados(
   DatabaseFactory fabrica,
-  String caminho,
-) async {
+  String caminho, {
+  bool instanciaUnica = true,
+}) async {
   var novo = false;
   final banco = await fabrica.openDatabase(
     caminho,
     options: OpenDatabaseOptions(
       version: versaoEsquema,
+      singleInstance: instanciaUnica,
       onConfigure: configurarConexao,
       onCreate: (banco, versao) async {
         novo = true;

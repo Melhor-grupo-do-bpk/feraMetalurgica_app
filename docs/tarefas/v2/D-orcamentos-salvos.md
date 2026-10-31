@@ -1,7 +1,7 @@
 ---
 trilha: V2-D
 titulo: Orçamentos salvos, dashboard, PDF e WhatsApp
-status: em revisão   # pendente | em andamento | em revisão | concluída
+status: concluída    # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-d-salvos
 depende_de: V2-F2

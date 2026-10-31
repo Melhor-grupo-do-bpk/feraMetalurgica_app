@@ -12,6 +12,9 @@ Future<Database> bancoDeTeste() async {
   final (:banco, novo: _) = await abrirBancoDeDados(
     databaseFactoryFfiNoIsolate,
     inMemoryDatabasePath,
+    // Sem isto, o sqflite devolve o mesmo banco em memória enquanto outro
+    // estiver aberto (HO-V2-D-03).
+    instanciaUnica: false,
   );
   return banco;
 }
