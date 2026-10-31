@@ -6,6 +6,7 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
+import 'package:fera_metalurgica_app/core/widgets/confirmar_acao.dart';
 import 'package:fera_metalurgica_app/core/widgets/step_progress_bar.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/etapa_cliente.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/etapa_previa.dart';
@@ -14,7 +15,6 @@ import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/eta
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller_state.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/sair_etapa_produtos.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_dialogos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
