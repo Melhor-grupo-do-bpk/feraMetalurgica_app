@@ -1,14 +1,9 @@
-import 'dart:async';
-
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
-import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/previa/aviso_total_zero.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../mocks/container_de_teste.dart';
 import 'wizard_teste_helpers.dart';
@@ -43,48 +38,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Abre a edição do exemplo C sobre a lista e os detalhes (textos) e vai
-  /// até a etapa 3.
+  /// Abre a edição do exemplo C com `abrirWizard` e vai até a etapa 3.
   Future<void> abrirEtapa3(
     WidgetTester tester, {
     ThemeMode themeMode = ThemeMode.light,
     Size tamanho = const Size(800, 2400),
   }) async {
-    tester.view
-      ..physicalSize = tamanho
-      ..devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final router = GoRouter(
-      initialLocation: AppRoutes.detalhesOrcamento(c.id),
-      routes: [
-        GoRoute(
-          path: '/orcamentos/:id',
-          builder: (_, state) => Text('detalhes ${state.pathParameters['id']}'),
-          routes: [
-            GoRoute(
-              path: 'editar',
-              builder: (_, state) =>
-                  OrcamentoWizardPage(orcamentoId: state.pathParameters['id']),
-            ),
-          ],
-        ),
-      ],
+    await abrirWizard(
+      tester,
+      AppRoutes.editarOrcamento(c.id),
+      overrides: overrides,
+      themeMode: themeMode,
+      tamanho: tamanho,
     );
-    addTearDown(router.dispose);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: overrides,
-        child: MaterialApp.router(
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: themeMode,
-          routerConfig: router,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    unawaited(router.push(AppRoutes.editarOrcamento(c.id)));
-    await tester.pumpAndSettle();
     await tocar(tester, continuar);
     await tocar(tester, continuar);
     expect(find.text('Etapa 3 de 4: Valores'), findsOneWidget);

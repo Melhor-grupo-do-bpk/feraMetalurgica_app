@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../mocks/container_de_teste.dart';
 import '../../mocks/dados_exemplo.dart';
-import 'materiais_teste_helpers.dart';
+import '../core/teste_helpers.dart';
 
 void main() {
   final nome = find.byKey(const ValueKey('material-nome'));

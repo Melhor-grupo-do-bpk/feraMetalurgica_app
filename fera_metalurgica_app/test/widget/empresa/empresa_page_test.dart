@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../mocks/container_de_teste.dart';
-import '../materiais/materiais_teste_helpers.dart';
+import '../core/teste_helpers.dart';
 
 void main() {
   Finder campo(String chave) => find.byKey(ValueKey('empresa-$chave'));

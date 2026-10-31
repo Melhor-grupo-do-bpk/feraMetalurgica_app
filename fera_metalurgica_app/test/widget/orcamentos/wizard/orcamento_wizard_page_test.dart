@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
-import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/previa/linha_valor.dart';
 import 'package:flutter/material.dart';
@@ -73,75 +72,18 @@ void main() {
     exemplos = await orcamentosGravados(overrides);
   });
 
-  /// Abre [rota] num router mínimo: a lista e os detalhes viram textos, e
-  /// o wizard é a tela real.
+  /// Abre [rota] com `abrirWizard`, com os [extras] somados aos overrides.
   Future<GoRouter> abrir(
     WidgetTester tester,
     String rota, {
     ThemeMode themeMode = ThemeMode.light,
     List<Override> extras = const [],
-  }) async {
-    tester.view
-      ..physicalSize = const Size(800, 2400)
-      ..devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
-    final router = GoRouter(
-      initialLocation: AppRoutes.orcamentos,
-      routes: [
-        GoRoute(
-          path: AppRoutes.orcamentos,
-          builder: (_, _) => const Text('lista'),
-          routes: [
-            GoRoute(
-              path: 'novo',
-              builder: (_, _) => const OrcamentoWizardPage(),
-            ),
-            GoRoute(
-              path: ':id',
-              builder: (_, state) =>
-                  Text('detalhes ${state.pathParameters['id']}'),
-              routes: [
-                GoRoute(
-                  path: 'editar',
-                  builder: (_, state) => OrcamentoWizardPage(
-                    orcamentoId: state.pathParameters['id'],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [...overrides, ...extras],
-        child: MaterialApp.router(
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: themeMode,
-          routerConfig: router,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    // Empilha sobre a lista (e os detalhes, na edição), como o app faz,
-    // para o voltar ter para onde ir. `push` só completa quando a rota sai
-    // da pilha: não espere.
-    const sufixoEdicao = '/editar';
-    if (rota.endsWith(sufixoEdicao)) {
-      unawaited(
-        router.push(rota.substring(0, rota.length - sufixoEdicao.length)),
-      );
-      await tester.pumpAndSettle();
-    }
-    unawaited(router.push(rota));
-    await tester.pumpAndSettle();
-    return router;
-  }
+  }) => abrirWizard(
+    tester,
+    rota,
+    overrides: [...overrides, ...extras],
+    themeMode: themeMode,
+  );
 
   for (final modo in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets('etapa 1 renderiza (${modo.name})', (tester) async {
