@@ -5,17 +5,17 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
+import 'package:fera_metalurgica_app/core/widgets/confirmar_acao.dart';
 import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/material_snapshot.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/validacao_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/aviso_inline.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/aviso_inline.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/campo_texto.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/linha_resumo.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/rascunho_produto.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/seletor_material.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_dialogos.dart';
 import 'package:flutter/material.dart' hide Material;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -325,8 +325,10 @@ class _PecaFormState extends ConsumerState<PecaForm> {
               texto:
                   'A unidade do material mudou para $simbolo. Confira as '
                   'medidas antes de aceitar a peça.',
-              acao: 'Medidas conferidas',
-              onAcao: () => setState(() => _medidasARevisar = false),
+              acao: TextButton(
+                onPressed: () => setState(() => _medidasARevisar = false),
+                child: const Text('Medidas conferidas'),
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
           ],

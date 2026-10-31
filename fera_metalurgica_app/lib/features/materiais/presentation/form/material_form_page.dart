@@ -150,11 +150,6 @@ class _MaterialFormState extends ConsumerState<_MaterialForm> {
       content: const Text(mensagemUnidadeEmUso),
       actions: [
         TextButton(
-          // A cor primária sobre o fundo do diálogo não chega a 4,5:1
-          // (D-25).
-          style: TextButton.styleFrom(
-            foregroundColor: context.colors.textPrimary,
-          ),
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Entendi'),
         ),

@@ -67,6 +67,10 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
+      // O fundo padrão do diálogo (`surfaceContainerHigh`) cai em
+      // `background`, onde o `TextButton` em `primary` dava 4,41:1 no claro.
+      // Em `surface` dá 4,64:1 (D-25), sem cor própria nos botões.
+      dialogTheme: DialogThemeData(backgroundColor: c.surface),
       cardTheme: CardThemeData(
         color: c.surface,
         elevation: 0,

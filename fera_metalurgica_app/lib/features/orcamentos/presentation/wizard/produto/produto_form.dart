@@ -4,6 +4,7 @@ import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
+import 'package:fera_metalurgica_app/core/widgets/confirmar_acao.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/campo_texto.dart';
@@ -12,7 +13,6 @@ import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/pro
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/peca_form.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/peca_linha.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/rascunho_produto.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/wizard_dialogos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -41,7 +41,7 @@ abstract class MedidaCm with _$MedidaCm implements Comparable<MedidaCm> {
     final inteiro = centesimos ~/ 100;
     final resto = centesimos.remainder(100).abs();
     final sinal = centesimos < 0 && inteiro == 0 ? '-' : '';
-    final parteInteira = '$sinal${_comMilhar(inteiro)}';
+    final parteInteira = '$sinal${comMilharPtBr(inteiro)}';
     if (resto == 0) return parteInteira;
     final decimal = resto
         .toString()
@@ -49,17 +49,6 @@ abstract class MedidaCm with _$MedidaCm implements Comparable<MedidaCm> {
         .replaceFirst(RegExp(r'0$'), '');
     return '$parteInteira,$decimal';
   }
-}
-
-/// Inteiro com ponto de milhar pt-BR (ex: `1200` → `1.200`).
-String _comMilhar(int valor) {
-  final digitos = valor.abs().toString();
-  final buffer = StringBuffer(valor < 0 ? '-' : '');
-  for (var i = 0; i < digitos.length; i++) {
-    if (i > 0 && (digitos.length - i) % 3 == 0) buffer.write('.');
-    buffer.write(digitos[i]);
-  }
-  return buffer.toString();
 }
 
 /// Serializa [MedidaCm] como `int` de centésimos de cm.

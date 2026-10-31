@@ -1,5 +1,4 @@
 import 'package:fera_metalurgica_app/core/domain/decimal_pt_br.dart';
-import 'package:fera_metalurgica_app/core/utils/currency_format.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'dinheiro.freezed.dart';
@@ -74,12 +73,11 @@ abstract class Dinheiro with _$Dinheiro implements Comparable<Dinheiro> {
 
   /// Valor em pt-BR com símbolo (ex: `R$ 1.234,56`). Só para exibição:
   /// nunca use o texto formatado como entrada de cálculo.
-  // A conversão para double é só para reaproveitar `formatarMoeda`; é exata
-  // na exibição com duas casas para qualquer valor abaixo de 2^53 centavos.
-  String get formatado => formatarMoeda(centavos / 100);
+  // Formata direto dos centavos em `int` (D-26), sem `double`.
+  String get formatado => 'R\$ $formatadoSemSimbolo';
 
   /// Valor em pt-BR sem símbolo (ex: `1.234,56`), para preencher campos.
-  String get formatadoSemSimbolo => formatarNumeroMoeda(centavos / 100);
+  String get formatadoSemSimbolo => formatarCentesimosPtBr(centavos);
 }
 
 /// Serializa [Dinheiro] como `int` de centavos.

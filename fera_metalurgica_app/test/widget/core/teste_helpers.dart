@@ -1,3 +1,6 @@
+// Helpers comuns dos testes de widget (vindos da V2-C e do wizard): abrir
+// o app numa rota, tocar e digitar rolando até o alvo e conferir as
+// diretrizes de acessibilidade.
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
@@ -36,19 +39,24 @@ ProviderContainer containerDoApp(WidgetTester tester) =>
     ProviderScope.containerOf(tester.element(find.byType(FeraApp)));
 
 /// Rola o `ListView` da tela até montar [finder], que pode estar fora da
-/// área já construída da lista.
+/// área já construída da lista. Telas sem `ListView` (o wizard, com
+/// `SingleChildScrollView`) já montam tudo e não precisam rolar.
 Future<void> _montar(WidgetTester tester, Finder finder) async {
   if (finder.evaluate().isNotEmpty) return;
-  final lista = find
-      .descendant(of: find.byType(ListView), matching: find.byType(Scrollable))
-      .first;
+  final listas = find.descendant(
+    of: find.byType(ListView),
+    matching: find.byType(Scrollable),
+  );
+  if (listas.evaluate().isEmpty) return;
+  final lista = listas.first;
   // Volta ao topo e desce até achar: o alvo pode estar acima ou abaixo.
   await tester.drag(lista, const Offset(0, 10000));
   await tester.pumpAndSettle();
   await tester.scrollUntilVisible(finder, 200, scrollable: lista);
 }
 
-/// Rola até [finder], toca e espera assentar.
+/// Rola até [finder] (montando-o, se a lista ainda não o construiu), toca
+/// e espera as animações.
 Future<void> tocar(WidgetTester tester, Finder finder) async {
   await _montar(tester, finder);
   await tester.ensureVisible(finder);

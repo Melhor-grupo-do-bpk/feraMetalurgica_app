@@ -1,19 +1,93 @@
-import 'package:flutter/widgets.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'dart:async';
 
-/// Rola até [finder], toca e espera as animações.
-Future<void> tocar(WidgetTester tester, Finder finder) async {
-  await tester.ensureVisible(finder);
-  await tester.pumpAndSettle();
-  await tester.tap(finder);
-  await tester.pumpAndSettle();
-}
+import 'package:fera_metalurgica_app/core/router/app_routes.dart';
+import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/teste_helpers.dart';
+
+export '../../core/teste_helpers.dart' show tocar;
 
 /// Botão "Continuar" do rodapé.
 Finder get continuar => find.text('Continuar');
 
-/// Passa pelas 4 etapas do wizard em stub: escolhe [cliente] na busca,
-/// adiciona o produto de teste e chega à prévia.
+/// Abre [rota] (o wizard novo ou a edição) num router mínimo: a lista e os
+/// detalhes viram os textos "lista" e "detalhes" seguido do id, e o wizard
+/// é a tela real. Empilha as telas como o app (lista, detalhes na edição,
+/// wizard), para o voltar ter para onde ir. Devolve o router, para
+/// conferir a navegação.
+Future<GoRouter> abrirWizard(
+  WidgetTester tester,
+  String rota, {
+  required List<Override> overrides,
+  ThemeMode themeMode = ThemeMode.light,
+  Size tamanho = const Size(800, 2400),
+}) async {
+  tester.view
+    ..physicalSize = tamanho
+    ..devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+
+  final router = GoRouter(
+    initialLocation: AppRoutes.orcamentos,
+    routes: [
+      GoRoute(
+        path: AppRoutes.orcamentos,
+        builder: (_, _) => const Text('lista'),
+        routes: [
+          GoRoute(path: 'novo', builder: (_, _) => const OrcamentoWizardPage()),
+          GoRoute(
+            path: ':id',
+            builder: (_, state) =>
+                Text('detalhes ${state.pathParameters['id']}'),
+            routes: [
+              GoRoute(
+                path: 'editar',
+                builder: (_, state) => OrcamentoWizardPage(
+                  orcamentoId: state.pathParameters['id'],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: overrides,
+      child: MaterialApp.router(
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeMode,
+        routerConfig: router,
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  // `push` só completa quando a rota sai da pilha: não espere.
+  const sufixoEdicao = '/editar';
+  if (rota.endsWith(sufixoEdicao)) {
+    unawaited(
+      router.push(rota.substring(0, rota.length - sufixoEdicao.length)),
+    );
+    await tester.pumpAndSettle();
+  }
+  unawaited(router.push(rota));
+  await tester.pumpAndSettle();
+  return router;
+}
+
+/// Passa pelas 4 etapas do wizard com um orçamento simples: escolhe
+/// [cliente] na busca, monta o "Produto de teste" na etapa 2, avança pelos
+/// valores e chega à prévia.
 Future<void> preencherStub(
   WidgetTester tester, {
   String cliente = 'João da Silva',

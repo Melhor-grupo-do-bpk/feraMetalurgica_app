@@ -87,6 +87,28 @@ void main() {
     expect(const Dinheiro(1).formatado, r'R$ 0,01');
     expect(Dinheiro.zero.formatado, r'R$ 0,00');
     expect(const Dinheiro(123456789).formatadoSemSimbolo, '1.234.567,89');
+    expect(const Dinheiro(845000).formatado, r'R$ 8.450,00');
+    expect(const Dinheiro(1520050).formatado, r'R$ 15.200,50');
+    expect(const Dinheiro(-363080).formatado, r'R$ -3.630,80');
+    expect(const Dinheiro(-5).formatadoSemSimbolo, '-0,05');
+  });
+
+  test('formata valores grandes sem perder centavos (sem double)', () {
+    // 2^53 + 1 centavos: um `double` arredondaria para ...992.
+    const doisElevado53 = 9007199254740992;
+    expect(
+      const Dinheiro(doisElevado53 + 1).formatadoSemSimbolo,
+      '90.071.992.547.409,93',
+    );
+    // Maior valor que `Dinheiro.tryParse` aceita (13 dígitos inteiros).
+    expect(
+      const Dinheiro(999999999999999).formatado,
+      r'R$ 9.999.999.999.999,99',
+    );
+    expect(
+      Dinheiro.tryParse(const Dinheiro(999999999999999).formatadoSemSimbolo),
+      const Dinheiro(999999999999999),
+    );
   });
 
   test('JSON é int de centavos', () {

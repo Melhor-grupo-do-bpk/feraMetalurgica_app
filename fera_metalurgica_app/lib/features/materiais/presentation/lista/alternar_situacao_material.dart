@@ -1,4 +1,4 @@
-import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
+import 'package:fera_metalurgica_app/core/widgets/confirmar_acao.dart';
 import 'package:fera_metalurgica_app/features/materiais/domain/material.dart';
 import 'package:fera_metalurgica_app/features/materiais/presentation/materiais_controller.dart';
 import 'package:flutter/material.dart' hide Material;
@@ -15,34 +15,16 @@ Future<void> alternarSituacaoMaterial(
   final messenger = ScaffoldMessenger.of(context);
   final notifier = ref.read(materiaisProvider.notifier);
   if (material.ativo) {
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Inativar material?'),
-        content: Text(
+    final confirmado = await confirmarAcao(
+      context,
+      titulo: 'Inativar material?',
+      mensagem:
           '"${material.nome}" deixa de aparecer nas novas peças. Os '
           'orçamentos que já o usam não mudam, e você pode reativá-lo '
           'depois.',
-        ),
-        actions: [
-          TextButton(
-            // A cor primária sobre o fundo do diálogo não chega a 4,5:1
-            // (D-25).
-            style: TextButton.styleFrom(
-              foregroundColor: context.colors.textPrimary,
-            ),
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: context.colors.error),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Inativar'),
-          ),
-        ],
-      ),
+      acao: 'Inativar',
     );
-    if (confirmado != true) return;
+    if (!confirmado) return;
   }
   void avisar(String mensagem) => messenger
     ..hideCurrentSnackBar()

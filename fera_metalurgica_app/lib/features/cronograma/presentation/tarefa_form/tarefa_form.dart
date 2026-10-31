@@ -6,6 +6,7 @@ import 'package:fera_metalurgica_app/core/utils/date_format.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
+import 'package:fera_metalurgica_app/core/widgets/confirmar_acao.dart';
 import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tipo_tarefa.dart';
@@ -166,24 +167,13 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
   }
 
   Future<void> _excluir() async {
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir tarefa?'),
-        content: const Text('Esta ação não pode ser desfeita.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
+    final confirmado = await confirmarAcao(
+      context,
+      titulo: 'Excluir tarefa?',
+      mensagem: 'Esta ação não pode ser desfeita.',
+      acao: 'Excluir',
     );
-    if (confirmado != true || !mounted) return;
+    if (!confirmado || !mounted) return;
 
     setState(() => _salvando = true);
     try {

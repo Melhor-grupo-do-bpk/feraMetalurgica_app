@@ -5,7 +5,7 @@ import 'package:flutter/material.dart' hide Material;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../mocks/banco_de_teste.dart';
-import 'materiais_teste_helpers.dart';
+import '../core/teste_helpers.dart';
 
 void main() {
   Finder cartao(Material material) =>

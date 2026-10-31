@@ -1,15 +1,11 @@
-import 'dart:async';
-
 import 'package:fera_metalurgica_app/core/domain/documento.dart';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
-import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../mocks/container_de_teste.dart';
 import 'wizard_teste_helpers.dart';
@@ -67,62 +63,19 @@ void main() {
     matching: find.text(nome),
   );
 
-  /// Abre [rota] (o wizard novo ou a edição de C) sobre a lista e os
-  /// detalhes, que viram textos.
+  /// Abre [rota] (o wizard novo ou a edição de C) com `abrirWizard`.
   Future<void> abrir(
     WidgetTester tester,
     String rota, {
     ThemeMode themeMode = ThemeMode.light,
     Size tamanho = const Size(800, 2400),
-  }) async {
-    tester.view
-      ..physicalSize = tamanho
-      ..devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final router = GoRouter(
-      initialLocation: AppRoutes.orcamentos,
-      routes: [
-        GoRoute(
-          path: AppRoutes.orcamentos,
-          builder: (_, _) => const Text('lista'),
-          routes: [
-            GoRoute(
-              path: 'novo',
-              builder: (_, _) => const OrcamentoWizardPage(),
-            ),
-            GoRoute(
-              path: ':id',
-              builder: (_, state) =>
-                  Text('detalhes ${state.pathParameters['id']}'),
-              routes: [
-                GoRoute(
-                  path: 'editar',
-                  builder: (_, state) => OrcamentoWizardPage(
-                    orcamentoId: state.pathParameters['id'],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: overrides,
-        child: MaterialApp.router(
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: themeMode,
-          routerConfig: router,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    unawaited(router.push(rota));
-    await tester.pumpAndSettle();
-  }
+  }) => abrirWizard(
+    tester,
+    rota,
+    overrides: overrides,
+    themeMode: themeMode,
+    tamanho: tamanho,
+  );
 
   /// Da etapa 1 da edição até salvar, sem mexer nas outras etapas.
   Future<Orcamento> salvarEdicao(WidgetTester tester) async {
