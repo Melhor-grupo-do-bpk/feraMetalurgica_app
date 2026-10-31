@@ -11,7 +11,7 @@ import 'package:fera_metalurgica_app/features/orcamentos/domain/calculadora_orca
 import 'package:fera_metalurgica_app/features/orcamentos/domain/material_snapshot.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/validacao_orcamento.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/aviso_inline.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/aviso_inline.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/campo_texto.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/linha_resumo.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/produto/rascunho_produto.dart';
@@ -325,8 +325,10 @@ class _PecaFormState extends ConsumerState<PecaForm> {
               texto:
                   'A unidade do material mudou para $simbolo. Confira as '
                   'medidas antes de aceitar a peça.',
-              acao: 'Medidas conferidas',
-              onAcao: () => setState(() => _medidasARevisar = false),
+              acao: TextButton(
+                onPressed: () => setState(() => _medidasARevisar = false),
+                child: const Text('Medidas conferidas'),
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
           ],

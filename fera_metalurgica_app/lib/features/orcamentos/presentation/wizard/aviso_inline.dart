@@ -3,20 +3,28 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Aviso em destaque dentro da etapa 2 (produto não adicionado, medidas a
-/// revisar), com uma ação opcional.
+/// Aviso em destaque dentro das etapas do wizard e da prévia: documento de
+/// outro cadastro (etapa 1), produto não adicionado e medidas a revisar
+/// (etapa 2), total zero (etapa 3 e prévia). Fundo `accentContainer`,
+/// ícone e texto em `onAccentContainer`, e uma ação opcional à direita.
 class AvisoInline extends StatelessWidget {
   /// Cria o aviso.
-  const AvisoInline({required this.texto, this.acao, this.onAcao, super.key});
+  const AvisoInline({
+    required this.texto,
+    this.icone = Icons.info_outline,
+    this.acao,
+    super.key,
+  });
 
   /// Mensagem.
   final String texto;
 
-  /// Rótulo do botão; sem ele (ou sem [onAcao]), não há botão.
-  final String? acao;
+  /// Ícone à esquerda do texto.
+  final IconData icone;
 
-  /// Ação do botão.
-  final VoidCallback? onAcao;
+  /// Botão abaixo do texto, alinhado à direita. Um `TextButton` aqui
+  /// recebe a cor `onAccentContainer`, que tem contraste com o fundo.
+  final Widget? acao;
 
   @override
   Widget build(BuildContext context) {
@@ -30,16 +38,12 @@ class AvisoInline extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.info_outline,
-                size: 20,
-                color: colors.onAccentContainer,
-              ),
+              Icon(icone, size: 20, color: colors.onAccentContainer),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
@@ -51,17 +55,20 @@ class AvisoInline extends StatelessWidget {
               ),
             ],
           ),
-          if (acao != null && onAcao != null)
+          if (acao != null) ...[
+            const SizedBox(height: AppSpacing.xs),
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: colors.onAccentContainer,
+              child: TextButtonTheme(
+                data: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.onAccentContainer,
+                  ),
                 ),
-                onPressed: onAcao,
-                child: Text(acao),
+                child: acao,
               ),
             ),
+          ],
         ],
       ),
     );

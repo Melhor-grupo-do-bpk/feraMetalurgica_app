@@ -9,6 +9,7 @@ import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/clientes/clientes.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/cliente_snapshot.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/aviso_inline.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/orcamento_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -429,7 +430,7 @@ class _AvisoDocumento extends ConsumerWidget {
 
     if (ehOutroCadastro) {
       return _Aviso(
-        chave: 'cliente-aviso-outro-cadastro',
+        key: const ValueKey('cliente-aviso-outro-cadastro'),
         texto:
             'Este documento é do cadastro de ${cadastro.nome}. Ao salvar, os '
             'dados desse cadastro serão atualizados com os digitados aqui.',
@@ -442,7 +443,7 @@ class _AvisoDocumento extends ConsumerWidget {
     }
     if (documentoMudou && cadastro == null && referencia != null) {
       return _Aviso(
-        chave: 'cliente-aviso-cadastro-novo',
+        key: const ValueKey('cliente-aviso-cadastro-novo'),
         texto:
             'O documento mudou e pode ser de outra pessoa. Nenhum cliente tem '
             'este documento: ao salvar, será criado um cadastro novo, e o de '
@@ -453,53 +454,16 @@ class _AvisoDocumento extends ConsumerWidget {
   }
 }
 
+/// Aviso da etapa 1, com o espaço abaixo dele.
 class _Aviso extends StatelessWidget {
-  const _Aviso({required this.chave, required this.texto, this.acao});
+  const _Aviso({required this.texto, this.acao, super.key});
 
-  final String chave;
   final String texto;
   final Widget? acao;
 
   @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final acao = this.acao;
-    return Container(
-      key: ValueKey(chave),
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: colors.accentContainer,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.info_outline,
-                size: 20,
-                color: colors.onAccentContainer,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  texto,
-                  style: AppTextStyles.body.copyWith(
-                    color: colors.onAccentContainer,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (acao != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Align(alignment: Alignment.centerRight, child: acao),
-          ],
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+    child: AvisoInline(texto: texto, acao: acao),
+  );
 }
