@@ -30,7 +30,7 @@ void main() {
     expect(mensagem, contains('Nº 081023-01 rev. 2'));
   });
 
-  test('não mostra custos internos nem adicionais (D-16)', () {
+  test('só o total geral, sem custos nem adicionais (D-39)', () {
     final mensagem = montarMensagemWhatsApp(orcamentoExemploC);
 
     // O único valor em reais é o total geral.

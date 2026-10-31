@@ -269,4 +269,26 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('cabe em 360 dp no modo escuro', (tester) async {
+    await abrirDashboard(tester, themeMode: ThemeMode.dark);
+    tester.view.physicalSize = const Size(360, 800);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('o recente mostra a data da revisão atual (HO-V2-F2-04)', (
+    tester,
+  ) async {
+    // Criado em 05/10 (o código), revisado e enviado em 09/10.
+    when(
+      orcamentos.listarResumos,
+    ).thenAnswer((_) async => [orcamentoExemploEnviado, orcamentoExemploB]);
+    await abrirDashboard(tester);
+
+    expect(find.textContaining('051023-02 rev. 2'), findsOneWidget);
+    expect(find.textContaining('09/10/2023'), findsOneWidget);
+    expect(find.textContaining('05/10/2023'), findsNothing);
+  });
 }
