@@ -42,7 +42,17 @@ void main() {
     expect(find.byType(OrcamentoWizardPage), findsNothing);
     expect(find.byType(OrcamentoDetalhesPage), findsOneWidget);
     expect(find.text('261026-01'), findsOneWidget);
-    expect(find.text(r'R$ 1.098,00'), findsOneWidget);
+    // Um produto sem adicionais repete o valor nos totais (D-39); confere
+    // a linha "Total geral".
+    expect(
+      find.descendant(
+        of: find
+            .ancestor(of: find.text('Total geral'), matching: find.byType(Row))
+            .first,
+        matching: find.text(r'R$ 1.098,00'),
+      ),
+      findsOneWidget,
+    );
 
     // Voltar dos detalhes leva à lista, que já mostra o orçamento.
     await tocar(tester, find.byTooltip('Voltar'));
