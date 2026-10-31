@@ -1,7 +1,7 @@
 ---
 trilha: V2-G
 titulo: Acabamento da rodada v2
-status: em revisão     # pendente | em andamento | em revisão | concluída
+status: concluída     # pendente | em andamento | em revisão | concluída
 responsavel: Felipe Drehmer (Claude Code, Opus 5.5)
 branch: feat/v2-g-acabamento
 depende_de: V2-A, V2-B, V2-C, V2-D, V2-E

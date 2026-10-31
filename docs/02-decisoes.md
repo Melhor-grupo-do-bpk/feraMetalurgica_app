@@ -583,3 +583,25 @@ continua só com o total geral.
   tarefa leva ao dia dela.
 - **Destaque:** faixa e marcador na cor de erro e a etiqueta "ATRASADA" no
   lugar da etiqueta do tipo, na agenda e nas tarefas do orçamento.
+
+### D-42
+**Acabamento da v2** (HO-V2-G-01, revisão do plano da V2-G, 31/10/2026).
+
+- **Diálogos:** o `AppTheme` usa `dialogTheme.backgroundColor = surface`.
+  O fundo padrão (`surfaceContainerHigh`) dava 4,41:1 ao `TextButton` em
+  `primary`; em `surface`, dá 4,64:1 no claro e 5,18:1 no escuro (D-25).
+  Os botões neutros ("Cancelar", "Entendi") ficam no laranja do tema, e a
+  ação destrutiva, na cor de erro. Nenhum diálogo tem cor própria nos
+  botões.
+- **Confirmação:** toda confirmação usa o `confirmarAcao` de
+  `core/widgets/confirmar_acao.dart`.
+- **`TimelineTile`:** com a linha abaixo de 440 dp (celulares), a
+  etiqueta ("PRODUÇÃO", "ATRASADA") fica acima do título; no tablet, ao
+  lado.
+- **`Dinheiro.formatado`** formata a partir dos centavos em `int`
+  (`formatarCentesimosPtBr`), sem `double` (D-26). Não há outro
+  formatador de moeda no app.
+- **Etapa 2:** os campos de dinheiro da peça continuam com o `CampoTexto`
+  decimal da feature (rótulo dentro da caixa, sufixo e ajuda); o
+  `CampoDinheiro` do core serve aos formulários com o rótulo acima.
+

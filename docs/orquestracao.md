@@ -8,7 +8,7 @@ não editam. A rodada anterior (telas v1) está em
 
 O **quê** desta rodada está em [`v2-plano.md`](v2-plano.md) e em
 [`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md). As
-decisões D-26 a D-41 em [`02-decisoes.md`](02-decisoes.md) valem sobre o
+decisões D-26 a D-42 em [`02-decisoes.md`](02-decisoes.md) valem sobre o
 prompt quando divergem dele (ex: Riverpod, edição, status).
 
 Precedência: nesta rodada, este arquivo vale sobre a seção 6 ("Git e PR")
@@ -38,7 +38,7 @@ trilha" de [`04-plano.md`](04-plano.md). As tarefas da rodada anterior em
 | V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | integrada |
 | V2-D | [Orçamentos salvos](tarefas/v2/D-orcamentos-salvos.md) | `feat/v2-d-salvos` | F2 integrada | integrada |
 | V2-E | [Agenda](tarefas/v2/E-agenda.md) | `feat/v2-e-agenda` | F2 integrada | integrada |
-| V2-G | [Acabamento](tarefas/v2/G-acabamento.md) | `feat/v2-g-acabamento` | A a E integradas | liberada |
+| V2-G | [Acabamento](tarefas/v2/G-acabamento.md) | `feat/v2-g-acabamento` | A a E integradas | integrada |
 
 A worktree de uma trilha só é criada (a partir da `integracao/v2`) quando
 todas as dependências dela estão integradas.
@@ -68,7 +68,7 @@ arquivos da sua linha, mais o próprio arquivo em `docs/tarefas/v2/` e
 | V2-F1 | **Só arquivos novos**: `lib/core/domain/**`; `lib/features/orcamentos/domain/v2/**`; `lib/features/materiais/{materiais.dart,domain/**}`; `lib/features/empresa/{empresa.dart,domain/**}`; `lib/features/clientes/{clientes.dart,domain/**}`; `test/unit/v2/**`. Além disso, a seção "Domínio do negócio" do `CLAUDE.md` e do `.cursorrules` (ver tarefa). |
 | V2-F2 | Qualquer arquivo (roda sozinha, entre a F1 e as trilhas paralelas). |
 | V2-A | `lib/features/orcamentos/presentation/wizard/etapa_produtos.dart` e arquivos novos em `wizard/produto/**`; testes novos em `test/widget/orcamentos/wizard/etapa_produtos*_test.dart`. Na `wizard_teste_helpers.dart`, só a linha do produto em `preencherStub` (ver abaixo). |
-| V2-B | Em `lib/features/orcamentos/presentation/wizard/`: `etapa_cliente.dart`, `etapa_valores.dart`, `etapa_previa.dart`, `orcamento_wizard_page.dart`, `wizard_dialogos.dart` e arquivos novos em `wizard/previa/**`. Testes: `test/widget/orcamentos/wizard/{orcamento_wizard_page_test,wizard_fluxo_completo_test}.dart` e testes novos em `test/widget/orcamentos/wizard/etapa_{cliente,valores,previa}*_test.dart`. Na `wizard_teste_helpers.dart`, as etapas 1, 3 e 4 de `preencherStub`. |
+| V2-B | Em `lib/features/orcamentos/presentation/wizard/`: `etapa_cliente.dart`, `etapa_valores.dart`, `etapa_previa.dart`, `orcamento_wizard_page.dart`, `wizard_dialogos.dart` (hoje `core/widgets/confirmar_acao.dart`) e arquivos novos em `wizard/previa/**`. Testes: `test/widget/orcamentos/wizard/{orcamento_wizard_page_test,wizard_fluxo_completo_test}.dart` e testes novos em `test/widget/orcamentos/wizard/etapa_{cliente,valores,previa}*_test.dart`. Na `wizard_teste_helpers.dart`, as etapas 1, 3 e 4 de `preencherStub`. |
 | V2-C | `lib/features/materiais/presentation/{lista,form}/**`, `lib/features/materiais/presentation/materiais_ui.dart` e `lib/features/empresa/presentation/empresa_page.dart`, mais arquivos novos nessas pastas; testes novos em `test/widget/{materiais,empresa}/**`. |
 | V2-D | `lib/features/orcamentos/presentation/{lista,detalhes,pdf}/**`, `lib/features/orcamentos/data/{pdf,whatsapp}/**`, `lib/features/orcamentos/domain/mensagem_whatsapp.dart` e `lib/features/dashboard/presentation/**` (exceto `dashboard_routes.dart`). Testes: `test/widget/orcamentos/{lista,detalhes,pdf}/**`, `test/widget/dashboard_page_test.dart` e `test/unit/{dashboard_indicadores,mensagem_whatsapp,orcamento_pdf_builder,whatsapp_launcher}_test.dart`. |
 | V2-E | `lib/features/cronograma/presentation/**` (exceto `cronograma_controller.dart`, `cronograma_routes.dart` e `cronograma_ui.dart`); `test/widget/cronograma/**`. |
@@ -96,6 +96,15 @@ que está na linha da V2-D), `core/**`, `main.dart`, `test/mocks/**`,
   garante que a tela devolve o id ao salvar.
 
 Arquivos de teste novos que não couberem nessas pastas: peça no handoff.
+
+**Caminhos que a V2-G mudou** (HO-V2-G-04): `wizard/wizard_dialogos.dart`
+→ `core/widgets/confirmar_acao.dart`; `wizard/produto/aviso_inline.dart`
+→ `wizard/aviso_inline.dart`;
+`test/widget/materiais/materiais_teste_helpers.dart` →
+`test/widget/core/teste_helpers.dart`;
+`test/widget/cronograma/tarefas_atrasadas_test.dart` →
+`test/unit/tarefas_atrasadas_test.dart`. A tabela acima mostra a posse
+durante a rodada, com os caminhos da época.
 
 ## 4. Contratos
 
@@ -273,3 +282,8 @@ Quando o responsável avisa que uma trilha terminou, o orquestrador:
 | HO-V2-E-01 (linhas do `telas_pequenas_test`) | Aplicado: a rota `tarefa(orcamentoId:)` e um teste da folha de atrasadas, que grava antes uma tarefa pendente de anteontem (`abrir(..., preparar:)`). | ver log |
 | HO-V2-E-02 (decisões da agenda) | Aceito, registrado na D-41. | ver log |
 | HO-V2-E-03 (avisos) | Registrados. A tarefa atrasada no seed de debug não entra: mudaria os cards e os testes que usam os exemplos. | — |
+| Revisão do plano da V2-G | TimelineTile só se reproduzisse (reproduziu); fundo `surface` nos diálogos; `CampoTexto` mantido na etapa 2; `currency_format` removido; testes puros da E em `test/unit/`. | merge da V2-G |
+| HO-V2-G-01 (escolhas para um D-xx) | Aceito, registrado na D-42. | ver log |
+| HO-V2-G-02 (juntados e separados) | Registrado. | — |
+| HO-V2-G-03 (`TarefasDoOrcamento` espreme o título a 360 dp) | Aceito como pendência para depois da v2: não transborda e passa no `telas_pequenas_test`. | — |
+| HO-V2-G-04 (caminhos que mudaram, ambiente) | Aplicado na seção 3. As licenças do Android ficam com o responsável. | ver log |
