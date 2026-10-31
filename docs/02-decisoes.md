@@ -549,3 +549,17 @@ A prévia comercial (etapa 4), o PDF e os detalhes mostram, nesta ordem:
 O custo das peças e dos materiais **não** vai para o documento do cliente;
 aparece só no detalhe interno das peças (prompt §4). A mensagem do WhatsApp
 continua só com o total geral.
+
+### D-40
+**Material em uso não troca de unidade** (revisão do plano da V2-C,
+30/10/2026).
+
+- `MaterialRepository.estaEmUso(id)` diz se alguma peça de orçamento salvo
+  copiou o material (`pecas_orcamento.material_origem_id`). O SQLite
+  consulta a tabela direto, sem a feature de materiais importar a de
+  orçamentos. A tela usa o `materialEmUsoProvider(id)`.
+- Num material em uso, a troca de unidade é **bloqueada**: o formulário
+  explica que é preciso cadastrar um material novo e inativar o atual
+  (prompt §3.1). Num material sem uso, a troca é livre.
+- Os orçamentos salvos não mudam em nenhum caso, porque guardam a cópia do
+  material (D-26).

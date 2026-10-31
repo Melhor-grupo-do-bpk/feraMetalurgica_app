@@ -285,7 +285,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
                 formatadores: [
                   FilteringTextInputFormatter.allow(RegExp('[a-zA-Z]')),
                   LengthLimitingTextInputFormatter(2),
-                  const _MaiusculasInputFormatter(),
+                  const MaiusculasInputFormatter(),
                 ],
               ),
               campo(
@@ -502,15 +502,4 @@ class _Aviso extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Deixa o texto em maiúsculas (a UF).
-class _MaiusculasInputFormatter extends TextInputFormatter {
-  const _MaiusculasInputFormatter();
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) => newValue.copyWith(text: newValue.text.toUpperCase());
 }

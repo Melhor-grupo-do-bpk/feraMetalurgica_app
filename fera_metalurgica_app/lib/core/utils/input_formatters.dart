@@ -70,6 +70,18 @@ class TelefoneInputFormatter extends _MascaraInputFormatter {
   String formatar(String valor) => formatarTelefone(valor);
 }
 
+/// Deixa o texto em maiúsculas (ex: a UF do endereço).
+class MaiusculasInputFormatter extends TextInputFormatter {
+  /// Cria o formatter.
+  const MaiusculasInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) => newValue.copyWith(text: newValue.text.toUpperCase());
+}
+
 /// Máscara de CPF/CNPJ para `TextField`, que alterna conforme o número de
 /// dígitos (ver [formatarCpfCnpj]).
 class CpfCnpjInputFormatter extends _MascaraInputFormatter {

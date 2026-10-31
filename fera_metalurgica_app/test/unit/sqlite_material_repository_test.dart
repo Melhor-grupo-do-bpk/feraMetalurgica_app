@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../mocks/banco_de_teste.dart';
+import '../mocks/container_de_teste.dart';
+import '../mocks/dados_exemplo.dart';
 import 'v2/dados_v2.dart';
 
 void main() {
@@ -15,6 +17,18 @@ void main() {
     repositorio = SqliteMaterialRepository(banco);
   });
   tearDown(() => banco.close());
+
+  test(
+    'estaEmUso: só com peça de orçamento salvo que copiou o material',
+    () async {
+      final comOrcamento = await bancoComOrcamentos([orcamentoExemploC]);
+      final repo = SqliteMaterialRepository(comOrcamento);
+      final usado = orcamentoExemploC.itens.first.pecas.first.material;
+
+      expect(await repo.estaEmUso(usado.materialOrigemId!), isTrue);
+      expect(await repo.estaEmUso('material-sem-uso'), isFalse);
+    },
+  );
 
   test('salva e lê de volta o material, com unidade e preço', () async {
     await repositorio.salvar(madeira);

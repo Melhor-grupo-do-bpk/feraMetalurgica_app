@@ -3,6 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('MaiusculasInputFormatter deixa o texto em maiúsculas', () {
+    final valor = const MaiusculasInputFormatter().formatEditUpdate(
+      TextEditingValue.empty,
+      const TextEditingValue(text: 'rs'),
+    );
+    expect(valor.text, 'RS');
+  });
+
   group('formatarTelefone', () {
     test('formata enquanto digita, sem separador sobrando', () {
       expect(formatarTelefone(''), '');
