@@ -35,8 +35,22 @@ Future<void> abrirEm(
 ProviderContainer containerDoApp(WidgetTester tester) =>
     ProviderScope.containerOf(tester.element(find.byType(FeraApp)));
 
+/// Rola o `ListView` da tela até montar [finder], que pode estar fora da
+/// área já construída da lista.
+Future<void> _montar(WidgetTester tester, Finder finder) async {
+  if (finder.evaluate().isNotEmpty) return;
+  final lista = find
+      .descendant(of: find.byType(ListView), matching: find.byType(Scrollable))
+      .first;
+  // Volta ao topo e desce até achar: o alvo pode estar acima ou abaixo.
+  await tester.drag(lista, const Offset(0, 10000));
+  await tester.pumpAndSettle();
+  await tester.scrollUntilVisible(finder, 200, scrollable: lista);
+}
+
 /// Rola até [finder], toca e espera assentar.
 Future<void> tocar(WidgetTester tester, Finder finder) async {
+  await _montar(tester, finder);
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
@@ -46,6 +60,7 @@ Future<void> tocar(WidgetTester tester, Finder finder) async {
 /// Digita [texto] no campo de texto dentro de [campo] (que pode ser o
 /// próprio `TextField` ou um widget que o contém).
 Future<void> digitar(WidgetTester tester, Finder campo, String texto) async {
+  await _montar(tester, campo);
   final editavel = find.descendant(
     of: campo,
     matching: find.byType(EditableText),
