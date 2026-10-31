@@ -7,4 +7,10 @@ extension UnidadeCobrancaUi on UnidadeCobranca {
     UnidadeCobranca.m2 => 'm²',
     UnidadeCobranca.m3 => 'm³',
   };
+
+  /// Nome por extenso, para o leitor de tela (ex: "metro quadrado").
+  String get descricao => switch (this) {
+    UnidadeCobranca.m2 => 'metro quadrado',
+    UnidadeCobranca.m3 => 'metro cúbico',
+  };
 }
