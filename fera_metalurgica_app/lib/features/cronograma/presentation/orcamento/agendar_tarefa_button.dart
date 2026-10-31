@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Botão "Agendar" dos detalhes do orçamento (v2-plano §6, item 3): abre o
-/// formulário de tarefa já vinculado ao orçamento [orcamentoId]. A V2-D
-/// posiciona; a V2-E implementa.
-// TODO(V2-E): título preenchido (ex: "Produção 281026-03").
+/// formulário de tarefa já vinculado ao orçamento [orcamentoId], do tipo
+/// Produção e com o título "Produção 281026-03" (o `TarefaFormPage` busca o
+/// código). A V2-D posiciona; a V2-E implementa.
 class AgendarTarefaButton extends StatelessWidget {
   /// Cria o botão para o orçamento [orcamentoId].
   const AgendarTarefaButton({required this.orcamentoId, super.key});

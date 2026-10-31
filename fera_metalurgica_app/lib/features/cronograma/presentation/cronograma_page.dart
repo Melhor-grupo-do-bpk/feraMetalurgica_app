@@ -9,15 +9,18 @@ import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_secao.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/atalhos_dia.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/aviso_atrasadas.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/calendario_mensal.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/calendario_mes.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/filtros_tarefas_card.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/folha_atrasadas.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma_controller.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/tarefas_atrasadas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Cronograma e agenda (Tela 10), aberto pela aba "Mais".
+/// Cronograma e agenda (Tela 10): raiz da aba "Agenda" (D-31).
 class CronogramaPage extends ConsumerWidget {
   /// Cria a tela.
   const CronogramaPage({super.key});
@@ -29,6 +32,7 @@ class CronogramaPage extends ConsumerWidget {
     final filtro = ref.watch(agendaFiltroControllerProvider);
     final controller = ref.read(agendaFiltroControllerProvider.notifier);
     final agenda = ref.watch(agendaProvider);
+    final atrasadas = ref.watch(atrasadasProvider).value ?? const [];
 
     return Scaffold(
       // Raiz da aba "Agenda" (D-31): sem voltar.
@@ -47,6 +51,21 @@ class CronogramaPage extends ConsumerWidget {
           AppSpacing.xl * 3,
         ),
         children: [
+          Text(
+            'Agenda',
+            style: AppTextStyles.headline.copyWith(color: colors.textPrimary),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (atrasadas.isNotEmpty) ...[
+            AvisoAtrasadas(
+              quantidade: atrasadas.length,
+              onVer: () async {
+                final tarefa = await mostrarFolhaAtrasadas(context, atrasadas);
+                if (tarefa != null) controller.selecionarDia(tarefa.data);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
           SectionCard(
             child: CalendarioMensal(
               mesExibido: filtro.mesExibido,

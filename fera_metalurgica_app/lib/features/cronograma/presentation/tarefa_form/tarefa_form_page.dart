@@ -4,8 +4,10 @@ import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
+import 'package:fera_metalurgica_app/features/cronograma/domain/tipo_tarefa.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma_controller.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/tarefa_form/tarefa_form.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,10 +27,13 @@ class TarefaFormPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final id = tarefaId;
+    final vinculo = orcamentoId;
     return Scaffold(
       appBar: AppTopBar(onBack: () => context.pop()),
       body: id == null
-          ? TarefaForm(orcamentoIdInicial: orcamentoId)
+          ? (vinculo == null
+                ? const TarefaForm()
+                : _NovaDoOrcamento(orcamentoId: vinculo))
           : switch (ref.watch(tarefaPorIdProvider(id))) {
               AsyncData(value: final Tarefa tarefa) => TarefaForm(
                 inicial: tarefa,
@@ -42,6 +47,28 @@ class TarefaFormPage extends ConsumerWidget {
             },
     );
   }
+}
+
+/// Tarefa nova de "Agendar" (v2-plano §6, item 3): espera o orçamento para
+/// o título "Produção 281026-03". Sem o orçamento (excluído ou com falha ao
+/// carregar), o vínculo fica e o título vem vazio.
+class _NovaDoOrcamento extends ConsumerWidget {
+  const _NovaDoOrcamento({required this.orcamentoId});
+
+  final String orcamentoId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      switch (ref.watch(orcamentoPorIdProvider(orcamentoId))) {
+        AsyncValue(hasValue: false, hasError: false) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        final orcamento => TarefaForm(
+          orcamentoIdInicial: orcamentoId,
+          tipoInicial: TipoTarefa.producao,
+          codigoOrcamento: orcamento.value?.codigo,
+        ),
+      };
 }
 
 class _Mensagem extends StatelessWidget {
