@@ -140,8 +140,8 @@ divergem, vale este arquivo.
   (`LocalJsonStorage`).
 - **RNF-03**: `flutter analyze --fatal-infos` limpo e `flutter test` verde
   em todo PR (CI).
-- **RNF-04**: Textos, datas e moeda em pt-BR (`formatarMoeda`, `DateFormat`
-  com locale `pt_BR`).
+- **RNF-04**: Textos, datas e moeda em pt-BR (`Dinheiro.formatado`,
+  `DateFormat` com locale `pt_BR`).
 - **RNF-05**: Toda tela trata os estados carregando, vazio e erro do
   `AsyncValue`.
 - **RNF-06**: Áreas de toque de no mínimo 48 dp. Ícones de ação com

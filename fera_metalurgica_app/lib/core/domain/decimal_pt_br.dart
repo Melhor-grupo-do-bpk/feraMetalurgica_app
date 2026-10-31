@@ -1,5 +1,5 @@
-// Leitura de números decimais digitados em pt-BR, sem passar por `double`.
-// Base de `Dinheiro.tryParse` e `MedidaCm.tryParse` (D-26).
+// Leitura e escrita de números decimais em pt-BR, sem passar por `double`.
+// Base de `Dinheiro` e `MedidaCm` (D-26).
 
 final RegExp _somenteDigitos = RegExp(r'^\d+$');
 final RegExp _milhar = RegExp(r'^\d{1,3}(\.\d{3})+$');
@@ -54,4 +54,26 @@ int? lerCentesimosPtBr(String texto) {
   if (decimal.length > 2) return null;
 
   return int.parse(inteiro) * 100 + int.parse(decimal.padRight(2, '0'));
+}
+
+/// Inteiro com ponto de milhar pt-BR (ex: `1200` → `1.200`, `-1200` →
+/// `-1.200`).
+String comMilharPtBr(int valor) {
+  final digitos = valor.abs().toString();
+  final buffer = StringBuffer(valor < 0 ? '-' : '');
+  for (var i = 0; i < digitos.length; i++) {
+    if (i > 0 && (digitos.length - i) % 3 == 0) buffer.write('.');
+    buffer.write(digitos[i]);
+  }
+  return buffer.toString();
+}
+
+/// Escreve [centesimos] em pt-BR com duas casas e ponto de milhar (ex:
+/// `123456` → `1.234,56`, `-5` → `-0,05`). Só aritmética de `int`: exato
+/// para qualquer valor.
+String formatarCentesimosPtBr(int centesimos) {
+  final sinal = centesimos < 0 ? '-' : '';
+  final inteiro = (centesimos ~/ 100).abs();
+  final decimal = centesimos.remainder(100).abs().toString().padLeft(2, '0');
+  return '$sinal${comMilharPtBr(inteiro)},$decimal';
 }
