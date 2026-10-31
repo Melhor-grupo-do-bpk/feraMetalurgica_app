@@ -1,7 +1,7 @@
 ---
 trilha: V2-E
 titulo: Agenda
-status: em revisão  # pendente | em andamento | em revisão | concluída
+status: concluída    # pendente | em andamento | em revisão | concluída
 responsavel: Claude (agente V2-E)
 branch: feat/v2-e-agenda
 depende_de: V2-F2

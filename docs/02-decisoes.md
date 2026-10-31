@@ -563,3 +563,23 @@ continua só com o total geral.
   (prompt §3.1). Num material sem uso, a troca é livre.
 - Os orçamentos salvos não mudam em nenhum caso, porque guardam a cópia do
   material (D-26).
+
+### D-41
+**Agenda da v2** (HO-V2-E-02, revisão do plano da V2-E, 30/10/2026).
+
+- **"Agendar"** a partir de um orçamento abre uma tarefa nova vinculada,
+  com o tipo Produção e o título "Produção <código>". Usa o `codigo`, sem
+  a revisão, porque a tarefa se liga ao orçamento. O título acompanha a
+  troca de tipo até o operador editá-lo. Com o orçamento excluído, o título
+  vem vazio.
+- **Tarefas do orçamento** (nos detalhes): pendentes primeiro, depois as
+  concluídas, cada grupo em ordem cronológica. Sem tarefas, "Nenhuma
+  tarefa agendada.". A seção "Agenda" que as envolve é dos detalhes.
+- **Atrasada:** tarefa pendente de um dia anterior ao de hoje
+  (`agoraProvider`). Uma tarefa de hoje com a hora já passada não está
+  atrasada.
+- **Aviso de atrasadas:** no topo da agenda, conta todas, sem considerar
+  os filtros de tipo. "Ver" abre uma folha com a lista, e tocar numa
+  tarefa leva ao dia dela.
+- **Destaque:** faixa e marcador na cor de erro e a etiqueta "ATRASADA" no
+  lugar da etiqueta do tipo, na agenda e nas tarefas do orçamento.

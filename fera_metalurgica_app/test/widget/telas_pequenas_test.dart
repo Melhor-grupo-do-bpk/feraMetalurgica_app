@@ -1,4 +1,6 @@
+import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
+import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +27,7 @@ void main() {
     AppRoutes.materiais,
     AppRoutes.material(),
     AppRoutes.material(id: 'material-granito'),
+    AppRoutes.tarefa(orcamentoId: _c),
     AppRoutes.empresa,
     AppRoutes.novoOrcamento(),
     AppRoutes.detalhesOrcamento(_c),
@@ -46,6 +49,7 @@ void main() {
     String rota, {
     required Size tamanho,
     required ThemeMode tema,
+    Future<void> Function(ProviderContainer container)? preparar,
   }) async {
     tester.view
       ..physicalSize = tamanho
@@ -53,6 +57,14 @@ void main() {
     addTearDown(tester.view.reset);
     // Como `feraAppDeTeste()`, trocando os marcadores pelos ids gravados.
     final overrides = await overridesDeTeste();
+    if (preparar != null) {
+      final container = ProviderContainer(overrides: overrides);
+      try {
+        await preparar(container);
+      } finally {
+        container.dispose();
+      }
+    }
     final [b, c] = await orcamentosGravados(overrides);
     appRouter.go(rota.replaceAll(_c, c.id).replaceAll(_b, b.id));
     await tester.pumpWidget(
@@ -84,6 +96,40 @@ void main() {
         await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
         await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
       }
+      semantics.dispose();
+    });
+
+    // Os exemplos não têm tarefa atrasada: grava uma pendente de anteontem.
+    testWidgets('folha "tarefas atrasadas" em 360 dp, ${tema.name}', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await abrir(
+        tester,
+        AppRoutes.agenda,
+        tamanho: tamanhos['360 dp']!,
+        tema: tema,
+        preparar: (container) async {
+          final agora = container.read(agoraProvider);
+          await container
+              .read(tarefaRepositoryProvider)
+              .save(
+                Tarefa(
+                  id: 'tarefa-atrasada',
+                  titulo: 'Visita atrasada',
+                  data: agora.subtract(const Duration(days: 2)),
+                  tipo: TipoTarefa.visita,
+                ),
+              );
+        },
+      );
+      await tocar(tester, find.text('Ver'));
+
+      expect(find.text('Visita atrasada'), findsWidgets);
+      expect(tester.takeException(), isNull);
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
       semantics.dispose();
     });
 

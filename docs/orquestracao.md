@@ -8,7 +8,7 @@ não editam. A rodada anterior (telas v1) está em
 
 O **quê** desta rodada está em [`v2-plano.md`](v2-plano.md) e em
 [`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md). As
-decisões D-26 a D-38 em [`02-decisoes.md`](02-decisoes.md) valem sobre o
+decisões D-26 a D-41 em [`02-decisoes.md`](02-decisoes.md) valem sobre o
 prompt quando divergem dele (ex: Riverpod, edição, status).
 
 Precedência: nesta rodada, este arquivo vale sobre a seção 6 ("Git e PR")
@@ -37,8 +37,8 @@ trilha" de [`04-plano.md`](04-plano.md). As tarefas da rodada anterior em
 | V2-B | [Wizard: cliente, valores e prévia](tarefas/v2/B-cliente-valores-previa.md) | `feat/v2-b-cliente-valores` | F2 integrada | integrada |
 | V2-C | [Cadastros](tarefas/v2/C-cadastros.md) | `feat/v2-c-cadastros` | F2 integrada | integrada |
 | V2-D | [Orçamentos salvos](tarefas/v2/D-orcamentos-salvos.md) | `feat/v2-d-salvos` | F2 integrada | integrada |
-| V2-E | [Agenda](tarefas/v2/E-agenda.md) | `feat/v2-e-agenda` | F2 integrada | liberada |
-| V2-G | [Acabamento](tarefas/v2/G-acabamento.md) | `feat/v2-g-acabamento` | A a E integradas | aguardando |
+| V2-E | [Agenda](tarefas/v2/E-agenda.md) | `feat/v2-e-agenda` | F2 integrada | integrada |
+| V2-G | [Acabamento](tarefas/v2/G-acabamento.md) | `feat/v2-g-acabamento` | A a E integradas | liberada |
 
 A worktree de uma trilha só é criada (a partir da `integracao/v2`) quando
 todas as dependências dela estão integradas.
@@ -270,3 +270,6 @@ Quando o responsável avisa que uma trilha terminou, o orquestrador:
 | HO-V2-D-02 (asserção do total no `wizard_fluxo_completo_test`) | Aceito como veio na branch. | merge da V2-D |
 | HO-V2-D-03 (`bancoDeTeste()` compartilhava o banco em memória) | Aplicado: `abrirBancoDeDados(..., instanciaUnica:)`, e o `bancoDeTeste()` abre com `instanciaUnica: false`. | ver log |
 | HO-V2-D-04 (avisos) | Registrados. A instabilidade do `app_shell_test` não se repetiu em duas rodadas da suíte na integração. | — |
+| HO-V2-E-01 (linhas do `telas_pequenas_test`) | Aplicado: a rota `tarefa(orcamentoId:)` e um teste da folha de atrasadas, que grava antes uma tarefa pendente de anteontem (`abrir(..., preparar:)`). | ver log |
+| HO-V2-E-02 (decisões da agenda) | Aceito, registrado na D-41. | ver log |
+| HO-V2-E-03 (avisos) | Registrados. A tarefa atrasada no seed de debug não entra: mudaria os cards e os testes que usam os exemplos. | — |
