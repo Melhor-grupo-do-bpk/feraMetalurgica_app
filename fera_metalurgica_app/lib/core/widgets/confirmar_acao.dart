@@ -18,11 +18,6 @@ Future<bool> confirmarAcao(
       content: Text(mensagem),
       actions: [
         TextButton(
-          // A cor primária sobre o fundo do diálogo não chega a 4,5:1
-          // (D-25).
-          style: TextButton.styleFrom(
-            foregroundColor: context.colors.textPrimary,
-          ),
           onPressed: () => Navigator.of(context).pop(false),
           child: const Text('Cancelar'),
         ),

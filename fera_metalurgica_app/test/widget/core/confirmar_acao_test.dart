@@ -74,15 +74,24 @@ void main() {
   });
 
   for (final tema in [ThemeMode.light, ThemeMode.dark]) {
-    testWidgets('ação na cor de erro e contraste, ${tema.name}', (
-      tester,
-    ) async {
+    testWidgets('cores dos botões e contraste, ${tema.name}', (tester) async {
       final semantics = tester.ensureSemantics();
       await montar(tester, [], themeMode: tema);
 
       final contexto = tester.element(find.text('Excluir'));
       final cor = DefaultTextStyle.of(contexto).style.color;
       expect(cor, contexto.colors.error);
+      // "Cancelar" usa o `TextButton` do tema (`primary`), sem cor própria:
+      // o fundo do diálogo é `surface` (AppTheme, D-25).
+      final cancelar = tester.element(find.text('Cancelar'));
+      expect(
+        DefaultTextStyle.of(cancelar).style.color,
+        cancelar.colors.primary,
+      );
+      expect(
+        Theme.of(contexto).dialogTheme.backgroundColor,
+        contexto.colors.surface,
+      );
       await expectLater(tester, meetsGuideline(textContrastGuideline));
       await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
       semantics.dispose();
