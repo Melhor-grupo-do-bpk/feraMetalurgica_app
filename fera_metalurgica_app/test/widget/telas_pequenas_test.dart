@@ -1,3 +1,4 @@
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../mocks/container_de_teste.dart';
+import 'core/teste_helpers.dart';
 import 'orcamentos/wizard/wizard_teste_helpers.dart';
 
 /// Marcadores nas rotas para os orçamentos de exemplo, cujos ids são UUIDs
@@ -109,19 +111,7 @@ void main() {
         AppRoutes.agenda,
         tamanho: tamanhos['360 dp']!,
         tema: tema,
-        preparar: (container) async {
-          final agora = container.read(agoraProvider);
-          await container
-              .read(tarefaRepositoryProvider)
-              .save(
-                Tarefa(
-                  id: 'tarefa-atrasada',
-                  titulo: 'Visita atrasada',
-                  data: agora.subtract(const Duration(days: 2)),
-                  tipo: TipoTarefa.visita,
-                ),
-              );
-        },
+        preparar: _gravarAtrasada,
       );
       await tocar(tester, find.text('Ver'));
 
@@ -168,6 +158,69 @@ void main() {
     });
   }
 
+  // Formulários de cadastro com os erros de obrigatório à vista (HO-V2-C-01):
+  // confere no fim da lista, onde fica o "Salvar", e de novo no topo.
+  final formularios =
+      <(String, String, String, Future<void> Function(ProviderContainer)?)>[
+        (
+          'formulário de material',
+          AppRoutes.material(),
+          'Salvar material',
+          null,
+        ),
+        (
+          'dados da empresa',
+          AppRoutes.empresa,
+          'Salvar dados',
+          (container) => container.read(bancoDeDadosProvider).delete('empresa'),
+        ),
+      ];
+  for (final (nome, rota, salvar, preparar) in formularios) {
+    for (final tema in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets('$nome com os erros em 360 dp, ${tema.name}', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await abrir(
+          tester,
+          rota,
+          tamanho: tamanhos['360 dp']!,
+          tema: tema,
+          preparar: preparar,
+        );
+        await tocar(tester, find.text(salvar));
+        expect(find.text('Campo obrigatório'), findsWidgets);
+        await conferirAcessibilidade(tester);
+
+        await tester.drag(find.byType(Scrollable).first, const Offset(0, 5000));
+        await tester.pumpAndSettle();
+        expect(find.text('Campo obrigatório'), findsWidgets);
+        await conferirAcessibilidade(tester);
+        semantics.dispose();
+      });
+    }
+  }
+
+  // O aviso de atrasadas no topo da agenda (D-41), em todos os tamanhos.
+  for (final MapEntry(key: nome, value: tamanho) in tamanhos.entries) {
+    for (final tema in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets('aviso de atrasadas na agenda em $nome, ${tema.name}', (
+        tester,
+      ) async {
+        final semantics = tester.ensureSemantics();
+        await abrir(
+          tester,
+          AppRoutes.agenda,
+          tamanho: tamanho,
+          tema: tema,
+          preparar: _gravarAtrasada,
+        );
+
+        expect(find.byKey(const ValueKey('aviso-atrasadas')), findsOneWidget);
+        await conferirAcessibilidade(tester);
+        semantics.dispose();
+      });
+    }
+  }
+
   // Folhas e diálogos não têm rota: abre cada um a partir da tela dona.
   final sobreposicoes = <(String, String, List<Finder> Function())>[
     (
@@ -207,6 +260,11 @@ void main() {
         find.byTooltip('Mais opções'),
         find.text('Voltar para criado'),
       ],
+    ),
+    (
+      'diálogo "Excluir tarefa?"',
+      AppRoutes.tarefa(id: 'tarefa-producao-00124'),
+      () => [find.text('Excluir tarefa')],
     ),
     (
       'formulário de produto (etapa 2)',
@@ -276,4 +334,19 @@ void main() {
       });
     });
   }
+}
+
+/// Grava uma tarefa pendente de anteontem: os exemplos não têm atrasadas.
+Future<void> _gravarAtrasada(ProviderContainer container) async {
+  final agora = container.read(agoraProvider);
+  await container
+      .read(tarefaRepositoryProvider)
+      .save(
+        Tarefa(
+          id: 'tarefa-atrasada',
+          titulo: 'Visita atrasada',
+          data: agora.subtract(const Duration(days: 2)),
+          tipo: TipoTarefa.visita,
+        ),
+      );
 }
