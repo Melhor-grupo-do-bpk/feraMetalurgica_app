@@ -1,11 +1,47 @@
 # Plano de desenvolvimento
 
-> **Rodada v2 em andamento:** o plano desta rodada está em
-> [`v2-plano.md`](v2-plano.md) e a execução em
-> [`orquestracao.md`](orquestracao.md). O conteúdo abaixo é o plano da
-> rodada telas-v1, já concluída.
+## Rodada v2 (atual)
 
-## Estratégia
+O quê e por quê: [`v2-plano.md`](v2-plano.md) e
+[`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md). Execução
+(branches, worktrees, posse de arquivos, contratos, handoffs e integração):
+[`orquestracao.md`](orquestracao.md), que nesta rodada substitui as seções
+"Quem pode tocar em cada arquivo" e "Mudanças fora da sua trilha" abaixo.
+
+```
+V2-F1 Domínio e cálculo ──▶ V2-F2 Persistência e adaptação
+                              ├── V2-A Wizard: produtos e peças
+                              ├── V2-B Wizard: cliente, valores e prévia
+                              ├── V2-C Cadastros (materiais e empresa)
+                              ├── V2-D Orçamentos salvos, dashboard, PDF e WhatsApp
+                              └── V2-E Agenda
+                                        (todas) ──▶ V2-G Acabamento
+```
+
+| Trilha | Conteúdo | Arquivo |
+|---|---|---|
+| **V2-F1** | Objetos de valor, modelos, `CalculadoraOrcamento` e validações | [tarefas/v2/F1-dominio-calculo.md](tarefas/v2/F1-dominio-calculo.md) |
+| **V2-F2** | SQLite, repositórios, serviço de finalização, controller da edição; catálogo removido e Agenda como aba | [tarefas/v2/F2-persistencia.md](tarefas/v2/F2-persistencia.md) |
+| **V2-A** | Etapa 2: produtos e peças | [tarefas/v2/A-produtos-pecas.md](tarefas/v2/A-produtos-pecas.md) |
+| **V2-B** | Etapas 1, 3 e 4 e o "Finalizar" | [tarefas/v2/B-cliente-valores-previa.md](tarefas/v2/B-cliente-valores-previa.md) |
+| **V2-C** | Materiais e Dados da empresa | [tarefas/v2/C-cadastros.md](tarefas/v2/C-cadastros.md) |
+| **V2-D** | Lista, detalhes, dashboard, PDF e WhatsApp | [tarefas/v2/D-orcamentos-salvos.md](tarefas/v2/D-orcamentos-salvos.md) |
+| **V2-E** | Agendar, tarefas do orçamento e atrasadas | [tarefas/v2/E-agenda.md](tarefas/v2/E-agenda.md) |
+| **V2-G** | Duplicações entre trilhas, acessibilidade, fluxo de ponta a ponta, documentação e APK | [tarefas/v2/G-acabamento.md](tarefas/v2/G-acabamento.md) |
+
+O status de cada trilha fica no cabeçalho do próprio arquivo. F1, F2 e A a
+E estão concluídas e integradas na `integracao/v2`; a V2-G é a última. A
+`integracao/v2` vai para a `main` por PR.
+
+Os requisitos da v2 estão em [`01-requisitos.md`](01-requisitos.md), e as
+pendências com o cliente, no fim deste arquivo.
+
+## Rodada telas-v1 (concluída, histórico)
+
+O conteúdo abaixo é o plano da rodada telas-v1. As trilhas T2 a T8 estão
+concluídas; as regras de posse de arquivos valem só como referência.
+
+### Estratégia
 
 Primeiro uma fase **sequencial** (F1) cria tudo o que é compartilhado:
 modelos, controllers, rotas, utilitários, dependências e um arquivo vazio
@@ -26,7 +62,7 @@ F1 Fundação das telas (sequencial, bloqueia todas)
 Depois da F1 podem trabalhar até **5 pessoas ou IAs ao mesmo tempo** (T2,
 T3, T4, T6 e T7). A T5 começa quando a T2 entrar na `main`.
 
-## Trilhas
+### Trilhas
 
 | Trilha | Telas | Depende de | Arquivo |
 |---|---|---|---|
@@ -42,7 +78,7 @@ T3, T4, T6 e T7). A T5 começa quando a T2 entrar na `main`.
 O status de cada trilha fica no cabeçalho do próprio arquivo, e só quem
 está com a trilha o edita. Assim, este plano não vira ponto de conflito.
 
-## Quem pode tocar em cada arquivo
+### Quem pode tocar em cada arquivo
 
 Caminhos relativos a `fera_metalurgica_app/`. "Congelado" significa que, após
 a F1, só muda via "Mudanças fora da sua trilha" (abaixo).
@@ -66,7 +102,7 @@ a F1, só muda via "Mudanças fora da sua trilha" (abaixo).
 | `docs/02-decisoes.md` | qualquer trilha, **apenas acrescentando** no fim |
 | `CLAUDE.md`, `.cursorrules`, `docs/0*.md` | só com acordo do time |
 
-### Mudanças fora da sua trilha
+#### Mudanças fora da sua trilha
 
 Precisa mudar algo congelado (um widget novo em `core/widgets`, um método
 no repositório, uma constante)?
@@ -81,7 +117,7 @@ no repositório, uma constante)?
 Isso mantém os PRs das trilhas fáceis de revisar e evita duas versões do
 mesmo utilitário (regra 1 do `CLAUDE.md`).
 
-## Pontos de sincronização
+### Pontos de sincronização
 
 - **Fim da F1**: todo mundo dá rebase. A partir daí, a `main` sempre abre
   todas as telas (stubs) e passa no CI.
@@ -91,6 +127,11 @@ mesmo utilitário (regra 1 do `CLAUDE.md`).
 
 ## Pendências com o cliente
 
-Ficaram provisórias, com `TODO(cliente)` no código: margem (D-08), prazo
-(D-08), rascunho (D-07), validade e dados do emissor (D-04). Quando
-alguma for respondida, atualize a decisão e abra um PR `[cliente] ...`.
+As da rodada telas-v1 (margem, prazo, rascunho, validade e emissor) foram
+resolvidas pelo modelo da v2 (D-26, D-30, D-38). O que segue em aberto
+(custos de material no PDF, mensagem do WhatsApp, layout do PDF, prazo de
+entrega, histórico de revisões, lembretes e visão de semana na agenda, logo
+e cores) está em
+[`relatorios/2026-10-28-perguntas-cliente.md`](relatorios/2026-10-28-perguntas-cliente.md).
+Quando alguma for respondida, registre a decisão em `02-decisoes.md` e
+atualize a lista.

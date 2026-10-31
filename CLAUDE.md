@@ -49,7 +49,7 @@ lib/
     domain/      # objetos de valor compartilhados (Dinheiro, MedidaCm, Documento...)
     router/      # AppRouter (go_router) — única fonte de rotas do app
     theme/       # AppTheme + tokens (AppColors, AppTextStyles, AppSpacing)
-    widgets/     # componentes visuais compartilhados (AppTopBar, StatCard...)
+    widgets/     # componentes visuais (AppTopBar, CampoDinheiro, confirmarAcao...)
     utils/       # utilitários genéricos (ex: formatação, linha_sql)
     constants/   # constantes globais (ex: AppConstants)
   features/
@@ -162,8 +162,8 @@ As decisões D-26 a D-30 valem sobre o prompt.
 - **`Material`** — `id`, `nome`, `unidade`, `precoReferencia`
   (`Dinheiro`), `ativo` (`= true`). Inativar substitui excluir.
   `MaterialRepository`: `listarAtivos({filtro})`, `listarTodos`,
-  `buscarPorId`, `salvar`, `inativar`, `reativar`, `estaEmUso` (D-40). Atenção: o nome colide
-  com o widget `Material` do Flutter.
+  `buscarPorId`, `salvar`, `inativar`, `reativar`, `estaEmUso` (D-40).
+  Atenção: o nome colide com o widget `Material` do Flutter (D-36).
 - **`Empresa`** — `id`, `nomeRazaoSocial`, `documento`, `telefone`,
   `endereco`, `email?`. Getter `estaCompleta`.
   `EmpresaRepository`: `obter`, `salvar` (um emitente só).
