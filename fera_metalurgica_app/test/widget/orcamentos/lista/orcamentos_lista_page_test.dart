@@ -220,6 +220,34 @@ void main() {
     expect(find.text('05/10/2023'), findsNothing);
   });
 
+  testWidgets('"Excluir" do cartão confirma e tira o orçamento da lista', (
+    tester,
+  ) async {
+    await abrirLista(tester);
+    expect(cartoes(), findsNWidgets(3));
+
+    await tester.tap(find.byTooltip('Ações do orçamento 071023-01'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Excluir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Excluir o orçamento?'), findsOneWidget);
+
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(cartoes(), findsNWidgets(3));
+
+    await tester.tap(find.byTooltip('Ações do orçamento 071023-01'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Excluir'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Excluir'));
+    await tester.pumpAndSettle();
+
+    expect(cartoes(), findsNWidgets(2));
+    expect(find.text('071023-01'), findsNothing);
+    expect(find.text('Orçamento 071023-01 excluído.'), findsOneWidget);
+  });
+
   for (final modo in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets('cabe em 360 dp sem overflow (${modo.name})', (tester) async {
       await abrirLista(tester, themeMode: modo, tamanho: const Size(360, 800));

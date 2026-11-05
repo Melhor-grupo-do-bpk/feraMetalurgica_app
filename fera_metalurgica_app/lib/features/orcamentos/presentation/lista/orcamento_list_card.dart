@@ -7,13 +7,17 @@ import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/orcamentos_ui.dart';
 import 'package:flutter/material.dart';
 
+enum _AcaoCartao { excluir }
+
 /// Cartão de um orçamento na lista (Tela 8): código (com a revisão),
-/// cliente, status, data da revisão atual e o total geral gravado (D-30).
+/// cliente, status, data da revisão atual, o total geral gravado (D-30) e o
+/// menu com "Excluir".
 class OrcamentoListCard extends StatelessWidget {
   /// Cria o cartão de [orcamento].
   const OrcamentoListCard({
     required this.orcamento,
     required this.onTap,
+    required this.onExcluir,
     super.key,
   });
 
@@ -22,6 +26,9 @@ class OrcamentoListCard extends StatelessWidget {
 
   /// Ação ao tocar no cartão (abrir os detalhes).
   final VoidCallback onTap;
+
+  /// "Excluir" do menu do cartão.
+  final VoidCallback onExcluir;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +62,17 @@ class OrcamentoListCard extends StatelessWidget {
                   StatusChip(
                     label: orcamento.status.label,
                     tone: orcamento.status.tone,
+                  ),
+                  PopupMenuButton<_AcaoCartao>(
+                    tooltip: 'Ações do orçamento ${orcamento.codigoExibicao}',
+                    icon: Icon(Icons.more_vert, color: colors.textSecondary),
+                    onSelected: (_) => onExcluir(),
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(
+                        value: _AcaoCartao.excluir,
+                        child: Text('Excluir'),
+                      ),
+                    ],
                   ),
                 ],
               ),

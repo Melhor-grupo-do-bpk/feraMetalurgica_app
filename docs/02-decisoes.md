@@ -194,7 +194,7 @@ aqui no futuro.
 - Qualquer outra dependência exige uma nova decisão aqui.
 
 ### D-15
-**Envio por WhatsApp.**
+**Envio por WhatsApp.** O envio mudou na D-43: vai o PDF, não o link.
 
 Abre `https://wa.me/55<somente-dígitos>?text=<mensagem>` com
 `url_launcher` (`LaunchMode.externalApplication`). A mensagem tem saudação,
@@ -235,7 +235,7 @@ catálogo real da empresa.
   alfabética.
 
 ### D-19
-**Sino de notificações sem tela.**
+**Sino de notificações sem tela.** Substituída pela D-43: o sino saiu.
 
 O sino continua na `AppTopBar` sem ação (`onNotificationsPressed: null`).
 Não implemente notificações sem uma nova decisão.
@@ -604,4 +604,32 @@ continua só com o total geral.
 - **Etapa 2:** os campos de dinheiro da peça continuam com o `CampoTexto`
   decimal da feature (rótulo dentro da caixa, sufixo e ajuda); o
   `CampoDinheiro` do core serve aos formulários com o rótulo acima.
+
+### D-43
+**Ajustes depois da v2** (pedido do responsável, 03/11/2026).
+
+- **Excluir orçamento:** além do menu dos detalhes, cada cartão da lista
+  tem um menu com "Excluir". Os dois usam o `excluirOrcamento`, com a mesma
+  confirmação e as mesmas regras (D-30, D-38).
+- **Agenda:** os chips "Por dia" e "Todas" ficam acima da linha do tempo.
+  "Todas" mostra todas as tarefas dos tipos marcados, inclusive as
+  concluídas e as passadas, agrupadas por dia em ordem cronológica. Escolher
+  um dia no calendário ou numa tarefa atrasada volta para "Por dia".
+- **Materiais:** os chips são Ativos (padrão), Inativos e Todos.
+- **Indicadores do início:** o ícone fica na linha do rótulo e o valor usa a
+  largura toda do card, numa linha. Os quatro valores têm sempre o mesmo
+  tamanho: o maior, até 32, em que o valor mais longo cabe.
+- **Barra de navegação do sistema:** nenhuma tela fica por baixo dela. A
+  raiz do app (`FeraApp`) reserva o espaço e pinta a área com o fundo do
+  app, no claro e no escuro.
+- **WhatsApp:** "Enviar WhatsApp" manda o PDF, em vez da mensagem pelo
+  `wa.me`, que não aceita anexo. No Android, o `MainActivity` abre a conversa
+  do cliente com o arquivo anexado (extra `jid`, que não é API oficial do
+  WhatsApp); quem envia é o operador. Se não abrir (número inválido, iPhone
+  ou WhatsApp que recuse), abre o compartilhamento do sistema. O texto que
+  acompanha só tem a saudação, o código e o emitente: os valores ficam no
+  PDF (D-39). O status passa a `enviado` ao abrir, porque o app não sabe se
+  o operador enviou mesmo. O `url_launcher` saiu das dependências.
+- **Sino:** saiu da `AppTopBar`, porque não tinha função (D-19). O app não
+  tem notificações.
 

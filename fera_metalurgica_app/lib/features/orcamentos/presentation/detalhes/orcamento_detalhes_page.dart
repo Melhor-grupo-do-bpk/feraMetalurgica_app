@@ -9,11 +9,11 @@ import 'package:fera_metalurgica_app/core/widgets/confirmar_acao.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/whatsapp/whatsapp_launcher.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/mensagem_whatsapp.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/detalhes/acoes_orcamento_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/detalhes/detalhes_status_card.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/excluir_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/orcamentos_controller.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/wizard/previa/previa_orcamento.dart';
 import 'package:flutter/material.dart';
@@ -64,29 +64,32 @@ class _ConteudoState extends ConsumerState<_Conteudo> {
 
   Orcamento get _orcamento => widget.orcamento;
 
-  /// Envia o resumo pelo WhatsApp do cliente (RF-34, D-15). Abrir o
-  /// WhatsApp marca como enviado (D-29); reenviar mantém o `enviadoEm`.
+  // Gerar o PDF leva um instante: um segundo toque não abre outro envio.
+  bool _enviando = false;
+
+  /// Envia o PDF pelo WhatsApp do cliente (RF-34, D-43). Abrir o WhatsApp ou
+  /// o compartilhamento marca como enviado (D-29); reenviar mantém o
+  /// `enviadoEm`.
   Future<void> _enviarWhatsApp() async {
-    final abriu = await ref
-        .read(whatsappLauncherProvider)
-        .abrirWhatsApp(
-          _orcamento.cliente.celular,
-          montarMensagemWhatsApp(_orcamento),
+    if (_enviando) return;
+    _enviando = true;
+    try {
+      final abriu = await ref
+          .read(whatsappLauncherProvider)
+          .enviarOrcamento(_orcamento);
+      if (!abriu) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível enviar o PDF.')),
         );
-    if (!abriu) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Não foi possível abrir o WhatsApp. Confira o número do cliente.',
-          ),
-        ),
-      );
-      return;
+        return;
+      }
+      await ref
+          .read(orcamentosProvider.notifier)
+          .alterarStatus(_orcamento.id, StatusOrcamento.enviado);
+    } finally {
+      _enviando = false;
     }
-    await ref
-        .read(orcamentosProvider.notifier)
-        .alterarStatus(_orcamento.id, StatusOrcamento.enviado);
   }
 
   /// De criado para enviado, direto. De enviado para criado, confirma
@@ -112,50 +115,29 @@ class _ConteudoState extends ConsumerState<_Conteudo> {
     await orcamentos.alterarStatus(_orcamento.id, StatusOrcamento.criado);
   }
 
-  /// Exclui depois de confirmar e volta à tela anterior. O código não é
-  /// reutilizado (D-30). As tarefas vinculadas ficam na agenda sem o
-  /// vínculo (D-38): a agenda é recarregada aqui, porque o
-  /// `orcamentosProvider` não depende da agenda.
-  Future<void> _excluir() async {
-    final codigo = _orcamento.codigoExibicao;
-    final excluir = await confirmarAcao(
-      context,
-      titulo: 'Excluir o orçamento?',
-      mensagem:
-          'O orçamento $codigo sai da lista, e o código não volta a ser '
-          'usado. As tarefas vinculadas continuam na agenda, sem o vínculo.',
-      acao: 'Excluir',
-    );
-    if (!excluir || !mounted) return;
-
-    // Depois do `pop` esta tela some: o container e o mensageiro são
-    // guardados antes.
-    final container = ProviderScope.containerOf(context, listen: false);
-    final mensageiro = ScaffoldMessenger.of(context);
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go(AppRoutes.orcamentos);
-    }
-    try {
-      await container.read(orcamentosProvider.notifier).excluir(_orcamento.id);
-      container.invalidate(tarefasProvider);
-      mensageiro.showSnackBar(
-        SnackBar(content: Text('Orçamento $codigo excluído.')),
-      );
-    } on Exception catch (erro) {
-      debugPrint('Falha ao excluir o orçamento: $erro');
-      mensageiro.showSnackBar(
-        const SnackBar(content: Text('Não foi possível excluir o orçamento.')),
-      );
-    }
-  }
+  /// Exclui depois de confirmar e volta à tela anterior.
+  Future<void> _excluir() => excluirOrcamento(
+    context,
+    _orcamento,
+    aoConfirmar: () {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(AppRoutes.orcamentos);
+      }
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.xl,
+      ),
       children: [
         DetalhesStatusCard(
           orcamento: _orcamento,

@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../mocks/banco_de_teste.dart';
+import '../mocks/dados_exemplo.dart';
 import '../mocks/mock_whatsapp_launcher.dart';
 import 'core/teste_helpers.dart';
 
@@ -27,11 +28,11 @@ void main() {
 
   late MockWhatsappLauncher launcher;
 
+  setUpAll(() => registerFallbackValue(orcamentoExemploC));
+
   setUp(() {
     launcher = MockWhatsappLauncher();
-    when(
-      () => launcher.abrirWhatsApp(any(), any()),
-    ).thenAnswer((_) async => true);
+    when(() => launcher.enviarOrcamento(any())).thenAnswer((_) async => true);
   });
 
   Future<void> abrirAppVazio(WidgetTester tester) async {
@@ -273,7 +274,10 @@ void main() {
 
     // 7. Envio pelo WhatsApp (D-29, D-37).
     await tocar(tester, find.text('Enviar WhatsApp'));
-    verify(() => launcher.abrirWhatsApp('(51) 98888-7777', any())).called(1);
+    final enviadoPeloLauncher =
+        verify(() => launcher.enviarOrcamento(captureAny())).captured.single
+            as Orcamento;
+    expect(enviadoPeloLauncher.cliente.celular, '(51) 98888-7777');
     final [enviado] = await container.read(orcamentosProvider.future);
     expect(enviado.status, StatusOrcamento.enviado);
     expect(enviado.enviadoEm, agora);

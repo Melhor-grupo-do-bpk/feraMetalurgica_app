@@ -71,6 +71,25 @@ void main() {
     );
   });
 
+  testWidgets('os chips separam ativos, inativos e todos', (tester) async {
+    await abrirEm(tester, AppRoutes.materiais);
+    await containerDoApp(
+      tester,
+    ).read(materiaisProvider.notifier).inativar(mdfExemplo.id);
+    await tester.pumpAndSettle();
+
+    expect(cartao(granitoExemplo), findsOneWidget);
+    expect(cartao(mdfExemplo), findsNothing);
+
+    await tocar(tester, find.text('Inativos'));
+    expect(cartao(granitoExemplo), findsNothing);
+    expect(cartao(mdfExemplo), findsOneWidget);
+
+    await tocar(tester, find.text('Todos'));
+    expect(cartao(granitoExemplo), findsOneWidget);
+    expect(cartao(mdfExemplo), findsOneWidget);
+  });
+
   testWidgets('cancelar a inativação mantém o material ativo', (tester) async {
     await abrirEm(tester, AppRoutes.materiais);
 

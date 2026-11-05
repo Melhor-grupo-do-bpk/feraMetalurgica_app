@@ -1,6 +1,7 @@
 import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
+import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
@@ -9,6 +10,7 @@ import 'package:fera_metalurgica_app/features/materiais/materiais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -94,6 +96,36 @@ class FeraApp extends StatelessWidget {
       supportedLocales: const [Locale('pt', 'BR')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: appRouter,
+      builder: (context, child) => _BarraDoSistema(child: child!),
+    );
+  }
+}
+
+/// Mantém o app acima da barra de navegação do sistema (voltar, início e
+/// apps abertos) e pinta a área dela com o fundo do app. O Android recente
+/// desenha o app por baixo da barra e ignora a cor pedida a ela, por isso o
+/// espaço é reservado aqui, para todas as telas.
+class _BarraDoSistema extends StatelessWidget {
+  const _BarraDoSistema({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        systemNavigationBarColor: colors.background,
+        systemNavigationBarIconBrightness: escuro
+            ? Brightness.light
+            : Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: ColoredBox(
+        color: colors.background,
+        child: SafeArea(top: false, left: false, right: false, child: child),
+      ),
     );
   }
 }

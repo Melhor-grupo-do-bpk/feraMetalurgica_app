@@ -7,6 +7,7 @@ import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
 import 'package:fera_metalurgica_app/core/widgets/filter_chips_bar.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/excluir_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/lista/orcamento_list_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/lista/orcamentos_lista_filtro.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/orcamentos_controller.dart';
@@ -122,6 +123,7 @@ class _Lista extends StatelessWidget {
         return OrcamentoListCard(
           orcamento: orcamento,
           onTap: () => context.push(AppRoutes.detalhesOrcamento(orcamento.id)),
+          onExcluir: () => excluirOrcamento(context, orcamento),
         );
       },
     );

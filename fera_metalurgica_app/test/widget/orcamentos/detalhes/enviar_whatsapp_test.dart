@@ -1,7 +1,6 @@
 import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/data/whatsapp/whatsapp_launcher.dart';
-import 'package:fera_metalurgica_app/features/orcamentos/domain/mensagem_whatsapp.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,11 +13,13 @@ import '../../../mocks/dados_exemplo.dart';
 import '../../../mocks/mock_whatsapp_launcher.dart';
 import '../../core/pump_themed.dart';
 
-/// "Enviar WhatsApp" nos detalhes (RF-34, D-15, D-29), com o launcher
+/// "Enviar WhatsApp" nos detalhes (RF-34, D-29, D-43), com o launcher
 /// mockado.
 void main() {
   late Database banco;
   late MockWhatsappLauncher launcher;
+
+  setUpAll(() => registerFallbackValue(orcamentoExemploC));
 
   setUp(() async {
     banco = await bancoComOrcamentos(orcamentosExemplo);
@@ -49,24 +50,17 @@ void main() {
       (await SqliteOrcamentoRepository(banco).buscarPorId(id))!;
 
   void launcherResponde({required bool abriu}) => when(
-    () => launcher.abrirWhatsApp(any(), any()),
+    () => launcher.enviarOrcamento(any()),
   ).thenAnswer((_) async => abriu);
 
-  testWidgets('abre a conversa do cliente com o resumo e passa a "Enviado"', (
-    tester,
-  ) async {
+  testWidgets('envia o orçamento e passa a "Enviado"', (tester) async {
     launcherResponde(abriu: true);
     await abrirDetalhes(tester, 'orcamento-c');
 
     await tester.tap(find.text('Enviar WhatsApp'));
     await tester.pumpAndSettle();
 
-    verify(
-      () => launcher.abrirWhatsApp(
-        '(11) 99999-8888',
-        montarMensagemWhatsApp(orcamentoExemploC),
-      ),
-    ).called(1);
+    verify(() => launcher.enviarOrcamento(orcamentoExemploC)).called(1);
     final orcamento = await salvo('orcamento-c');
     expect(orcamento.status, StatusOrcamento.enviado);
     expect(orcamento.enviadoEm, agoraDosExemplos);
@@ -82,7 +76,7 @@ void main() {
     await tester.tap(find.text('Enviar WhatsApp'));
     await tester.pumpAndSettle();
 
-    verify(() => launcher.abrirWhatsApp(any(), any())).called(1);
+    verify(() => launcher.enviarOrcamento(any())).called(1);
     expect(await salvo('orcamento-e'), orcamentoExemploEnviado);
   });
 
@@ -95,12 +89,7 @@ void main() {
     await tester.tap(find.text('Enviar WhatsApp'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        'Não foi possível abrir o WhatsApp. Confira o número do cliente.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Não foi possível enviar o PDF.'), findsOneWidget);
     expect(await salvo('orcamento-c'), orcamentoExemploC);
   });
 }

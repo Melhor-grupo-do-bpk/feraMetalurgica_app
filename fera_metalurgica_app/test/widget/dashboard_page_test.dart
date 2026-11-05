@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
+import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/widgets/stat_card.dart';
@@ -88,9 +89,10 @@ void main() {
     WidgetTester tester, {
     ThemeMode themeMode = ThemeMode.light,
     bool aguardar = true,
+    Size tamanho = const Size(800, 2400),
   }) async {
     tester.view
-      ..physicalSize = const Size(800, 2400)
+      ..physicalSize = tamanho
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -290,5 +292,33 @@ void main() {
     expect(find.textContaining('051023-02 rev. 2'), findsOneWidget);
     expect(find.textContaining('09/10/2023'), findsOneWidget);
     expect(find.textContaining('05/10/2023'), findsNothing);
+  });
+
+  testWidgets('valor alto cabe numa linha, com os 4 cards no mesmo tamanho', (
+    tester,
+  ) async {
+    final enviado = _orcamentos[1];
+    when(orcamentos.listarResumos).thenAnswer(
+      (_) async => [
+        enviado.copyWith(
+          totais: enviado.totais.copyWith(
+            totalGeral: const Dinheiro(123456789),
+          ),
+        ),
+      ],
+    );
+    await abrirDashboard(tester, tamanho: const Size(360, 800));
+
+    expect(tester.takeException(), isNull);
+    expect(
+      find.descendant(
+        of: find.byType(StatCard),
+        matching: find.text(r'R$ 1.234.567,89'),
+      ),
+      findsOneWidget,
+    );
+    final cards = tester.widgetList<StatCard>(find.byType(StatCard));
+    expect(cards.map((c) => c.tamanhoValor).toSet(), hasLength(1));
+    expect(cards.first.tamanhoValor, lessThan(32));
   });
 }

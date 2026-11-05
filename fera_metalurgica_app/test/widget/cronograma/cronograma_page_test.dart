@@ -4,6 +4,7 @@ import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/widgets/timeline_tile.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/atalhos_dia.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -262,6 +263,68 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('2 tarefas'), findsOneWidget);
+  });
+
+  testWidgets('"Todas" mostra as tarefas de todos os dias', (tester) async {
+    salvas = [
+      ...salvas,
+      Tarefa(
+        id: 'tarefa-distante',
+        titulo: 'Entrega distante',
+        data: DateTime(2023, 12, 20, 10),
+        tipo: TipoTarefa.visita,
+      ),
+    ];
+    await abrirCronograma(tester);
+    expect(find.text('Entrega distante'), findsNothing);
+
+    await tester.tap(find.text('Todas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Entrega distante'), findsOneWidget);
+    expect(find.byType(AtalhosDia), findsNothing);
+
+    // Escolher um dia no calendário volta à visão por dia.
+    await tester.tap(find.text('15'));
+    await tester.pumpAndSettle();
+    expect(find.text('Entrega distante'), findsNothing);
+    expect(find.byType(AtalhosDia), findsOneWidget);
+  });
+
+  testWidgets('"Todas" sem tarefas avisa que não há nada agendado', (
+    tester,
+  ) async {
+    salvas = [];
+    await abrirCronograma(tester);
+
+    await tester.tap(find.text('Todas'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nenhuma tarefa agendada.'), findsOneWidget);
+  });
+
+  test('montarAgenda com todas agrupa por dia, em ordem', () {
+    final agenda = montarAgenda(
+      [
+        ...tarefasExemplo,
+        Tarefa(
+          id: 'antiga',
+          titulo: 'Antiga',
+          data: DateTime(2023, 1, 2, 9),
+          tipo: TipoTarefa.visita,
+          concluida: true,
+        ),
+      ],
+      diaSelecionado: DateTime(2023, 10, 9),
+      tipos: TipoTarefa.values.toSet(),
+      todas: true,
+    );
+
+    expect(agenda.secoes.map((s) => s.dia), [
+      DateTime(2023, 1, 2),
+      DateTime(2023, 10, 9),
+      DateTime(2023, 10, 10),
+    ]);
+    expect(agenda.secoes.map((s) => s.tarefas.length), [1, 2, 1]);
   });
 
   test('montarAgenda e rótulos', () {

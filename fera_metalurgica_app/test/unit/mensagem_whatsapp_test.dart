@@ -4,22 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import '../mocks/dados_exemplo.dart';
 
 void main() {
-  test('monta o resumo do exemplo C, com a validade (D-15)', () {
+  test('monta o texto que acompanha o PDF (D-43)', () {
     expect(
       montarMensagemWhatsApp(orcamentoExemploC),
-      'Olá, João da Silva! Segue o resumo do orçamento Nº 071023-01 da '
-      'Fera Metalúrgica Ltda.\n'
-      '\n'
-      'Valor total: R\$ 3.630,80\n'
-      'Validade: até 22/10/2023',
+      'Olá, João da Silva! Segue o orçamento Nº 071023-01 da '
+      'Fera Metalúrgica Ltda.',
     );
-  });
-
-  test('sem validade, não mostra a linha', () {
-    final mensagem = montarMensagemWhatsApp(orcamentoExemploB);
-
-    expect(mensagem, endsWith(r'Valor total: R$ 644,40'));
-    expect(mensagem, isNot(contains('Validade')));
   });
 
   test('a partir da 2ª revisão, mostra "rev. N" (D-30)', () {
@@ -30,12 +20,7 @@ void main() {
     expect(mensagem, contains('Nº 081023-01 rev. 2'));
   });
 
-  test('só o total geral, sem custos nem adicionais (D-39)', () {
-    final mensagem = montarMensagemWhatsApp(orcamentoExemploC);
-
-    // O único valor em reais é o total geral.
-    expect(RegExp(r'R\$').allMatches(mensagem), hasLength(1));
-    expect(mensagem.toLowerCase(), isNot(contains('custo')));
-    expect(mensagem.toLowerCase(), isNot(contains('desconto')));
+  test('sem valores: eles ficam no PDF (D-39)', () {
+    expect(montarMensagemWhatsApp(orcamentoExemploC), isNot(contains(r'R$')));
   });
 }

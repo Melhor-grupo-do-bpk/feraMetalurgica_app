@@ -5,6 +5,7 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
+import 'package:fera_metalurgica_app/core/widgets/filter_chips_bar.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_secao.dart';
@@ -81,11 +82,19 @@ class CronogramaPage extends ConsumerWidget {
             onAlterado: controller.marcarTipo,
           ),
           const SizedBox(height: AppSpacing.lg),
-          AtalhosDia(
-            diaSelecionado: filtro.diaSelecionado,
-            hoje: hoje,
-            onDiaSelecionado: controller.selecionarDia,
+          FilterChipsBar(
+            opcoes: const ['Por dia', 'Todas'],
+            selecionado: filtro.verTodas ? 1 : 0,
+            onSelecionado: (i) => controller.mostrarTodas(todas: i == 1),
           ),
+          if (!filtro.verTodas) ...[
+            const SizedBox(height: AppSpacing.md),
+            AtalhosDia(
+              diaSelecionado: filtro.diaSelecionado,
+              hoje: hoje,
+              onDiaSelecionado: controller.selecionarDia,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           Container(
             padding: const EdgeInsets.all(AppSpacing.md + AppSpacing.xxs),
@@ -95,6 +104,11 @@ class CronogramaPage extends ConsumerWidget {
               border: Border.all(color: colors.border),
             ),
             child: switch (agenda) {
+              AsyncData(:final value) when value.secoes.isEmpty => Text(
+                'Nenhuma tarefa agendada.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body.copyWith(color: colors.textSecondary),
+              ),
               AsyncData(:final value) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

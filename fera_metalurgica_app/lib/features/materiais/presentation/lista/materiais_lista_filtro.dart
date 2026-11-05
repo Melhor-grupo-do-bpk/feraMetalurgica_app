@@ -5,22 +5,46 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'materiais_lista_filtro.g.dart';
 
-/// Busca e chip Ativos/Todos da lista de materiais; não é persistido.
-typedef FiltroMateriais = ({String busca, bool somenteAtivos});
+/// Chips de situação da lista de materiais, na ordem de exibição.
+enum SituacaoMaterialFiltro {
+  /// Só os materiais ativos.
+  ativos('Ativos'),
+
+  /// Só os materiais inativos.
+  inativos('Inativos'),
+
+  /// Ativos e inativos.
+  todos('Todos');
+
+  const SituacaoMaterialFiltro(this.label);
+
+  /// Texto do chip.
+  final String label;
+
+  /// Se [material] aparece com este chip selecionado.
+  bool aceita(Material material) => switch (this) {
+    SituacaoMaterialFiltro.ativos => material.ativo,
+    SituacaoMaterialFiltro.inativos => !material.ativo,
+    SituacaoMaterialFiltro.todos => true,
+  };
+}
+
+/// Busca e chip de situação da lista de materiais; não é persistido.
+typedef FiltroMateriais = ({String busca, SituacaoMaterialFiltro situacao});
 
 /// Estado da busca e do filtro da lista de materiais. Começa em "Ativos".
 @riverpod
 class MateriaisListaFiltro extends _$MateriaisListaFiltro {
   @override
-  FiltroMateriais build() => (busca: '', somenteAtivos: true);
+  FiltroMateriais build() =>
+      (busca: '', situacao: SituacaoMaterialFiltro.ativos);
 
   /// Troca o texto da busca.
-  void buscar(String busca) =>
-      state = (busca: busca, somenteAtivos: state.somenteAtivos);
+  void buscar(String busca) => state = (busca: busca, situacao: state.situacao);
 
-  /// Troca o chip: `true` é "Ativos", `false` é "Todos".
-  void filtrarSomenteAtivos({required bool somenteAtivos}) =>
-      state = (busca: state.busca, somenteAtivos: somenteAtivos);
+  /// Troca o chip de situação.
+  void filtrarPorSituacao(SituacaoMaterialFiltro situacao) =>
+      state = (busca: state.busca, situacao: situacao);
 }
 
 /// Materiais de [materiaisProvider] que passam pelo filtro da tela, na
@@ -45,7 +69,7 @@ List<Material> filtrarMateriais(
   final busca = normalizarParaBusca(filtro.busca.trim());
   return [
     for (final m in materiais)
-      if ((!filtro.somenteAtivos || m.ativo) &&
+      if (filtro.situacao.aceita(m) &&
           (busca.isEmpty || normalizarParaBusca(m.nome).contains(busca)))
         m,
   ];

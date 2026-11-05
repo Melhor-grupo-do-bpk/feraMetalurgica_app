@@ -15,7 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Lista de materiais, aberta por "Mais" (D-31): busca por nome, filtro
-/// Ativos/Todos, e acesso a criar, editar, inativar e reativar (prompt
+/// Ativos/Inativos/Todos, e acesso a criar, editar, inativar e reativar (prompt
 /// §3.1). Materiais não são excluídos.
 class MateriaisPage extends ConsumerWidget {
   /// Cria a tela.
@@ -69,10 +69,14 @@ class MateriaisPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 FilterChipsBar(
-                  opcoes: const ['Ativos', 'Todos'],
-                  selecionado: filtro.somenteAtivos ? 0 : 1,
-                  onSelecionado: (i) =>
-                      notifier.filtrarSomenteAtivos(somenteAtivos: i == 0),
+                  opcoes: [
+                    for (final situacao in SituacaoMaterialFiltro.values)
+                      situacao.label,
+                  ],
+                  selecionado: filtro.situacao.index,
+                  onSelecionado: (i) => notifier.filtrarPorSituacao(
+                    SituacaoMaterialFiltro.values[i],
+                  ),
                 ),
               ],
             ),
