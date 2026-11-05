@@ -4,23 +4,29 @@ import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/widgets/timeline_tile.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/atalhos_dia.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_cronograma_repository.dart';
+import '../../mocks/dados_exemplo.dart';
+import '../../mocks/mock_tarefa_repository.dart';
 
 void main() {
-  late MockCronogramaRepository repository;
+  late MockTarefaRepository repository;
   late List<Tarefa> salvas;
 
-  setUpAll(() => registerFallbackValue(cronogramaSeed.first));
+  setUpAll(() => registerFallbackValue(tarefasExemplo.first));
 
   setUp(() {
-    salvas = [...cronogramaSeed];
-    repository = MockCronogramaRepository();
+    // A revisão vinculada ao exemplo C.
+    salvas = [
+      tarefasExemplo.first.copyWith(orcamentoId: 'orcamento-c'),
+      ...tarefasExemplo.skip(1),
+    ];
+    repository = MockTarefaRepository();
     when(() => repository.getAll()).thenAnswer((_) async => [...salvas]);
     when(() => repository.save(any())).thenAnswer((invocation) async {
       final tarefa = invocation.positionalArguments.first as Tarefa;
@@ -37,6 +43,7 @@ void main() {
   Future<void> abrirCronograma(
     WidgetTester tester, {
     ThemeMode themeMode = ThemeMode.light,
+    DateTime? agora,
   }) async {
     tester.view
       ..physicalSize = const Size(360, 3000)
@@ -44,10 +51,10 @@ void main() {
     addTearDown(tester.view.reset);
 
     final router = GoRouter(
-      initialLocation: AppRoutes.cronograma,
+      initialLocation: AppRoutes.agenda,
       routes: [
         GoRoute(
-          path: AppRoutes.cronograma,
+          path: AppRoutes.agenda,
           builder: (_, _) => const CronogramaPage(),
           routes: [
             GoRoute(
@@ -68,8 +75,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          cronogramaRepositoryProvider.overrideWithValue(repository),
-          agoraProvider.overrideWithValue(DateTime(2023, 10, 9, 8)),
+          tarefaRepositoryProvider.overrideWithValue(repository),
+          agoraProvider.overrideWithValue(agora ?? DateTime(2023, 10, 9, 8)),
         ],
         // Sem o retry automático do Riverpod, para o erro aparecer na hora.
         retry: (_, _) => null,
@@ -94,6 +101,9 @@ void main() {
     ) async {
       await abrirCronograma(tester, themeMode: modo);
 
+      // Raiz da aba "Agenda" (D-31): título, sem voltar.
+      expect(find.text('Agenda'), findsOneWidget);
+      expect(find.byTooltip('Voltar'), findsNothing);
       expect(find.text('Outubro 2023'), findsOneWidget);
       expect(find.text('FILTROS DE TAREFAS'), findsOneWidget);
       expect(find.text('Hoje, 9 Out'), findsOneWidget);
@@ -104,7 +114,7 @@ void main() {
       expect(find.text('2 tarefas'), findsOneWidget);
       expect(find.text('Amanhã'), findsOneWidget);
       expect(find.text('1 tarefa'), findsOneWidget);
-      expect(find.text('Revisar orçamento #00482'), findsOneWidget);
+      expect(find.text('Revisar orçamento'), findsOneWidget);
       expect(find.text('Manutenção preventiva Torno CNC'), findsOneWidget);
       expect(find.text('Iniciar produção do pedido #00124'), findsOneWidget);
       expect(find.text('09:00'), findsOneWidget);
@@ -133,7 +143,7 @@ void main() {
 
     expect(find.text('Manutenção preventiva Torno CNC'), findsNothing);
     expect(find.text('Iniciar produção do pedido #00124'), findsNothing);
-    expect(find.text('Revisar orçamento #00482'), findsOneWidget);
+    expect(find.text('Revisar orçamento'), findsOneWidget);
     expect(find.text('1 tarefa'), findsOneWidget);
     expect(find.text('0 tarefas'), findsOneWidget);
     expect(find.text('Nenhuma tarefa neste dia'), findsOneWidget);
@@ -145,7 +155,7 @@ void main() {
 
     await tester.tap(
       find.descendant(
-        of: tarefa('tarefa-revisar-00482'),
+        of: tarefa('tarefa-revisar-orcamento'),
         matching: find.byKey(const ValueKey('timeline-marcador')),
       ),
     );
@@ -153,10 +163,10 @@ void main() {
 
     final salva =
         verify(() => repository.save(captureAny())).captured.single as Tarefa;
-    expect((salva.id, salva.concluida), ('tarefa-revisar-00482', true));
+    expect((salva.id, salva.concluida), ('tarefa-revisar-orcamento', true));
     final tile = tester.widget<TimelineTile>(
       find.descendant(
-        of: tarefa('tarefa-revisar-00482'),
+        of: tarefa('tarefa-revisar-orcamento'),
         matching: find.byType(TimelineTile),
       ),
     );
@@ -221,7 +231,7 @@ void main() {
     await tester.tap(find.text('Ver Detalhes'));
     await tester.pumpAndSettle();
 
-    expect(find.text('detalhes 00482'), findsOneWidget);
+    expect(find.text('detalhes orcamento-c'), findsOneWidget);
   });
 
   testWidgets('"+" abre uma tarefa nova', (tester) async {
@@ -248,16 +258,78 @@ void main() {
 
     expect(find.text('Não foi possível carregar as tarefas.'), findsOneWidget);
 
-    when(() => repository.getAll()).thenAnswer((_) async => cronogramaSeed);
+    when(() => repository.getAll()).thenAnswer((_) async => tarefasExemplo);
     await tester.tap(find.text('Tentar novamente'));
     await tester.pumpAndSettle();
 
     expect(find.text('2 tarefas'), findsOneWidget);
   });
 
+  testWidgets('"Todas" mostra as tarefas de todos os dias', (tester) async {
+    salvas = [
+      ...salvas,
+      Tarefa(
+        id: 'tarefa-distante',
+        titulo: 'Entrega distante',
+        data: DateTime(2023, 12, 20, 10),
+        tipo: TipoTarefa.visita,
+      ),
+    ];
+    await abrirCronograma(tester);
+    expect(find.text('Entrega distante'), findsNothing);
+
+    await tester.tap(find.text('Todas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Entrega distante'), findsOneWidget);
+    expect(find.byType(AtalhosDia), findsNothing);
+
+    // Escolher um dia no calendário volta à visão por dia.
+    await tester.tap(find.text('15'));
+    await tester.pumpAndSettle();
+    expect(find.text('Entrega distante'), findsNothing);
+    expect(find.byType(AtalhosDia), findsOneWidget);
+  });
+
+  testWidgets('"Todas" sem tarefas avisa que não há nada agendado', (
+    tester,
+  ) async {
+    salvas = [];
+    await abrirCronograma(tester);
+
+    await tester.tap(find.text('Todas'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nenhuma tarefa agendada.'), findsOneWidget);
+  });
+
+  test('montarAgenda com todas agrupa por dia, em ordem', () {
+    final agenda = montarAgenda(
+      [
+        ...tarefasExemplo,
+        Tarefa(
+          id: 'antiga',
+          titulo: 'Antiga',
+          data: DateTime(2023, 1, 2, 9),
+          tipo: TipoTarefa.visita,
+          concluida: true,
+        ),
+      ],
+      diaSelecionado: DateTime(2023, 10, 9),
+      tipos: TipoTarefa.values.toSet(),
+      todas: true,
+    );
+
+    expect(agenda.secoes.map((s) => s.dia), [
+      DateTime(2023, 1, 2),
+      DateTime(2023, 10, 9),
+      DateTime(2023, 10, 10),
+    ]);
+    expect(agenda.secoes.map((s) => s.tarefas.length), [1, 2, 1]);
+  });
+
   test('montarAgenda e rótulos', () {
     final agenda = montarAgenda(
-      cronogramaSeed,
+      tarefasExemplo,
       diaSelecionado: DateTime(2023, 10, 9, 15),
       tipos: TipoTarefa.values.toSet(),
     );
@@ -273,5 +345,145 @@ void main() {
     expect(rotuloAtalho(DateTime(2023, 10, 11), hoje), 'Qua, 11 Out');
     expect(contarTarefas(0), '0 tarefas');
     expect(contarTarefas(1), '1 tarefa');
+  });
+
+  group('tarefas atrasadas', () {
+    Finder aviso() => find.byKey(const ValueKey('aviso-atrasadas'));
+
+    // Uma visita pendente de sábado (7) e uma concluída de sexta (6).
+    setUp(() {
+      salvas = [
+        Tarefa(
+          id: 'visita-sabado',
+          titulo: 'Visita na obra',
+          data: DateTime(2023, 10, 7, 16),
+          tipo: TipoTarefa.visita,
+        ),
+        Tarefa(
+          id: 'medicao-sexta',
+          titulo: 'Medição do vão',
+          data: DateTime(2023, 10, 6, 10),
+          tipo: TipoTarefa.visita,
+          concluida: true,
+        ),
+        ...salvas,
+      ];
+    });
+
+    for (final modo in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets('aviso com a contagem no topo (${modo.name})', (
+        tester,
+      ) async {
+        await abrirCronograma(tester, themeMode: modo);
+
+        expect(aviso(), findsOneWidget);
+        expect(find.text('1 tarefa atrasada'), findsOneWidget);
+        expect(
+          tester.getTopLeft(aviso()).dy,
+          lessThan(tester.getTopLeft(find.text('Outubro 2023')).dy),
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('a contagem usa o agoraProvider', (tester) async {
+      // Em 11/10, a revisão (9) e a produção (10), pendentes, também
+      // atrasaram; a hora já passada de hoje não conta.
+      await abrirCronograma(tester, agora: DateTime(2023, 10, 11, 23));
+
+      expect(find.text('3 tarefas atrasadas'), findsOneWidget);
+    });
+
+    testWidgets('sem atrasadas, sem aviso', (tester) async {
+      salvas = [...tarefasExemplo];
+      await abrirCronograma(tester, agora: DateTime(2023, 10, 9, 23, 59));
+
+      expect(aviso(), findsNothing);
+    });
+
+    testWidgets('o aviso conta todas, apesar dos filtros', (tester) async {
+      await abrirCronograma(tester);
+
+      await tester.tap(find.widgetWithText(CheckboxListTile, 'Visitas'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 tarefa atrasada'), findsOneWidget);
+    });
+
+    for (final modo in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets('"Ver" lista e leva ao dia da tarefa (${modo.name})', (
+        tester,
+      ) async {
+        await abrirCronograma(tester, themeMode: modo);
+
+        await tester.tap(find.text('Ver'));
+        await tester.pumpAndSettle();
+        final folha = find.byType(BottomSheet);
+        expect(
+          find.descendant(of: folha, matching: find.text('Visita na obra')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: folha, matching: find.text('Medição do vão')),
+          findsNothing,
+        );
+        expect(find.text('07/10/2023 • 16:00'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(find.byKey(const ValueKey('atrasada-visita-sabado')));
+        await tester.pumpAndSettle();
+
+        expect(folha, findsNothing);
+        expect(find.text('Sáb, 7 Out'), findsWidgets);
+        expect(tarefa('visita-sabado'), findsOneWidget);
+      });
+    }
+
+    // O aviso e a folha não aparecem no `telas_pequenas_test` (os exemplos
+    // não têm atrasadas): as diretrizes de acessibilidade ficam aqui.
+    for (final modo in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets('aviso e folha: contraste e áreas de toque (${modo.name})', (
+        tester,
+      ) async {
+        final semantics = tester.ensureSemantics();
+        await abrirCronograma(tester, themeMode: modo);
+        await expectLater(tester, meetsGuideline(textContrastGuideline));
+        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+
+        await tester.tap(find.text('Ver'));
+        await tester.pumpAndSettle();
+        await expectLater(tester, meetsGuideline(textContrastGuideline));
+        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+        semantics.dispose();
+      });
+    }
+
+    testWidgets('destaca a tarefa atrasada no dia dela', (tester) async {
+      await abrirCronograma(tester);
+      await tester.tap(find.byKey(const ValueKey('calendario-dia-07/10/2023')));
+      await tester.pumpAndSettle();
+
+      final atrasada = tester.widget<TimelineTile>(
+        find.descendant(
+          of: tarefa('visita-sabado'),
+          matching: find.byType(TimelineTile),
+        ),
+      );
+      final contexto = tester.element(tarefa('visita-sabado'));
+      expect(atrasada.corDestaque, Theme.of(contexto).colorScheme.error);
+      expect(
+        find.descendant(
+          of: tarefa('visita-sabado'),
+          matching: find.text('ATRASADA'),
+        ),
+        findsOneWidget,
+      );
+      // Quinta e sexta: a concluída de sexta não é atrasada.
+      await tester.tap(find.byKey(const ValueKey('calendario-dia-05/10/2023')));
+      await tester.pumpAndSettle();
+      expect(find.text('ATRASADA'), findsNothing);
+    });
   });
 }

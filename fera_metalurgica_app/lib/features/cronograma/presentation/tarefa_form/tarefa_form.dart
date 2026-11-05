@@ -6,6 +6,7 @@ import 'package:fera_metalurgica_app/core/utils/date_format.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
+import 'package:fera_metalurgica_app/core/widgets/confirmar_acao.dart';
 import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tipo_tarefa.dart';
@@ -19,12 +20,33 @@ import 'package:go_router/go_router.dart';
 /// Campos da tarefa (RF-86): título\*, data\*, hora\*, tipo\*, descrição e
 /// orçamento vinculado. Sem [inicial], cria uma tarefa nova com os campos
 /// vazios; com ele, edita e oferece "Excluir".
+///
+/// "Agendar" nos detalhes do orçamento (v2-plano §6, item 3) abre uma tarefa
+/// nova com [orcamentoIdInicial], [tipoInicial] e [codigoOrcamento]: o
+/// título vem como "Produção 281026-03" e acompanha a troca de tipo até o
+/// operador editá-lo.
 class TarefaForm extends ConsumerStatefulWidget {
   /// Cria o formulário.
-  const TarefaForm({this.inicial, super.key});
+  const TarefaForm({
+    this.inicial,
+    this.orcamentoIdInicial,
+    this.tipoInicial,
+    this.codigoOrcamento,
+    super.key,
+  });
 
   /// Tarefa em edição, ou `null` para uma tarefa nova.
   final Tarefa? inicial;
+
+  /// Orçamento já vinculado a uma tarefa nova (ignorado na edição).
+  final String? orcamentoIdInicial;
+
+  /// Tipo já escolhido numa tarefa nova (ignorado na edição).
+  final TipoTarefa? tipoInicial;
+
+  /// Código do orçamento vinculado (`281026-03`, sem a revisão), para o
+  /// título de uma tarefa nova (ignorado na edição).
+  final String? codigoOrcamento;
 
   @override
   ConsumerState<TarefaForm> createState() => _TarefaFormState();
@@ -42,11 +64,19 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
   String? _orcamentoId;
   bool _salvando = false;
 
+  /// O título ainda é o montado a partir do tipo e do código: trocar o tipo
+  /// o refaz. Deixa de ser quando o operador digita no título.
+  bool _tituloAutomatico = false;
+
   @override
   void initState() {
     super.initState();
     final inicial = widget.inicial;
-    _titulo = TextEditingController(text: inicial?.titulo);
+    _tipo = inicial?.tipo ?? widget.tipoInicial;
+    _tituloAutomatico = inicial == null && widget.codigoOrcamento != null;
+    _titulo = TextEditingController(
+      text: _tituloAutomatico ? _tituloDoOrcamento(_tipo) : inicial?.titulo,
+    );
     _descricao = TextEditingController(text: inicial?.descricao);
     _data = inicial?.data;
     _hora = inicial == null ? null : TimeOfDay.fromDateTime(inicial.data);
@@ -56,9 +86,19 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
     _horaTexto = TextEditingController(
       text: inicial == null ? null : formatarHora(inicial.data),
     );
-    _tipo = inicial?.tipo;
-    _orcamentoId = inicial?.orcamentoId;
+    _orcamentoId = inicial == null
+        ? widget.orcamentoIdInicial
+        : inicial.orcamentoId;
   }
+
+  /// "Produção 281026-03", ou só o código sem [tipo].
+  String _tituloDoOrcamento(TipoTarefa? tipo) =>
+      [?tipo?.label, widget.codigoOrcamento!].join(' ');
+
+  void _mudarTipo(TipoTarefa? tipo) => setState(() {
+    _tipo = tipo;
+    if (_tituloAutomatico) _titulo.text = _tituloDoOrcamento(tipo);
+  });
 
   @override
   void dispose() {
@@ -127,24 +167,13 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
   }
 
   Future<void> _excluir() async {
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir tarefa?'),
-        content: const Text('Esta ação não pode ser desfeita.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
+    final confirmado = await confirmarAcao(
+      context,
+      titulo: 'Excluir tarefa?',
+      mensagem: 'Esta ação não pode ser desfeita.',
+      acao: 'Excluir',
     );
-    if (confirmado != true || !mounted) return;
+    if (!confirmado || !mounted) return;
 
     setState(() => _salvando = true);
     try {
@@ -182,6 +211,7 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
             child: TextFormField(
               key: const ValueKey('tarefa-titulo'),
               controller: _titulo,
+              onChanged: (_) => _tituloAutomatico = false,
               textCapitalization: TextCapitalization.sentences,
               textInputAction: TextInputAction.next,
               validator: validarObrigatorio,
@@ -238,7 +268,7 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
                 for (final tipo in TipoTarefa.values)
                   DropdownMenuItem(value: tipo, child: Text(tipo.label)),
               ],
-              onChanged: (tipo) => setState(() => _tipo = tipo),
+              onChanged: _mudarTipo,
               validator: (tipo) => tipo == null ? 'Campo obrigatório' : null,
             ),
           ),
@@ -264,7 +294,7 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
                   DropdownMenuItem(
                     value: o.id,
                     child: Text(
-                      '${o.numeroFormatado} - ${o.cliente.nome}',
+                      '${o.codigoExibicao} - ${o.cliente.nome}',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -274,7 +304,7 @@ class _TarefaFormState extends ConsumerState<TarefaForm> {
                     !idsOrcamentos.contains(_orcamentoId))
                   DropdownMenuItem(
                     value: _orcamentoId,
-                    child: Text('#$_orcamentoId'),
+                    child: const Text('Orçamento não encontrado'),
                   ),
               ],
               onChanged: (id) => setState(() => _orcamentoId = id),

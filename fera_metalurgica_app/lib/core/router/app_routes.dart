@@ -6,8 +6,9 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
 );
 
-/// Mapa de rotas do app (D-11). Navegue sempre pelos helpers daqui, nunca
-/// por strings soltas, e nunca use `Navigator.push` direto nas features.
+/// Mapa de rotas do app (D-11, D-31). Navegue sempre pelos helpers daqui,
+/// nunca por strings soltas, e nunca use `Navigator.push` direto nas
+/// features.
 ///
 /// Os segmentos (`novo`, `:id`, `editar`...) são declarados nos
 /// `<feature>_routes.dart`; `test/widget/app_router_test.dart` garante que
@@ -19,34 +20,50 @@ abstract final class AppRoutes {
   /// Aba "Orçamentos" (lista).
   static const String orcamentos = '/orcamentos';
 
-  /// Aba "Catálogo".
-  static const String catalogo = '/catalogo';
+  /// Aba "Agenda" (o cronograma, D-31).
+  static const String agenda = '/agenda';
 
   /// Aba "Mais" (menu).
   static const String mais = '/mais';
 
-  /// Cronograma, aberto pelo menu da aba "Mais".
-  static const String cronograma = '/mais/cronograma';
+  /// Cadastro de materiais (lista), aberto pelo menu da aba "Mais".
+  static const String materiais = '$mais/materiais';
 
-  /// Wizard de novo orçamento; com [produtoId], já começa com esse produto
-  /// do catálogo como primeiro item.
-  static String novoOrcamento({String? produtoId}) => Uri(
-    path: '$orcamentos/novo',
-    queryParameters: produtoId == null ? null : {'produtoId': produtoId},
-  ).toString();
+  /// Dados da empresa emitente, abertos pelo menu da aba "Mais". Sem a
+  /// empresa completa, "Novo orçamento" e "Editar" redirecionam para cá
+  /// (prompt §3.2).
+  static const String empresa = '$mais/empresa';
+
+  /// Wizard de novo orçamento.
+  static String novoOrcamento() => '$orcamentos/novo';
 
   /// Detalhes do orçamento [id].
   static String detalhesOrcamento(String id) => '$orcamentos/$id';
 
-  /// Wizard de edição do orçamento [id].
+  /// Wizard de edição do orçamento [id] (D-30).
   static String editarOrcamento(String id) => '$orcamentos/$id/editar';
 
   /// Prévia do PDF do orçamento [id].
   static String pdfOrcamento(String id) => '$orcamentos/$id/pdf';
 
-  /// Formulário de tarefa: nova, ou edição da tarefa [id].
-  static String tarefa({String? id}) => Uri(
-    path: '$cronograma/tarefa',
+  /// Formulário de material: novo, ou edição do material [id].
+  ///
+  /// Contrato do atalho "Cadastrar material":
+  /// `context.push<String>(AppRoutes.material())` devolve o id do material
+  /// salvo (ou `null` se o operador voltar sem salvar).
+  static String material({String? id}) => Uri(
+    path: '$materiais/material',
     queryParameters: id == null ? null : {'id': id},
   ).toString();
+
+  /// Formulário de tarefa: nova, ou edição da tarefa [id]. Com
+  /// [orcamentoId], a tarefa nova já vem vinculada a esse orçamento
+  /// ("Agendar" nos detalhes).
+  static String tarefa({String? id, String? orcamentoId}) {
+    final parametros = {'id': ?id, 'orcamentoId': ?orcamentoId};
+    return Uri(
+      path: '$agenda/tarefa',
+      queryParameters: parametros.isEmpty ? null : parametros,
+    ).toString();
+  }
 }

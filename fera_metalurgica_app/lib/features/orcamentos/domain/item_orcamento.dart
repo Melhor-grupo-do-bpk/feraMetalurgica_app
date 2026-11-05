@@ -1,43 +1,50 @@
-import 'package:fera_metalurgica_app/features/orcamentos/domain/medidas.dart';
+import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/domain/peca_orcamento.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'item_orcamento.freezed.dart';
 part 'item_orcamento.g.dart';
 
-/// Etapa 2 do wizard de orçamento: um item de serviço/material/medida.
+/// Produto vendido ao cliente (na interface, "Produto"; prompt §3.4): preço
+/// base de fabricação por unidade mais o material das [pecas].
 ///
-/// Itens são descritivos (o que será fabricado e em que quantidade); eles
-/// não entram no valor final, que vem dos custos operacionais.
-///
-/// `produtoId` referencia opcionalmente um item do catálogo
-/// (`ProdutoCatalogo`), quando o item parte de uma estrutura pré-cadastrada.
+/// [quantidadeProdutos] só multiplica o resultado final do produto; nunca
+/// altera a `quantidadePorProduto` das peças. Só entra no orçamento depois
+/// de validado (`validarItem`).
 @freezed
 abstract class ItemOrcamento with _$ItemOrcamento {
   /// Cria um [ItemOrcamento].
   const factory ItemOrcamento({
-    /// Identificador único do item.
+    /// Identificador único (UUID), novo a cada duplicação.
     required String id,
 
-    /// Tipo do serviço (ex: "Portão metálico basculante").
-    required String tipoServico,
+    /// Descrição do produto (ex: "Mesa de jantar sob medida").
+    required String descricao,
 
-    /// Medidas do item, em metros.
-    @Default(Medidas()) Medidas medidas,
+    /// Quantos produtos iguais são vendidos (≥ 1).
+    required int quantidadeProdutos,
 
-    /// Material principal (ex: "Aço Carbono").
-    String? materialPrincipal,
+    /// Preço base de fabricação por produto, sem materiais (≥ 0).
+    @DinheiroJsonConverter() required Dinheiro precoBase,
 
-    /// Especificações técnicas / observações (acabamento, pintura etc.).
-    String? especificacoes,
+    /// Peças de uma unidade do produto (pelo menos uma), na ordem exibida.
+    required List<PecaOrcamento> pecas,
 
-    /// Quantidade de unidades do item.
-    @Default(1) int quantidade,
-
-    /// Identificador do produto do catálogo de origem, quando houver.
-    String? produtoId,
+    /// Observações, quando informadas.
+    String? observacoes,
   }) = _ItemOrcamento;
+
+  const ItemOrcamento._();
 
   /// Cria um [ItemOrcamento] a partir de um mapa JSON.
   factory ItemOrcamento.fromJson(Map<String, dynamic> json) =>
       _$ItemOrcamentoFromJson(json);
+
+  /// Cópia profunda: o item e cada peça recebem um id novo de [gerarId]
+  /// (ex: `gerarId` de `core/utils/id_generator.dart`). Editar a cópia não
+  /// muda o original.
+  ItemOrcamento duplicarComNovosIds(String Function() gerarId) => copyWith(
+    id: gerarId(),
+    pecas: [for (final peca in pecas) peca.duplicar(gerarId())],
+  );
 }

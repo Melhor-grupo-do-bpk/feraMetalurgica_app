@@ -21,12 +21,16 @@ app lê, nesta ordem:
 [`01-requisitos.md`](01-requisitos.md) lista os requisitos de cada tela
 (RF-xx). As telas originais estão em [`../Teste/`](../Teste/) (Tela 1 a 10).
 
-> **Rodada atual (telas-v1):** as trilhas T2 a T8 são feitas por agentes em
-> paralelo, cada um na sua worktree. Branches, posse de arquivos, contratos,
-> handoffs e integração estão em [`orquestracao.md`](orquestracao.md), que
-> substitui, nesta rodada, o fluxo de PR descrito abaixo e em
-> `03-padroes.md` §6. Os prompts dos agentes ficam em [`prompts/`](prompts/)
-> e os pedidos de cada trilha em [`handoffs/`](handoffs/).
+> **Rodada atual (v2):** orçamento por produtos e peças, remoção do
+> catálogo e melhorias da agenda. O quê e por quê: [`v2-plano.md`](v2-plano.md)
+> e [`prompt-modulo-orcamento-v2.md`](prompt-modulo-orcamento-v2.md). As
+> trilhas V2-F1 a V2-G são feitas por agentes, cada um na sua worktree.
+> Branches, posse de arquivos, contratos, handoffs e integração estão em
+> [`orquestracao.md`](orquestracao.md), que substitui, nesta rodada, o fluxo
+> de PR descrito abaixo e em `03-padroes.md` §6. Tarefas em
+> [`tarefas/v2/`](tarefas/v2/), prompts em [`prompts/v2/`](prompts/v2/) e
+> pedidos em [`handoffs/v2/`](handoffs/v2/). A rodada telas-v1 (T2 a T8)
+> está concluída e serve de histórico.
 
 ## Como pegar uma tarefa
 

@@ -5,19 +5,23 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
+import 'package:fera_metalurgica_app/core/widgets/filter_chips_bar.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_secao.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/atalhos_dia.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/aviso_atrasadas.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/calendario_mensal.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/calendario_mes.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/filtros_tarefas_card.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/folha_atrasadas.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma_controller.dart';
+import 'package:fera_metalurgica_app/features/cronograma/presentation/tarefas_atrasadas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Cronograma e agenda (Tela 10), aberto pela aba "Mais".
+/// Cronograma e agenda (Tela 10): raiz da aba "Agenda" (D-31).
 class CronogramaPage extends ConsumerWidget {
   /// Cria a tela.
   const CronogramaPage({super.key});
@@ -29,9 +33,11 @@ class CronogramaPage extends ConsumerWidget {
     final filtro = ref.watch(agendaFiltroControllerProvider);
     final controller = ref.read(agendaFiltroControllerProvider.notifier);
     final agenda = ref.watch(agendaProvider);
+    final atrasadas = ref.watch(atrasadasProvider).value ?? const [];
 
     return Scaffold(
-      appBar: AppTopBar(onBack: () => context.pop()),
+      // Raiz da aba "Agenda" (D-31): sem voltar.
+      appBar: const AppTopBar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.tarefa()),
         tooltip: 'Nova tarefa',
@@ -46,6 +52,21 @@ class CronogramaPage extends ConsumerWidget {
           AppSpacing.xl * 3,
         ),
         children: [
+          Text(
+            'Agenda',
+            style: AppTextStyles.headline.copyWith(color: colors.textPrimary),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (atrasadas.isNotEmpty) ...[
+            AvisoAtrasadas(
+              quantidade: atrasadas.length,
+              onVer: () async {
+                final tarefa = await mostrarFolhaAtrasadas(context, atrasadas);
+                if (tarefa != null) controller.selecionarDia(tarefa.data);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
           SectionCard(
             child: CalendarioMensal(
               mesExibido: filtro.mesExibido,
@@ -61,11 +82,19 @@ class CronogramaPage extends ConsumerWidget {
             onAlterado: controller.marcarTipo,
           ),
           const SizedBox(height: AppSpacing.lg),
-          AtalhosDia(
-            diaSelecionado: filtro.diaSelecionado,
-            hoje: hoje,
-            onDiaSelecionado: controller.selecionarDia,
+          FilterChipsBar(
+            opcoes: const ['Por dia', 'Todas'],
+            selecionado: filtro.verTodas ? 1 : 0,
+            onSelecionado: (i) => controller.mostrarTodas(todas: i == 1),
           ),
+          if (!filtro.verTodas) ...[
+            const SizedBox(height: AppSpacing.md),
+            AtalhosDia(
+              diaSelecionado: filtro.diaSelecionado,
+              hoje: hoje,
+              onDiaSelecionado: controller.selecionarDia,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           Container(
             padding: const EdgeInsets.all(AppSpacing.md + AppSpacing.xxs),
@@ -75,6 +104,11 @@ class CronogramaPage extends ConsumerWidget {
               border: Border.all(color: colors.border),
             ),
             child: switch (agenda) {
+              AsyncData(:final value) when value.secoes.isEmpty => Text(
+                'Nenhuma tarefa agendada.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body.copyWith(color: colors.textSecondary),
+              ),
               AsyncData(:final value) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

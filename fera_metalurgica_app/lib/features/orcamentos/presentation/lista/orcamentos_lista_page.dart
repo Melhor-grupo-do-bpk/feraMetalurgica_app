@@ -7,6 +7,7 @@ import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
 import 'package:fera_metalurgica_app/core/widgets/filter_chips_bar.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/status_orcamento.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/presentation/excluir_orcamento.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/lista/orcamento_list_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/lista/orcamentos_lista_filtro.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/presentation/orcamentos_controller.dart';
@@ -15,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Chips de filtro na ordem de D-22; `null` é "Todos".
+/// Chips de filtro: Todos, Criados e Enviados (D-29); `null` é "Todos".
 const List<StatusOrcamento?> _filtros = [null, ...StatusOrcamento.values];
 
 /// Lista de orçamentos, raiz da aba "Orçamentos" (Tela 8).
@@ -63,7 +64,7 @@ class OrcamentosListaPage extends ConsumerWidget {
                   onChanged: notifier.buscar,
                   textInputAction: TextInputAction.search,
                   decoration: const InputDecoration(
-                    hintText: 'Buscar por cliente ou número...',
+                    hintText: 'Buscar por cliente ou código...',
                     prefixIcon: Icon(Icons.search),
                   ),
                 ),
@@ -122,6 +123,7 @@ class _Lista extends StatelessWidget {
         return OrcamentoListCard(
           orcamento: orcamento,
           onTap: () => context.push(AppRoutes.detalhesOrcamento(orcamento.id)),
+          onExcluir: () => excluirOrcamento(context, orcamento),
         );
       },
     );

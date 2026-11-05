@@ -24,6 +24,9 @@ abstract class AgendaFiltro with _$AgendaFiltro {
 
     /// Tipos marcados em "Filtros de tarefas".
     required Set<TipoTarefa> tipos,
+
+    /// Mostra todas as tarefas, em vez do dia selecionado e do seguinte.
+    @Default(false) bool verTodas,
   }) = _AgendaFiltro;
 }
 
@@ -32,7 +35,8 @@ abstract class AgendaFiltro with _$AgendaFiltro {
 typedef SecaoAgenda = ({DateTime dia, List<Tarefa> tarefas});
 
 /// O que a Tela 10 mostra a partir das tarefas: as seções da linha do tempo
-/// (dia selecionado e o seguinte) e os dias com ponto no calendário.
+/// (dia selecionado e o seguinte, ou todos os dias com tarefa) e os dias com
+/// ponto no calendário.
 typedef Agenda = ({List<SecaoAgenda> secoes, Set<DateTime> diasComPendencia});
 
 /// Filtros da Tela 10. Começa em "hoje" (de [agoraProvider]), no mês de
@@ -49,11 +53,17 @@ class AgendaFiltroController extends _$AgendaFiltroController {
     );
   }
 
-  /// Seleciona [dia]; o calendário passa a exibir o mês dele.
+  /// Seleciona [dia] e volta à visão por dia; o calendário passa a exibir o
+  /// mês dele.
   void selecionarDia(DateTime dia) => state = state.copyWith(
     diaSelecionado: soDia(dia),
     mesExibido: DateTime(dia.year, dia.month),
+    verTodas: false,
   );
+
+  /// Alterna entre a visão por dia e todas as tarefas.
+  void mostrarTodas({required bool todas}) =>
+      state = state.copyWith(verTodas: todas);
 
   /// Avança (ou volta, com [meses] negativo) o mês exibido, sem mudar o
   /// dia selecionado.
@@ -82,16 +92,19 @@ AsyncValue<Agenda> agenda(Ref ref) {
           tarefas,
           diaSelecionado: filtro.diaSelecionado,
           tipos: filtro.tipos,
+          todas: filtro.verTodas,
         ),
       );
 }
 
-/// Monta a [Agenda]: seções do [diaSelecionado] e do dia seguinte, e os
-/// dias com tarefa pendente; ambos só com as tarefas dos [tipos].
+/// Monta a [Agenda]: seções do [diaSelecionado] e do dia seguinte (ou, com
+/// [todas], uma por dia com tarefa, em ordem cronológica) e os dias com
+/// tarefa pendente; ambos só com as tarefas dos [tipos].
 Agenda montarAgenda(
   List<Tarefa> tarefas, {
   required DateTime diaSelecionado,
   required Set<TipoTarefa> tipos,
+  bool todas = false,
 }) {
   final visiveis = [
     for (final t in tarefas)
@@ -107,8 +120,11 @@ Agenda montarAgenda(
   );
 
   final dia = soDia(diaSelecionado);
+  final dias = todas
+      ? {for (final t in visiveis) soDia(t.data)}
+      : {dia, DateTime(dia.year, dia.month, dia.day + 1)};
   return (
-    secoes: [secao(dia), secao(DateTime(dia.year, dia.month, dia.day + 1))],
+    secoes: [for (final d in dias) secao(d)],
     diasComPendencia: {
       for (final t in visiveis)
         if (!t.concluida) soDia(t.data),

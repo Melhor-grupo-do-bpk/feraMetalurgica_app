@@ -1,22 +1,19 @@
 import 'dart:async';
 
-import 'package:fera_metalurgica_app/core/di/local_storage_provider.dart';
-import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
-import 'package:fera_metalurgica_app/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../mocks/fake_local_json_storage.dart';
+import '../../fera_app_de_teste.dart';
 import 'wizard_teste_helpers.dart';
 
-/// Critério de aceite da T3: o orçamento do Figma (João da Silva, portão
-/// basculante, custos de R$ 5.200,00) termina nos detalhes com valor final
-/// de R$ 8.450,00 e aparece na lista sem reiniciar o app.
+/// No app completo com os dados de exemplo: o wizard cria o primeiro
+/// orçamento do dia (`DDMMAA-01`), que abre nos detalhes e aparece na lista
+/// sem reiniciar o app; e a edição grava a rev. 2, que os detalhes mostram
+/// ao voltar.
 void main() {
-  testWidgets(r'fluxo completo grava R$ 8.450,00 para custos de R$ 5.200,00', (
+  testWidgets('fluxo completo cria o orçamento -01 e ele aparece na lista', (
     tester,
   ) async {
     tester.view
@@ -24,76 +21,90 @@ void main() {
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final storage = InMemoryJsonStorage();
-    await popularDadosIniciais(storage, incluirExemplos: true);
     appRouter.go(AppRoutes.orcamentos);
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          localJsonStorageProvider.overrideWithValue(storage),
-          agoraProvider.overrideWithValue(DateTime(2026, 10, 26, 10)),
-        ],
-        child: const FeraApp(themeMode: ThemeMode.light),
+      await feraAppDeTeste(
+        themeMode: ThemeMode.light,
+        agora: DateTime(2026, 10, 26, 10),
       ),
     );
     await tester.pumpAndSettle();
+    // Os dois exemplos, de dias anteriores.
+    expect(find.text('241026-01'), findsOneWidget);
+    expect(find.text('251026-01'), findsOneWidget);
+
     unawaited(appRouter.push(AppRoutes.novoOrcamento()));
     await tester.pumpAndSettle();
-
-    // Etapa 1.
-    await preencherCliente(tester);
-    await tocar(tester, continuar);
-
-    // Etapa 2.
-    await digitar(tester, 'campo-projeto', 'Portão metálico');
-    await escolherTipoServico(tester, 'Portão Basculante');
-    await digitar(tester, 'campo-medida-A', '2,50');
-    await digitar(tester, 'campo-medida-L', '2.20');
-    await digitar(tester, 'campo-material', 'Aço Carbono');
-    await digitar(
-      tester,
-      'campo-especificacoes',
-      'Estrutura tubular 50×50mm, chapa 18',
-    );
-    await tocar(tester, find.text('Adicionar Item'));
-    await tocar(tester, continuar);
-
-    // Etapa 3.
-    await digitarCusto(tester, 'Matéria-prima', '245000');
-    await digitarCusto(tester, 'Mão de obra', '180000');
-    await digitarCusto(tester, 'Insumos', '35000');
-    await digitarCusto(tester, 'Combustível', '18000');
-    await digitarCusto(tester, 'Impostos', '42000');
-    expect(find.text(r'R$ 5.200,00'), findsOneWidget);
-    await tocar(tester, continuar);
-
-    // Etapa 4: só o valor final, nenhum custo interno (D-16).
-    expect(find.text('Etapa 4 de 4: Resumo do orçamento'), findsOneWidget);
-    expect(find.text(r'R$ 8.450,00'), findsOneWidget);
-    expect(find.text(r'R$ 5.200,00'), findsNothing);
-    expect(find.text('Portão metálico'), findsOneWidget);
-    expect(find.text('15 dias úteis'), findsOneWidget);
-    await tocar(tester, continuar);
+    await preencherStub(tester, cliente: 'Construtora Horizonte Ltda');
+    await tocar(tester, find.text('Finalizar'));
 
     // Detalhes do novo orçamento, no lugar do wizard.
     expect(find.byType(OrcamentoWizardPage), findsNothing);
-    final detalhes = tester.widget<OrcamentoDetalhesPage>(
-      find.byType(OrcamentoDetalhesPage),
+    expect(find.byType(OrcamentoDetalhesPage), findsOneWidget);
+    expect(find.text('261026-01'), findsOneWidget);
+    // Um produto sem adicionais repete o valor nos totais (D-39); confere
+    // a linha "Total geral".
+    expect(
+      find.descendant(
+        of: find
+            .ancestor(of: find.text('Total geral'), matching: find.byType(Row))
+            .first,
+        matching: find.text(r'R$ 1.098,00'),
+      ),
+      findsOneWidget,
     );
-    expect(detalhes.orcamentoId, '00483');
-    expect(find.text(r'R$ 8.450,00'), findsWidgets);
-
-    final salvo = (await LocalOrcamentoRepository(
-      storage,
-    ).getAll()).firstWhere((o) => o.id == '00483');
-    expect(salvo.status, StatusOrcamento.emAnalise);
-    expect(salvo.criadoEm, DateTime(2026, 10, 26, 10));
-    expect(salvo.valorFinal, 8450);
-    expect(salvo.itens.single.produtoId, 'produto-portao-basculante');
 
     // Voltar dos detalhes leva à lista, que já mostra o orçamento.
     await tocar(tester, find.byTooltip('Voltar'));
     expect(find.byType(OrcamentosListaPage), findsOneWidget);
-    expect(find.text('#00483'), findsOneWidget);
+    expect(find.text('261026-01'), findsOneWidget);
+  });
+
+  testWidgets('editar o exemplo C volta aos detalhes com a rev. 2', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(800, 2400)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    appRouter.go(AppRoutes.orcamentos);
+    await tester.pumpWidget(
+      await feraAppDeTeste(
+        themeMode: ThemeMode.light,
+        agora: DateTime(2026, 10, 26, 10),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tocar(tester, find.text('241026-01'));
+    expect(find.byType(OrcamentoDetalhesPage), findsOneWidget);
+    expect(find.text(r'R$ 3.630,80'), findsOneWidget);
+
+    await tocar(tester, find.text('Editar'));
+    expect(find.text('Editar Orçamento'), findsOneWidget);
+    await tocar(tester, continuar);
+    await tocar(tester, continuar);
+    // Combustível de 50,00 para 75,00: + R$ 25,00.
+    final combustivel = find.descendant(
+      of: find.byKey(const ValueKey('valores-combustivel')),
+      matching: find.byType(EditableText),
+    );
+    await tester.enterText(combustivel, '75');
+    await tester.pumpAndSettle();
+    await tocar(tester, continuar);
+    expect(find.text('Nº 241026-01 rev. 2'), findsOneWidget);
+    await tocar(tester, find.text('Salvar alterações'));
+
+    // De volta aos mesmos detalhes, já com a revisão e os totais novos.
+    expect(find.byType(OrcamentoWizardPage), findsNothing);
+    expect(find.byType(OrcamentoDetalhesPage), findsOneWidget);
+    expect(find.text('241026-01 rev. 2'), findsOneWidget);
+    expect(find.text(r'R$ 3.655,80'), findsOneWidget);
+    expect(find.text(r'R$ 3.630,80'), findsNothing);
+
+    // A lista também já mostra a revisão.
+    await tocar(tester, find.byTooltip('Voltar'));
+    expect(find.byType(OrcamentosListaPage), findsOneWidget);
+    expect(find.text(r'R$ 3.655,80'), findsOneWidget);
   });
 }

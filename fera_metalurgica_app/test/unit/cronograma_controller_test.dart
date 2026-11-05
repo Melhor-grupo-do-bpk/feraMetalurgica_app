@@ -2,25 +2,28 @@ import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../mocks/fake_local_json_storage.dart';
+import '../mocks/banco_de_teste.dart';
+import '../mocks/dados_exemplo.dart';
 
 void main() {
   late ProviderContainer container;
-  late LocalCronogramaRepository repository;
+  late SqliteTarefaRepository repository;
 
   setUp(() async {
-    repository = LocalCronogramaRepository(InMemoryJsonStorage());
-    for (final tarefa in cronogramaSeed.reversed) {
+    final banco = await bancoDeTeste();
+    addTearDown(banco.close);
+    repository = SqliteTarefaRepository(banco);
+    for (final tarefa in tarefasExemplo.reversed) {
       await repository.save(tarefa);
     }
     container = ProviderContainer(
-      overrides: [cronogramaRepositoryProvider.overrideWithValue(repository)],
+      overrides: [tarefaRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
   });
 
   test('carrega em ordem cronológica', () async {
-    expect(await container.read(tarefasProvider.future), cronogramaSeed);
+    expect(await container.read(tarefasProvider.future), tarefasExemplo);
   });
 
   test('salvar e excluir atualizam o estado e o repositório', () async {
@@ -38,13 +41,13 @@ void main() {
     expect(await container.read(tarefaPorIdProvider('nova').future), nova);
 
     await notifier.excluir('nova');
-    expect(container.read(tarefasProvider).value, cronogramaSeed);
+    expect(container.read(tarefasProvider).value, tarefasExemplo);
     expect(await repository.getAll(), isNot(contains(nova)));
   });
 
   test('alternarConcluida inverte o estado da tarefa', () async {
     await container.read(tarefasProvider.future);
-    final id = cronogramaSeed.first.id;
+    final id = tarefasExemplo.first.id;
     final notifier = container.read(tarefasProvider.notifier);
     Future<bool> concluidaSalva() async =>
         (await repository.getAll()).firstWhere((t) => t.id == id).concluida;
@@ -62,6 +65,6 @@ void main() {
 
     await container.read(tarefasProvider.notifier).alternarConcluida('x');
 
-    expect(container.read(tarefasProvider).value, cronogramaSeed);
+    expect(container.read(tarefasProvider).value, tarefasExemplo);
   });
 }

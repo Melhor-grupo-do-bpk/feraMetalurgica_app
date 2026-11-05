@@ -1,4 +1,4 @@
-import 'package:fera_metalurgica_app/features/cronograma/data/cronograma_repository_impl.dart';
+import 'package:fera_metalurgica_app/features/cronograma/data/sqlite_tarefa_repository.dart';
 import 'package:fera_metalurgica_app/features/cronograma/domain/tarefa.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,18 +13,18 @@ part 'cronograma_controller.g.dart';
 class Tarefas extends _$Tarefas {
   @override
   Future<List<Tarefa>> build() async =>
-      _ordenar(await ref.watch(cronogramaRepositoryProvider).getAll());
+      _ordenar(await ref.watch(tarefaRepositoryProvider).getAll());
 
   /// Cria ou atualiza [tarefa].
   Future<void> salvar(Tarefa tarefa) async {
-    final repository = ref.read(cronogramaRepositoryProvider);
+    final repository = ref.read(tarefaRepositoryProvider);
     await repository.save(tarefa);
     state = AsyncData(_ordenar(await repository.getAll()));
   }
 
   /// Remove a tarefa de identificador [id].
   Future<void> excluir(String id) async {
-    final repository = ref.read(cronogramaRepositoryProvider);
+    final repository = ref.read(tarefaRepositoryProvider);
     await repository.delete(id);
     state = AsyncData(_ordenar(await repository.getAll()));
   }
@@ -40,6 +40,21 @@ class Tarefas extends _$Tarefas {
   static List<Tarefa> _ordenar(List<Tarefa> tarefas) =>
       [...tarefas]..sort((a, b) => a.data.compareTo(b.data));
 }
+
+/// Tarefas vinculadas ao orçamento [orcamentoId], em ordem cronológica
+/// (detalhes do orçamento, D-05).
+///
+/// Síncrono de propósito, como os filtros das listas: concluir uma tarefa
+/// não volta a tela para o estado de carregamento.
+@riverpod
+AsyncValue<List<Tarefa>> tarefasDoOrcamento(Ref ref, String orcamentoId) => ref
+    .watch(tarefasProvider)
+    .whenData(
+      (tarefas) => [
+        for (final t in tarefas)
+          if (t.orcamentoId == orcamentoId) t,
+      ],
+    );
 
 /// Tarefa de identificador [id], ou `null` se não existir.
 @riverpod

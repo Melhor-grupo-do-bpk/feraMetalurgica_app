@@ -26,4 +26,25 @@ void main() {
     await tester.tap(find.byType(StatCard));
     expect(tocou, isTrue);
   });
+
+  testWidgets('tamanhoQueCabe reduz só o que não cabe na largura do card', (
+    tester,
+  ) async {
+    late BuildContext contexto;
+    await pumpThemed(
+      tester,
+      Builder(
+        builder: (context) {
+          contexto = context;
+          return const SizedBox();
+        },
+      ),
+    );
+
+    double tamanho(List<String> valores) =>
+        StatCard.tamanhoQueCabe(contexto, valores: valores, larguraCard: 156);
+
+    expect(tamanho(['08', '12']), 32);
+    expect(tamanho(['08', r'R$ 1.234.567,89']), lessThan(32));
+  });
 }

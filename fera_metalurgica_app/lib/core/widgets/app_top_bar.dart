@@ -3,16 +3,13 @@ import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Top bar padrão das telas: voltar (opcional), logo FERA e sino.
+/// Top bar padrão das telas: voltar (opcional) e logo FERA.
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Cria a top bar. O botão voltar só aparece quando [onBack] é informado.
-  const AppTopBar({this.onBack, this.onNotificationsPressed, super.key});
+  const AppTopBar({this.onBack, super.key});
 
   /// Ação do botão voltar; `null` esconde o botão.
   final VoidCallback? onBack;
-
-  /// Ação do sino de notificações.
-  final VoidCallback? onNotificationsPressed;
 
   @override
   Size get preferredSize => const Size.fromHeight(AppSpacing.topBarHeight);
@@ -40,15 +37,6 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                     onPressed: onBack,
                   ),
                 ),
-              Positioned(
-                right: AppSpacing.xs,
-                child: IconButton(
-                  tooltip: 'Notificações',
-                  icon: const Icon(Icons.notifications_none),
-                  color: colors.textPrimary,
-                  onPressed: onNotificationsPressed,
-                ),
-              ),
             ],
           ),
         ),

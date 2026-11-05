@@ -1,7 +1,6 @@
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
-import 'package:fera_metalurgica_app/core/utils/currency_format.dart';
 import 'package:fera_metalurgica_app/core/utils/date_format.dart';
 import 'package:fera_metalurgica_app/core/widgets/status_chip.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
@@ -43,11 +42,13 @@ class OrcamentoRecenteCard extends StatelessWidget {
             children: [
               Text.rich(
                 TextSpan(
-                  text: orcamento.numeroFormatado,
+                  text: orcamento.codigoExibicao,
                   style: AppTextStyles.label,
                   children: [
+                    // A data da revisão atual, como na lista de orçamentos
+                    // (HO-V2-F2-04): os recentes são ordenados por ela.
                     TextSpan(
-                      text: ' • ${formatarData(orcamento.criadoEm)}',
+                      text: ' • ${formatarData(orcamento.atualizadoEm)}',
                       style: AppTextStyles.caption,
                     ),
                   ],
@@ -79,7 +80,7 @@ class OrcamentoRecenteCard extends StatelessWidget {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            formatarMoeda(orcamento.valorFinal),
+                            orcamento.totalGeral.formatado,
                             style: AppTextStyles.title.copyWith(
                               color: colors.textPrimary,
                             ),

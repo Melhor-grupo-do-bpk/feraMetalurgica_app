@@ -90,4 +90,49 @@ void main() {
 
     expect(find.byTooltip('Marcar como pendente'), findsOneWidget);
   });
+
+  group('etiqueta e título (HO-V2-E-03)', () {
+    const titulo = 'Produção do portão basculante da obra';
+
+    /// Monta o tile numa linha de [largura] dp, como na agenda.
+    Future<void> montar(WidgetTester tester, double largura) async {
+      tester.view
+        ..physicalSize = Size(largura + 32, 800)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await pumpThemed(
+        tester,
+        const TimelineTile(
+          horario: '10:00',
+          titulo: titulo,
+          tag: StatusChip(label: 'Produção', uppercase: true),
+          ultimo: true,
+        ),
+      );
+    }
+
+    testWidgets('num cartão estreito (360 dp), a etiqueta vai para cima', (
+      tester,
+    ) async {
+      // 360 dp de tela menos as margens da agenda: o tile fica com 286.
+      await montar(tester, 286);
+
+      final etiqueta = tester.getRect(find.text('PRODUÇÃO'));
+      final texto = tester.getRect(find.text(titulo));
+      expect(etiqueta.bottom, lessThanOrEqualTo(texto.top));
+      // O título usa a largura do cartão inteira, não o que sobra ao lado
+      // da etiqueta.
+      expect(texto.width, greaterThan(160));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('com espaço (tablet), a etiqueta fica ao lado', (tester) async {
+      await montar(tester, 700);
+
+      final etiqueta = tester.getRect(find.text('PRODUÇÃO'));
+      final texto = tester.getRect(find.text(titulo));
+      expect(etiqueta.left, greaterThan(texto.right));
+      expect(etiqueta.top, lessThan(texto.bottom));
+    });
+  });
 }

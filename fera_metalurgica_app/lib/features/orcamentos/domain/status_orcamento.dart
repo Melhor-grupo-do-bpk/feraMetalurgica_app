@@ -1,27 +1,15 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-/// Status de um orçamento.
+/// Status de um orçamento salvo (D-29).
 ///
-/// Serializado pelo NOME (ex: `"emAnalise"`), nunca pelo índice: reordenar ou
-/// adicionar valores não quebra JSON já salvo. Não renomeie valores
-/// existentes sem migrar os dados.
+/// Serializado pelo NOME (ex: `"criado"`), nunca pelo índice. Não renomeie
+/// valores existentes sem migrar os dados.
 @JsonEnum()
 enum StatusOrcamento {
-  /// Orçamento ainda incompleto, salvo antes de concluir o wizard. Não conta
-  /// nos indicadores do dashboard.
-  // TODO(cliente): o wizard ainda não salva rascunho (só grava emAnalise ao
-  // concluir); habilitar quando o cliente confirmar o fluxo.
-  rascunho,
+  /// Salvo e ainda não enviado. Editar um orçamento enviado o traz de volta
+  /// para cá (D-30).
+  criado,
 
-  /// Orçamento em elaboração/revisão interna.
-  emAnalise,
-
-  /// Orçamento enviado ao cliente, aguardando retorno.
+  /// Enviado ao cliente (pelo WhatsApp, ou marcado à mão nos detalhes).
   enviado,
-
-  /// Orçamento aceito pelo cliente.
-  aprovado,
-
-  /// Orçamento recusado pelo cliente.
-  recusado,
 }

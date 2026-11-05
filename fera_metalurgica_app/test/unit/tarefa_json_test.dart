@@ -1,13 +1,15 @@
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../mocks/dados_exemplo.dart';
+
 void main() {
   test('descricao e orcamentoId fazem ida e volta no JSON', () {
-    final tarefa = cronogramaSeed.firstWhere((t) => t.orcamentoId != null);
+    final tarefa = tarefasExemplo.first.copyWith(orcamentoId: 'orcamento-c');
 
     expect(Tarefa.fromJson(tarefa.toJson()), tarefa);
     expect(tarefa.toJson()['descricao'], 'Cliente: João da Silva');
-    expect(tarefa.toJson()['orcamentoId'], '00482');
+    expect(tarefa.toJson()['orcamentoId'], 'orcamento-c');
   });
 
   test('JSON salvo antes da F1 (sem os campos novos) continua legível', () {

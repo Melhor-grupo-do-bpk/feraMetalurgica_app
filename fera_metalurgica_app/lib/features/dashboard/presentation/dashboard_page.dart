@@ -14,7 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Tela inicial do app, raiz da aba "Início" (Tela 1): botão "Criar
-/// orçamento", os 4 indicadores (D-03) e os orçamentos recentes (RF-12).
+/// orçamento", os 4 indicadores (D-32) e os orçamentos recentes.
 class DashboardPage extends ConsumerWidget {
   /// Cria a tela inicial do dashboard.
   const DashboardPage({super.key});
@@ -69,31 +69,7 @@ class _Conteudo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _LinhaDeCards(
-          esquerda: StatCard(
-            label: 'Orçamentos em andamento',
-            valor: formatarContagem(indicadores.emAndamento),
-            icone: Icons.pending_actions,
-          ),
-          direita: StatCard(
-            label: 'Aguardando aprovação',
-            valor: formatarContagem(indicadores.aguardandoAprovacao),
-            icone: Icons.hourglass_empty,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _LinhaDeCards(
-          esquerda: StatCard(
-            label: 'Aprovados',
-            valor: formatarContagem(indicadores.aprovados),
-            icone: Icons.check_circle_outline,
-          ),
-          direita: StatCard(
-            label: 'Pedidos em produção',
-            valor: formatarContagem(indicadores.pedidosEmProducao),
-            icone: Icons.factory_outlined,
-          ),
-        ),
+        _Indicadores(indicadores: indicadores),
         const SizedBox(height: AppSpacing.xl),
         Row(
           children: [
@@ -136,6 +112,66 @@ class _Conteudo extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
           ],
       ],
+    );
+  }
+}
+
+/// Os quatro [StatCard], todos com o valor no mesmo tamanho: o maior que
+/// comporta o valor mais longo numa linha.
+class _Indicadores extends StatelessWidget {
+  const _Indicadores({required this.indicadores});
+
+  final IndicadoresDashboard indicadores;
+
+  @override
+  Widget build(BuildContext context) {
+    final criados = formatarContagem(indicadores.criados);
+    final enviados = formatarContagem(indicadores.enviadosNoMes);
+    final valor = indicadores.valorEnviadoNoMes.formatado;
+    final producao = formatarContagem(indicadores.pedidosEmProducao);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tamanho = StatCard.tamanhoQueCabe(
+          context,
+          valores: [criados, enviados, valor, producao],
+          larguraCard: (constraints.maxWidth - AppSpacing.md) / 2,
+        );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _LinhaDeCards(
+              esquerda: StatCard(
+                label: 'Criados',
+                valor: criados,
+                icone: Icons.pending_actions,
+                tamanhoValor: tamanho,
+              ),
+              direita: StatCard(
+                label: 'Enviados no mês',
+                valor: enviados,
+                icone: Icons.send_outlined,
+                tamanhoValor: tamanho,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _LinhaDeCards(
+              esquerda: StatCard(
+                label: 'Valor enviado no mês',
+                valor: valor,
+                icone: Icons.payments_outlined,
+                tamanhoValor: tamanho,
+              ),
+              direita: StatCard(
+                label: 'Pedidos em produção',
+                valor: producao,
+                icone: Icons.factory_outlined,
+                tamanhoValor: tamanho,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

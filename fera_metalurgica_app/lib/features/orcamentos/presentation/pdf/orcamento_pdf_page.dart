@@ -87,7 +87,7 @@ class _PreviaState extends ConsumerState<_Previa> {
     try {
       await Printing.sharePdf(
         bytes: await _pdf,
-        filename: 'orcamento-${widget.orcamento.id}.pdf',
+        filename: 'orcamento-${widget.orcamento.codigo}.pdf',
       );
     } on Exception catch (erro) {
       debugPrint('Falha ao compartilhar o PDF: $erro');
@@ -108,7 +108,7 @@ class _PreviaState extends ConsumerState<_Previa> {
             AsyncData(value: true) => PdfPreview(
               build: _gerar,
               initialPageFormat: PdfPageFormat.a4,
-              pdfFileName: 'orcamento-${widget.orcamento.id}.pdf',
+              pdfFileName: 'orcamento-${widget.orcamento.codigo}.pdf',
               useActions: false,
               allowPrinting: false,
               allowSharing: false,
