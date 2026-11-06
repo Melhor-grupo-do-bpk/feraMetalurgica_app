@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../mocks/container_de_teste.dart';
+import '../../../mocks/mock_cep_repository.dart';
+import '../../../mocks/mock_localizacao_repository.dart';
 import 'wizard_teste_helpers.dart';
 
 /// CPF válido que nenhum cliente de exemplo usa.
@@ -199,13 +202,194 @@ void main() {
     );
   });
 
+  group('consulta do CEP (D-43)', () {
+    late MockCepRepository cep;
+
+    setUp(() {
+      cep = MockCepRepository();
+      overrides = [...overrides, cepRepositoryProvider.overrideWithValue(cep)];
+    });
+
+    testWidgets('com 8 dígitos, preenche o endereço e mantém o número', (
+      tester,
+    ) async {
+      when(() => cep.buscar('01001000')).thenAnswer(
+        (_) async => const EnderecoEncontrado(
+          logradouro: 'Praça da Sé',
+          bairro: 'Sé',
+          cidade: 'São Paulo',
+          uf: 'SP',
+        ),
+      );
+      await abrir(tester, AppRoutes.novoOrcamento());
+      await digitar(tester, 'numero', '100');
+
+      await digitar(tester, 'cep', '0100100');
+      verifyNever(() => cep.buscar(any()));
+      await digitar(tester, 'cep', '01001000');
+
+      expect(texto(tester, 'logradouro'), 'Praça da Sé');
+      expect(texto(tester, 'bairro'), 'Sé');
+      expect(texto(tester, 'cidade'), 'São Paulo');
+      expect(texto(tester, 'uf'), 'SP');
+      expect(texto(tester, 'numero'), '100');
+      expect(texto(tester, 'cep'), '01001-000');
+    });
+
+    testWidgets('CEP geral não apaga o logradouro já digitado', (tester) async {
+      when(() => cep.buscar(any())).thenAnswer(
+        (_) async => const EnderecoEncontrado(cidade: 'Arroio', uf: 'RS'),
+      );
+      await abrir(tester, AppRoutes.novoOrcamento());
+      await digitar(tester, 'logradouro', 'Rua A');
+
+      await digitar(tester, 'cep', '95000000');
+
+      expect(texto(tester, 'logradouro'), 'Rua A');
+      expect(texto(tester, 'cidade'), 'Arroio');
+    });
+
+    testWidgets('CEP inexistente avisa e não muda o endereço', (tester) async {
+      when(() => cep.buscar(any())).thenAnswer((_) async => null);
+      await abrir(tester, AppRoutes.novoOrcamento());
+
+      await digitar(tester, 'cep', '99999999');
+
+      expect(
+        find.text('CEP não encontrado. Preencha o endereço.'),
+        findsOneWidget,
+      );
+      expect(texto(tester, 'cidade'), isEmpty);
+    });
+
+    testWidgets('sem internet, avisa e deixa digitar à mão', (tester) async {
+      when(() => cep.buscar(any())).thenThrow(Exception('sem internet'));
+      await abrir(tester, AppRoutes.novoOrcamento());
+
+      await digitar(tester, 'cep', '01001000');
+
+      expect(
+        find.text('Não foi possível consultar o CEP. Preencha o endereço.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('abrir um orçamento salvo não consulta o CEP', (tester) async {
+      await abrir(tester, AppRoutes.editarOrcamento(c.id));
+
+      verifyNever(() => cep.buscar(any()));
+    });
+  });
+
+  group('"Usar minha localização" (D-43)', () {
+    late MockLocalizacaoRepository localizacao;
+    final botao = find.byKey(const ValueKey('cliente-usar-localizacao'));
+
+    setUp(() {
+      localizacao = MockLocalizacaoRepository();
+      overrides = [
+        ...overrides,
+        localizacaoRepositoryProvider.overrideWithValue(localizacao),
+      ];
+    });
+
+    Future<void> tocarNoBotao(WidgetTester tester) async {
+      await tester.ensureVisible(botao);
+      await tester.tap(botao);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('preenche o endereço e deixa o número para o operador', (
+      tester,
+    ) async {
+      when(localizacao.enderecoAtual).thenAnswer(
+        (_) async => const EnderecoEncontrado(
+          logradouro: 'Avenida Ipiranga',
+          bairro: 'Azenha',
+          cidade: 'Porto Alegre',
+          uf: 'RS',
+          cep: '90160093',
+        ),
+      );
+      await abrir(tester, AppRoutes.novoOrcamento());
+
+      await tocarNoBotao(tester);
+
+      expect(texto(tester, 'logradouro'), 'Avenida Ipiranga');
+      expect(texto(tester, 'bairro'), 'Azenha');
+      expect(texto(tester, 'cidade'), 'Porto Alegre');
+      expect(texto(tester, 'uf'), 'RS');
+      expect(texto(tester, 'cep'), '90160-093');
+      expect(texto(tester, 'numero'), isEmpty);
+      expect(
+        find.text('Confira o endereço e informe o número.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('campo que não veio fica como está', (tester) async {
+      when(localizacao.enderecoAtual).thenAnswer(
+        (_) async => const EnderecoEncontrado(cidade: 'Canoas', uf: 'RS'),
+      );
+      await abrir(tester, AppRoutes.novoOrcamento());
+      await digitar(tester, 'bairro', 'Centro');
+
+      await tocarNoBotao(tester);
+
+      expect(texto(tester, 'bairro'), 'Centro');
+      expect(texto(tester, 'cidade'), 'Canoas');
+      expect(texto(tester, 'cep'), isEmpty);
+    });
+
+    for (final (motivo, mensagem) in const [
+      (
+        MotivoFalhaLocalizacao.indisponivel,
+        'A localização só funciona no celular.',
+      ),
+      (
+        MotivoFalhaLocalizacao.gpsDesligado,
+        'Ligue a localização do celular e tente de novo.',
+      ),
+      (
+        MotivoFalhaLocalizacao.semPermissao,
+        'Libere a localização para o app nas configurações do celular.',
+      ),
+      (
+        MotivoFalhaLocalizacao.semEndereco,
+        'Nenhum endereço encontrado aqui. Preencha à mão.',
+      ),
+    ]) {
+      testWidgets('${motivo.name} mostra o aviso', (tester) async {
+        when(localizacao.enderecoAtual).thenThrow(FalhaLocalizacao(motivo));
+        await abrir(tester, AppRoutes.novoOrcamento());
+
+        await tocarNoBotao(tester);
+
+        expect(find.text(mensagem), findsOneWidget);
+        expect(texto(tester, 'cidade'), isEmpty);
+      });
+    }
+
+    testWidgets('outro erro mostra o aviso genérico', (tester) async {
+      when(localizacao.enderecoAtual).thenThrow(Exception('falhou'));
+      await abrir(tester, AppRoutes.novoOrcamento());
+
+      await tocarNoBotao(tester);
+
+      expect(
+        find.text('Não foi possível obter a localização. Preencha o endereço.'),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('edição do exemplo C (cliente João da Silva)', () {
     testWidgets('abre com a cópia do cliente e sem aviso', (tester) async {
       await abrir(tester, AppRoutes.editarOrcamento(c.id));
 
       expect(texto(tester, 'nome'), 'João da Silva');
       expect(texto(tester, 'documento'), '529.982.247-25');
-      expect(texto(tester, 'cep'), '01455000');
+      expect(texto(tester, 'cep'), '01455-000');
       expect(
         find.byKey(const ValueKey('cliente-aviso-outro-cadastro')),
         findsNothing,

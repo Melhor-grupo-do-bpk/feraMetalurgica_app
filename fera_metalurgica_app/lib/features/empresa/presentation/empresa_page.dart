@@ -128,11 +128,8 @@ final _Campo _cep = _campo(
   caminho: 'endereco.cep',
   obrigatorio: false,
   teclado: TextInputType.number,
-  formatadores: [
-    FilteringTextInputFormatter.digitsOnly,
-    LengthLimitingTextInputFormatter(8),
-  ],
-  dica: '8 dígitos',
+  formatadores: const [CepInputFormatter()],
+  dica: '00000-000',
 );
 final _Campo _logradouro = _campo(
   'logradouro',
@@ -212,7 +209,7 @@ class _EmpresaFormState extends ConsumerState<_EmpresaForm> {
       'documento': e?.documento.formatado,
       'telefone': e == null ? null : formatarTelefone(e.telefone),
       'email': e?.email,
-      'cep': e?.endereco.cep,
+      'cep': formatarCep(e?.endereco.cep ?? ''),
       'logradouro': e?.endereco.logradouro,
       'numero': e?.endereco.numero,
       'complemento': e?.endereco.complemento,
@@ -261,7 +258,8 @@ class _EmpresaFormState extends ConsumerState<_EmpresaForm> {
         bairro: _texto(_bairro),
         cidade: _texto(_cidade),
         uf: _texto(_uf).toUpperCase(),
-        cep: _opcional(_cep),
+        // Gravado só com os dígitos, como o CEP do cliente.
+        cep: _opcional(_cep)?.replaceAll('-', ''),
       ),
     );
     final erros = {

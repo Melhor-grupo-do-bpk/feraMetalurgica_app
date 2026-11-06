@@ -173,8 +173,8 @@ só em memória. O valor final nunca é digitado: é sempre o
   destaque e ponto nos dias que têm tarefas pendentes.
 - **RF-81**: "Filtros de tarefas" com 3 caixas de seleção, Orçamentos,
   Produção e Visitas, todas marcadas por padrão ([D-05](02-decisoes.md#d-05)).
-- **RF-82**: Atalhos horizontais de dia ("Hoje, 9 Out", "Amanhã, 10 Out",
-  "Qua, 11 Out"…) que mudam o dia selecionado.
+- **RF-82**: *Removido ([D-43](02-decisoes.md#d-43)).* O dia é escolhido no
+  calendário.
 - **RF-83**: Linha do tempo agrupada por dia (dia selecionado e o seguinte)
   com "N tarefas". Cada tarefa mostra hora, título, etiqueta do tipo e
   descrição. Em telas estreitas, a etiqueta fica acima do título.

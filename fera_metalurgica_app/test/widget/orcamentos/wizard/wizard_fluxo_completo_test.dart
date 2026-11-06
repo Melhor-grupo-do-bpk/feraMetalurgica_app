@@ -89,7 +89,7 @@ void main() {
       of: find.byKey(const ValueKey('valores-combustivel')),
       matching: find.byType(EditableText),
     );
-    await tester.enterText(combustivel, '75');
+    await tester.enterText(combustivel, '75,00');
     await tester.pumpAndSettle();
     await tocar(tester, continuar);
     expect(find.text('Nº 241026-01 rev. 2'), findsOneWidget);

@@ -310,7 +310,7 @@ class _PecaFormState extends ConsumerState<PecaForm> {
             prefixo: r'R$ ',
             sufixo: simbolo == null ? null : '/$simbolo',
             habilitado: temMaterial,
-            tipo: TipoCampo.decimal,
+            tipo: TipoCampo.dinheiro,
             ajuda: material == null
                 ? 'Escolha o material primeiro'
                 : ajustado

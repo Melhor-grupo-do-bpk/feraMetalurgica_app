@@ -95,7 +95,7 @@ void main() {
     await digitar(tester, campo('telefone'), '51999998888');
     expect(textoDe(tester, 'telefone'), '(51) 99999-8888');
     await digitar(tester, campo('cep'), '90.010-000x123');
-    expect(textoDe(tester, 'cep'), '90010000');
+    expect(textoDe(tester, 'cep'), '90010-000');
     await digitar(tester, campo('uf'), 's1p');
     expect(textoDe(tester, 'uf'), 'SP');
   });

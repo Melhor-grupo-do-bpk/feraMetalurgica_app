@@ -9,7 +9,6 @@ import 'package:fera_metalurgica_app/core/widgets/filter_chips_bar.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_secao.dart';
-import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/atalhos_dia.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/aviso_atrasadas.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/calendario_mensal.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/calendario_mes.dart';
@@ -87,14 +86,6 @@ class CronogramaPage extends ConsumerWidget {
             selecionado: filtro.verTodas ? 1 : 0,
             onSelecionado: (i) => controller.mostrarTodas(todas: i == 1),
           ),
-          if (!filtro.verTodas) ...[
-            const SizedBox(height: AppSpacing.md),
-            AtalhosDia(
-              diaSelecionado: filtro.diaSelecionado,
-              hoje: hoje,
-              onDiaSelecionado: controller.selecionarDia,
-            ),
-          ],
           const SizedBox(height: AppSpacing.lg),
           Container(
             padding: const EdgeInsets.all(AppSpacing.md + AppSpacing.xxs),

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:fera_metalurgica_app/core/domain/documento.dart';
 import 'package:fera_metalurgica_app/core/domain/endereco.dart';
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:fera_metalurgica_app/core/utils/input_formatters.dart';
+import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_buttons.dart';
 import 'package:fera_metalurgica_app/core/widgets/form_campo.dart';
 import 'package:fera_metalurgica_app/core/widgets/section_card.dart';
@@ -54,6 +57,18 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
   /// edição). `null` num cliente digitado do zero.
   ClienteSnapshot? _referencia;
 
+  /// Consulta do CEP em andamento.
+  bool _buscandoCep = false;
+
+  /// Resultado negativo da consulta do CEP, mostrado abaixo do campo.
+  String? _avisoCep;
+
+  /// Busca da localização atual em andamento.
+  bool _buscandoLocalizacao = false;
+
+  /// Resultado de "Usar minha localização", mostrado abaixo do botão.
+  String? _avisoLocalizacao;
+
   List<TextEditingController> get _campos => [
     _nome,
     _documento,
@@ -103,7 +118,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
     _bairro.text = endereco.bairro;
     _cidade.text = endereco.cidade;
     _uf.text = endereco.uf;
-    _cep.text = endereco.cep ?? '';
+    _cep.text = formatarCep(endereco.cep ?? '');
   }
 
   /// Escolhe [cliente] do cadastro: preenche a cópia e limpa a busca.
@@ -121,6 +136,89 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
     return texto.isEmpty ? null : texto;
   }
 
+  /// Com os 8 dígitos do [cep], preenche o endereço (D-43). Só roda quando
+  /// o operador digita: abrir um cliente salvo não sobrescreve o endereço.
+  /// A consulta é uma ajuda: se falhar, o endereço é digitado à mão.
+  Future<void> _consultarCep(String cep) async {
+    setState(() {
+      _avisoCep = null;
+      _buscandoCep = cep.length == 8;
+    });
+    if (cep.length != 8) return;
+
+    EnderecoEncontrado? endereco;
+    String? aviso;
+    try {
+      endereco = await ref.read(cepRepositoryProvider).buscar(cep);
+      if (endereco == null) aviso = 'CEP não encontrado. Preencha o endereço.';
+    } on Exception catch (erro) {
+      debugPrint('Falha ao consultar o CEP: $erro');
+      aviso = 'Não foi possível consultar o CEP. Preencha o endereço.';
+    }
+    // Outro CEP digitado durante a espera: esta resposta já não vale.
+    if (!mounted || somenteDigitos(_cep.text) != cep) return;
+
+    _buscandoCep = false;
+    _avisoCep = aviso;
+    if (endereco != null) _preencherEndereco(endereco);
+    _enviar();
+  }
+
+  /// Preenche o que veio em [endereco]. Campo que veio vazio fica como está,
+  /// e número e complemento são sempre do operador.
+  void _preencherEndereco(EnderecoEncontrado endereco) {
+    void trocar(TextEditingController controller, String valor) {
+      if (valor.isNotEmpty) controller.text = valor;
+    }
+
+    trocar(_logradouro, endereco.logradouro);
+    trocar(_bairro, endereco.bairro);
+    trocar(_cidade, endereco.cidade);
+    trocar(_uf, endereco.uf);
+  }
+
+  /// Preenche o endereço com o lugar em que o aparelho está (D-43). É uma
+  /// ajuda para quem monta o orçamento no local do cliente: o endereço é
+  /// aproximado, e o número fica para o operador.
+  Future<void> _usarLocalizacao() async {
+    setState(() {
+      _buscandoLocalizacao = true;
+      _avisoLocalizacao = null;
+    });
+    EnderecoEncontrado? endereco;
+    String aviso;
+    try {
+      endereco = await ref.read(localizacaoRepositoryProvider).enderecoAtual();
+      aviso = 'Confira o endereço e informe o número.';
+    } on FalhaLocalizacao catch (falha) {
+      aviso = switch (falha.motivo) {
+        MotivoFalhaLocalizacao.indisponivel =>
+          'A localização só funciona no celular.',
+        MotivoFalhaLocalizacao.gpsDesligado =>
+          'Ligue a localização do celular e tente de novo.',
+        MotivoFalhaLocalizacao.semPermissao =>
+          'Libere a localização para o app nas configurações do celular.',
+        MotivoFalhaLocalizacao.semEndereco =>
+          'Nenhum endereço encontrado aqui. Preencha à mão.',
+      };
+    } on Exception catch (erro) {
+      debugPrint('Falha ao obter a localização: $erro');
+      aviso = 'Não foi possível obter a localização. Preencha o endereço.';
+    }
+    if (!mounted) return;
+
+    _buscandoLocalizacao = false;
+    _avisoLocalizacao = aviso;
+    if (endereco != null) {
+      _preencherEndereco(endereco);
+      if (endereco.cep.isNotEmpty) {
+        _cep.text = formatarCep(endereco.cep);
+        _avisoCep = null;
+      }
+    }
+    _enviar();
+  }
+
   /// Manda a cópia do formulário para a sessão. Antes do primeiro dado,
   /// a sessão continua sem cliente.
   void _enviar() {
@@ -131,6 +229,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
         ref.read(orcamentoControllerProvider).edicao?.cliente == null) {
       return;
     }
+    final cep = somenteDigitos(_cep.text);
     controller.atualizarCliente(
       ClienteSnapshot(
         nome: _nome.text.trim(),
@@ -143,7 +242,7 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
           bairro: _bairro.text.trim(),
           cidade: _cidade.text.trim(),
           uf: _uf.text.trim(),
-          cep: _textoOuNulo(_cep),
+          cep: cep.isEmpty ? null : cep,
         ),
         // Outro documento é outra identidade: a origem antiga não vale.
         clienteOrigemId: _documentoMudou ? null : _referencia?.clienteOrigemId,
@@ -171,6 +270,9 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
       List<TextInputFormatter>? formatadores,
       TextCapitalization capitalizacao = TextCapitalization.words,
       String? dica,
+      String? ajuda,
+      Widget? sufixo,
+      ValueChanged<String>? aoMudar,
     }) => FormCampo(
       rotulo: rotulo,
       obrigatorio: obrigatorio,
@@ -182,9 +284,15 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
         textCapitalization: capitalizacao,
         decoration: InputDecoration(
           hintText: dica,
+          helperText: ajuda,
+          helperMaxLines: 2,
+          suffixIcon: sufixo,
           errorText: erro(caminho ?? chave),
         ),
-        onChanged: (_) => _enviar(),
+        onChanged: (valor) {
+          _enviar();
+          aoMudar?.call(valor);
+        },
       ),
     );
 
@@ -251,6 +359,48 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              OutlinedAppButton(
+                key: const ValueKey('cliente-usar-localizacao'),
+                label: _buscandoLocalizacao
+                    ? 'Buscando localização...'
+                    : 'Usar minha localização',
+                icon: Icons.my_location,
+                onPressed: _buscandoLocalizacao
+                    ? null
+                    : () => unawaited(_usarLocalizacao()),
+              ),
+              if (_avisoLocalizacao case final aviso?) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  aviso,
+                  style: AppTextStyles.caption.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.md),
+              // Antes dos outros campos, porque os preenche.
+              campo(
+                'cep',
+                'CEP',
+                _cep,
+                obrigatorio: false,
+                caminho: 'endereco.cep',
+                dica: '00000-000',
+                ajuda: _avisoCep,
+                sufixo: _buscandoCep
+                    ? const Padding(
+                        padding: EdgeInsets.all(AppSpacing.sm),
+                        child: SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
+                aoMudar: (cep) => unawaited(_consultarCep(somenteDigitos(cep))),
+                teclado: TextInputType.number,
+                formatadores: const [CepInputFormatter()],
+              ),
               campo(
                 'logradouro',
                 'Logradouro',
@@ -287,19 +437,6 @@ class _EtapaClienteState extends ConsumerState<EtapaCliente> {
                   FilteringTextInputFormatter.allow(RegExp('[a-zA-Z]')),
                   LengthLimitingTextInputFormatter(2),
                   const MaiusculasInputFormatter(),
-                ],
-              ),
-              campo(
-                'cep',
-                'CEP',
-                _cep,
-                obrigatorio: false,
-                caminho: 'endereco.cep',
-                dica: 'Só os 8 números',
-                teclado: TextInputType.number,
-                formatadores: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(8),
                 ],
               ),
             ],

@@ -92,7 +92,7 @@ void main() {
     expect(find.text('Novo material'), findsOneWidget);
     await digitar(tester, nome, 'Concreto usinado');
     await tocar(tester, segmento('m³'));
-    await digitar(tester, preco, '450');
+    await digitar(tester, preco, '450,00');
     await tocar(tester, salvar);
 
     expect(find.text('Material salvo.'), findsOneWidget);
@@ -124,20 +124,6 @@ void main() {
         find.text('O preço de referência deve ser maior que zero'),
         findsOneWidget,
       );
-    });
-
-    testWidgets('preço com mais de 2 casas não salva', (tester) async {
-      await abrirEm(tester, AppRoutes.materiais);
-      await tocar(tester, find.text('Novo'));
-
-      await digitar(tester, nome, 'Granito');
-      await digitar(tester, preco, '12,345');
-      await tocar(tester, salvar);
-
-      expect(find.textContaining('Valor inválido'), findsOneWidget);
-      expect(find.byType(MaterialFormPage), findsOneWidget);
-      final todos = containerDoApp(tester).read(materiaisProvider).value!;
-      expect(todos, hasLength(materiaisExemplo.length));
     });
   });
 

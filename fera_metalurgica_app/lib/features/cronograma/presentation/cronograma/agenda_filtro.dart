@@ -16,7 +16,7 @@ part 'agenda_filtro.g.dart';
 abstract class AgendaFiltro with _$AgendaFiltro {
   /// Cria um [AgendaFiltro].
   const factory AgendaFiltro({
-    /// Dia selecionado (sem hora); define a linha do tempo e os atalhos.
+    /// Dia selecionado (sem hora); define a linha do tempo.
     required DateTime diaSelecionado,
 
     /// Primeiro dia do mês exibido no calendário.
@@ -138,14 +138,6 @@ String rotuloDia(DateTime dia, DateTime hoje) {
   if (mesmoDia(dia, h)) return 'Hoje';
   if (mesmoDia(dia, DateTime(h.year, h.month, h.day + 1))) return 'Amanhã';
   return formatarDiaCurto(dia);
-}
-
-/// Texto do atalho do [dia]: "Hoje, 9 Out", "Amanhã, 10 Out" ou
-/// "Qua, 11 Out".
-String rotuloAtalho(DateTime dia, DateTime hoje) {
-  final curto = formatarDiaCurto(dia);
-  final rotulo = rotuloDia(dia, hoje);
-  return rotulo == curto ? curto : '$rotulo, ${curto.split(', ').last}';
 }
 
 /// Contagem da seção: "1 tarefa", "2 tarefas", "0 tarefas".

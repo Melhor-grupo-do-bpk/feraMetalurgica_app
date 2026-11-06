@@ -190,7 +190,7 @@ class _ProdutoFormState extends ConsumerState<ProdutoForm> {
             controller: _precoBase,
             rotulo: 'Preço base de fabricação por produto (sem materiais)',
             prefixo: r'R$ ',
-            tipo: TipoCampo.decimal,
+            tipo: TipoCampo.dinheiro,
             erro: _erros['precoBase'],
             onChanged: (_) => _alterou(),
           ),

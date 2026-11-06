@@ -88,10 +88,10 @@ void main() {
     // Só os produtos A + B.
     expect(totalGeral(r'R$ 3.350,80'), findsOneWidget);
 
-    await digitar(tester, 'insumos', '100');
+    await digitar(tester, 'insumos', '100,00');
     await digitar(tester, 'impostos', '200,00');
-    await digitar(tester, 'combustivel', '50');
-    await digitar(tester, 'outros', '30');
+    await digitar(tester, 'combustivel', '50,00');
+    await digitar(tester, 'outros', '30,00');
     await digitar(tester, 'outros-descricao', 'Instalação');
     await digitar(tester, 'desconto', '100,00');
     expect(totalGeral(r'R$ 3.630,80'), findsOneWidget);
@@ -156,24 +156,6 @@ void main() {
     expect(find.textContaining('Válido até'), findsNothing);
   });
 
-  testWidgets('texto inválido mostra o erro e não avança nem volta', (
-    tester,
-  ) async {
-    await abrirEtapa3(tester);
-    await digitar(tester, 'insumos', '12,345');
-
-    expect(find.textContaining('Valor inválido'), findsOneWidget);
-    // O controller ficou com o último valor válido.
-    expect(totalGeral(r'R$ 3.630,80'), findsOneWidget);
-
-    await tocar(tester, continuar);
-    expect(find.text('Etapa 3 de 4: Valores'), findsOneWidget);
-    expect(find.text('Corrija os campos destacados.'), findsOneWidget);
-
-    await tocar(tester, find.text('Voltar'));
-    expect(find.text('Etapa 3 de 4: Valores'), findsOneWidget);
-  });
-
   testWidgets('total geral zero aparece destacado', (tester) async {
     await abrirEtapa3(tester);
     await digitar(tester, 'desconto', '3.730,80');
@@ -186,7 +168,7 @@ void main() {
     tester,
   ) async {
     await abrirEtapa3(tester);
-    await digitar(tester, 'combustivel', '75');
+    await digitar(tester, 'combustivel', '75,00');
     await digitar(tester, 'observacoes', 'Entrega em 20 dias.');
 
     await tocar(tester, find.text('Voltar'));

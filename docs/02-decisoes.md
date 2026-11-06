@@ -615,6 +615,7 @@ continua só com o total geral.
   "Todas" mostra todas as tarefas dos tipos marcados, inclusive as
   concluídas e as passadas, agrupadas por dia em ordem cronológica. Escolher
   um dia no calendário ou numa tarefa atrasada volta para "Por dia".
+- **Atalhos de dia:** saíram da agenda. O dia é escolhido no calendário.
 - **Materiais:** os chips são Ativos (padrão), Inativos e Todos.
 - **Indicadores do início:** o ícone fica na linha do rótulo e o valor usa a
   largura toda do card, numa linha. Os quatro valores têm sempre o mesmo
@@ -630,6 +631,25 @@ continua só com o total geral.
   acompanha só tem a saudação, o código e o emitente: os valores ficam no
   PDF (D-39). O status passa a `enviado` ao abrir, porque o app não sabe se
   o operador enviou mesmo. O `url_launcher` saiu das dependências.
+- **CEP do cliente:** na etapa 1, digitar os 8 dígitos do CEP, que passou a
+  ser o primeiro campo do endereço, preenche logradouro, bairro, cidade e UF
+  pelo ViaCEP (gratuito e sem chave). Número e complemento não mudam, e
+  campos vazios na resposta não apagam o que foi digitado. É a primeira
+  chamada de internet do app: só o CEP sai do aparelho, e sem internet o
+  endereço é digitado à mão. O Android ganhou a permissão `INTERNET`, e não
+  há dependência nova (`HttpClient` do Dart).
+- **Localização do celular:** na etapa 1, o botão "Usar minha localização"
+  preenche logradouro, bairro, cidade, UF e, se vier completo, o CEP, com o
+  GPS e o geocodificador do próprio aparelho (gratuito e sem chave; as
+  coordenadas passam pelo serviço do sistema). O número e o complemento
+  ficam para o operador, e o endereço é aproximado. Só funciona no celular.
+  Entram os pacotes `geolocator` e `geocoding` (complementa a D-33) e a
+  permissão de localização, pedida só em uso.
+- **Máscaras:** todo campo de dinheiro usa o `DinheiroInputFormatter`: os
+  dígitos entram pela direita, como centavos (`123456` vira `1.234,56`).
+  Isso vale sobre a leitura livre da D-35 nesses campos. As medidas em cm
+  continuam como na D-35. O CEP aparece como `00000-000` e é gravado só com
+  os dígitos.
 - **Sino:** saiu da `AppTopBar`, porque não tinha função (D-19). O app não
   tem notificações.
 

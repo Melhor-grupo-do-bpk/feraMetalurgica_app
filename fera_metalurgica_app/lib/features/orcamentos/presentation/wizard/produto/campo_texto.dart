@@ -1,4 +1,5 @@
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
+import 'package:fera_metalurgica_app/core/utils/input_formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,9 +8,12 @@ enum TipoCampo {
   /// Texto livre.
   texto,
 
-  /// Número com até duas casas (dinheiro, medida): teclado com vírgula ou
-  /// ponto (D-35); a leitura é do `Dinheiro`/`MedidaCm`.
+  /// Medida com até duas casas: teclado com vírgula ou ponto (D-35); a
+  /// leitura é do `MedidaCm`.
   decimal,
+
+  /// Valor em reais, com a máscara do [DinheiroInputFormatter] (D-43).
+  dinheiro,
 
   /// Inteiro (quantidades): só dígitos.
   inteiro,
@@ -86,11 +90,13 @@ class CampoTexto extends StatelessWidget {
         TipoCampo.decimal => const TextInputType.numberWithOptions(
           decimal: true,
         ),
-        TipoCampo.inteiro => TextInputType.number,
+        TipoCampo.inteiro || TipoCampo.dinheiro => TextInputType.number,
       },
-      inputFormatters: tipo == TipoCampo.inteiro
-          ? [FilteringTextInputFormatter.digitsOnly]
-          : null,
+      inputFormatters: switch (tipo) {
+        TipoCampo.inteiro => [FilteringTextInputFormatter.digitsOnly],
+        TipoCampo.dinheiro => const [DinheiroInputFormatter()],
+        _ => null,
+      },
       decoration: InputDecoration(
         labelText: rotulo,
         hintText: dica,

@@ -268,7 +268,7 @@ void main() {
       findsOneWidget,
     );
 
-    await escrever(tester, 'peca-preco', '95');
+    await escrever(tester, 'peca-preco', '95,00');
 
     expect(valor(tester, 'Custo unitário'), r'R$ 68,40');
     expect(valor(tester, 'Preço ajustado'), contains(r'R$ 90,00'));

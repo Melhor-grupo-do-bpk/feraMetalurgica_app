@@ -33,6 +33,17 @@ void main() {
     expect(find.text('Insumos'), findsOneWidget);
   });
 
+  testWidgets('aplica a máscara: os dígitos entram como centavos', (
+    tester,
+  ) async {
+    final lidos = await montar(tester);
+
+    await tester.enterText(find.byType(TextFormField), '123456');
+
+    expect(find.text('1.234,56'), findsOneWidget);
+    expect(lidos, [const Dinheiro(123456)]);
+  });
+
   testWidgets('lê texto pt-BR em centavos, sem double', (tester) async {
     final lidos = await montar(tester);
 
@@ -47,21 +58,6 @@ void main() {
     await tester.enterText(find.byType(TextFormField), '');
 
     expect(lidos, [null]);
-  });
-
-  testWidgets('texto inválido mostra o erro e não chama onChanged', (
-    tester,
-  ) async {
-    final lidos = await montar(tester);
-
-    await tester.enterText(find.byType(TextFormField), '12,345');
-    await tester.pump();
-
-    expect(lidos, isEmpty);
-    expect(
-      find.text('Valor inválido: use até 2 casas (ex: 1.234,56)'),
-      findsOneWidget,
-    );
   });
 
   testWidgets('mostra o erro de regra vindo de fora', (tester) async {

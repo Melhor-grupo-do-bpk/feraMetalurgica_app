@@ -1,3 +1,4 @@
+import 'package:fera_metalurgica_app/core/domain/decimal_pt_br.dart';
 import 'package:fera_metalurgica_app/core/utils/validators.dart';
 import 'package:flutter/services.dart';
 
@@ -41,6 +42,13 @@ String formatarCpfCnpj(String valor) {
   );
 }
 
+/// CEP (`99999-999`), com até 8 dígitos.
+String formatarCep(String valor) {
+  final digitos = somenteDigitos(valor);
+  final limitado = digitos.length > 8 ? digitos.substring(0, 8) : digitos;
+  return _aplicarMascara(limitado, '#####-###');
+}
+
 /// Base dos formatters de máscara: reformata o texto inteiro e põe o
 /// cursor no fim.
 abstract class _MascaraInputFormatter extends TextInputFormatter {
@@ -68,6 +76,52 @@ class TelefoneInputFormatter extends _MascaraInputFormatter {
 
   @override
   String formatar(String valor) => formatarTelefone(valor);
+}
+
+/// Máscara de CEP para `TextField` (ver [formatarCep]).
+class CepInputFormatter extends _MascaraInputFormatter {
+  /// Cria o formatter.
+  const CepInputFormatter();
+
+  @override
+  String formatar(String valor) => formatarCep(valor);
+}
+
+/// Máscara de valor em reais: os dígitos entram pela direita, como centavos
+/// (`1` → `0,01`, `123456` → `1.234,56`), sem `double` (D-26). Campo vazio
+/// continua vazio; digitar `0` dá `0,00`, e apagar a partir daí limpa o
+/// campo.
+class DinheiroInputFormatter extends TextInputFormatter {
+  /// Cria o formatter.
+  const DinheiroInputFormatter();
+
+  /// Até R$ 99.999.999.999,99.
+  static const int _maximoDigitos = 13;
+
+  static final RegExp _zerosAEsquerda = RegExp('^0+');
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final todos = somenteDigitos(newValue.text);
+    final digitos = todos.replaceFirst(_zerosAEsquerda, '');
+    if (digitos.length > _maximoDigitos) return oldValue;
+
+    final String texto;
+    if (digitos.isNotEmpty) {
+      texto = formatarCentesimosPtBr(int.parse(digitos));
+    } else {
+      final apagou =
+          todos.isEmpty || newValue.text.length < oldValue.text.length;
+      texto = apagou ? '' : formatarCentesimosPtBr(0);
+    }
+    return TextEditingValue(
+      text: texto,
+      selection: TextSelection.collapsed(offset: texto.length),
+    );
+  }
 }
 
 /// Deixa o texto em maiúsculas (ex: a UF do endereço).

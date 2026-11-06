@@ -170,6 +170,10 @@ As decisões D-26 a D-30 valem sobre o prompt.
 - **`Cliente`** — `id`, `nome`, `documento` (chave única normalizada),
   `celular`, `endereco`, todos obrigatórios.
   `ClienteRepository`: `buscarPorDocumento`, `pesquisar(termo)`, `salvar`.
+  `CepRepository.buscar(cep)` (ViaCEP) e
+  `LocalizacaoRepository.enderecoAtual()` (GPS e geocodificador do celular)
+  devolvem o `EnderecoEncontrado` (`logradouro`, `bairro`, `cidade`,
+  `uf`, `cep`, D-43).
 
 ### Orçamentos (`lib/features/orcamentos/domain/`)
 

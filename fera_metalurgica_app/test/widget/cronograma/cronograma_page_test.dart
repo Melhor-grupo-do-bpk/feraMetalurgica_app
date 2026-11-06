@@ -4,7 +4,6 @@ import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
 import 'package:fera_metalurgica_app/core/widgets/timeline_tile.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/agenda_filtro.dart';
-import 'package:fera_metalurgica_app/features/cronograma/presentation/cronograma/atalhos_dia.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,10 +105,6 @@ void main() {
       expect(find.byTooltip('Voltar'), findsNothing);
       expect(find.text('Outubro 2023'), findsOneWidget);
       expect(find.text('FILTROS DE TAREFAS'), findsOneWidget);
-      expect(find.text('Hoje, 9 Out'), findsOneWidget);
-      expect(find.text('Amanhã, 10 Out'), findsOneWidget);
-      expect(find.text('Qua, 11 Out'), findsOneWidget);
-
       expect(find.text('Hoje'), findsOneWidget);
       expect(find.text('2 tarefas'), findsOneWidget);
       expect(find.text('Amanhã'), findsOneWidget);
@@ -174,19 +169,16 @@ void main() {
     expect(find.text('Ver Detalhes'), findsNothing);
   });
 
-  testWidgets('atalho de dia muda a seleção e a linha do tempo', (
+  testWidgets('escolher um dia sem tarefas muda a linha do tempo', (
     tester,
   ) async {
     await abrirCronograma(tester);
 
-    // Num celular, o terceiro atalho começa fora da tela.
-    await tester.ensureVisible(find.text('Qua, 11 Out'));
-    await tester.tap(find.text('Qua, 11 Out'));
+    await tester.tap(find.byKey(const ValueKey('calendario-dia-11/10/2023')));
     await tester.pumpAndSettle();
 
-    // "Qua, 11 Out" agora é o primeiro atalho e o título da seção.
-    expect(find.text('Qua, 11 Out'), findsNWidgets(2));
-    expect(find.text('Qui, 12 Out'), findsNWidgets(2));
+    expect(find.text('Qua, 11 Out'), findsOneWidget);
+    expect(find.text('Qui, 12 Out'), findsOneWidget);
     expect(find.text('Hoje'), findsNothing);
     expect(find.text('0 tarefas'), findsNWidgets(2));
     // Fora da seleção, o dia 9 volta a mostrar o ponto.
@@ -200,7 +192,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Amanhã'), findsOneWidget);
-    expect(find.text('Qua, 11 Out'), findsNWidgets(2));
+    expect(find.text('Qua, 11 Out'), findsOneWidget);
     expect(find.text('Iniciar produção do pedido #00124'), findsOneWidget);
   });
 
@@ -222,7 +214,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('calendario-dia-27/08/2023')));
     await tester.pumpAndSettle();
     expect(find.text('Agosto 2023'), findsOneWidget);
-    expect(find.text('Dom, 27 Ago'), findsNWidgets(2));
+    expect(find.text('Dom, 27 Ago'), findsOneWidget);
   });
 
   testWidgets('"Ver Detalhes" abre o orçamento', (tester) async {
@@ -281,13 +273,11 @@ void main() {
     await tester.tap(find.text('Todas'));
     await tester.pumpAndSettle();
     expect(find.text('Entrega distante'), findsOneWidget);
-    expect(find.byType(AtalhosDia), findsNothing);
 
     // Escolher um dia no calendário volta à visão por dia.
     await tester.tap(find.text('15'));
     await tester.pumpAndSettle();
     expect(find.text('Entrega distante'), findsNothing);
-    expect(find.byType(AtalhosDia), findsOneWidget);
   });
 
   testWidgets('"Todas" sem tarefas avisa que não há nada agendado', (
@@ -339,10 +329,6 @@ void main() {
       DateTime(2023, 10, 10),
     });
 
-    final hoje = DateTime(2023, 10, 9, 8);
-    expect(rotuloAtalho(DateTime(2023, 10, 9), hoje), 'Hoje, 9 Out');
-    expect(rotuloAtalho(DateTime(2023, 10, 10), hoje), 'Amanhã, 10 Out');
-    expect(rotuloAtalho(DateTime(2023, 10, 11), hoje), 'Qua, 11 Out');
     expect(contarTarefas(0), '0 tarefas');
     expect(contarTarefas(1), '1 tarefa');
   });
