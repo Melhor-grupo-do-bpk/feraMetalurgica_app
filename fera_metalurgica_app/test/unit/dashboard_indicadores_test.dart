@@ -228,4 +228,43 @@ void main() {
       expect(container.read(recentesDashboardProvider).hasValue, isTrue);
     });
   });
+
+  group('calcularEnviosPorMes (D-45)', () {
+    test('6 meses até o atual, com os enviados de cada mês', () {
+      final envios = calcularEnviosPorMes([
+        _orcamento('a', status: StatusOrcamento.enviado, enviadoEm: _outubro),
+        _orcamento(
+          'b',
+          status: StatusOrcamento.enviado,
+          enviadoEm: DateTime(2023, 10, 2),
+        ),
+        _orcamento(
+          'c',
+          status: StatusOrcamento.enviado,
+          enviadoEm: DateTime(2023, 7, 15),
+        ),
+        // Fora da janela de 6 meses e criado: não contam.
+        _orcamento(
+          'd',
+          status: StatusOrcamento.enviado,
+          enviadoEm: DateTime(2023, 4, 30),
+        ),
+        _orcamento('e'),
+      ], _outubro);
+
+      expect(envios.map((e) => e.mes), [
+        for (var mes = 5; mes <= 10; mes++) DateTime(2023, mes),
+      ]);
+      expect(envios.map((e) => e.quantidade), [0, 0, 1, 0, 0, 2]);
+      expect(envios.last.valor, orcamentoExemploB.totalGeral * 2);
+      expect(envios.first.valor, Dinheiro.zero);
+    });
+
+    test('atravessa a virada do ano', () {
+      final envios = calcularEnviosPorMes(const [], DateTime(2024, 2, 10));
+
+      expect(envios.first.mes, DateTime(2023, 9));
+      expect(envios.last.mes, DateTime(2024, 2));
+    });
+  });
 }

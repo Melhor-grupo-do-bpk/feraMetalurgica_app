@@ -1,6 +1,9 @@
 import 'package:fera_metalurgica_app/core/domain/dinheiro.dart';
 import 'package:fera_metalurgica_app/core/domain/documento.dart';
+import 'package:fera_metalurgica_app/core/domain/endereco.dart';
 import 'package:fera_metalurgica_app/core/utils/date_format.dart';
+import 'package:fera_metalurgica_app/core/utils/input_formatters.dart';
+import 'package:fera_metalurgica_app/features/orcamentos/data/pdf/pdf_tema.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/domain/orcamento.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -77,20 +80,33 @@ List<LinhaTotalPdf> linhasTotaisPdf(Orcamento orcamento) {
   ];
 }
 
-/// PDF do orçamento que vai para o cliente (Tela 7, RF-40): logo, código
-/// (com a revisão), emissão (a revisão atual), validade (só se houver),
-/// emitente e cliente das cópias gravadas, produtos e totais conforme a
-/// D-39 e as observações, se houver.
+/// Margem da folha A4: 20 mm.
+const double _margem = 20 * PdfPageFormat.mm;
+
+/// Largura do bloco de totais: 78 mm.
+const double _larguraTotais = 78 * PdfPageFormat.mm;
+
+/// PDF do orçamento que vai para o cliente (Tela 7, RF-40), no layout do
+/// protótipo `docs/referencias/prototipo-orcamento-fera.pdf` (D-44):
+/// cabeçalho com a logo e o código, emitente e cliente das cópias gravadas,
+/// tabela de produtos, totais conforme a D-39, observações e as linhas de
+/// assinatura. O rodapé repete o emitente e o código, e numera as páginas
+/// quando há mais de uma.
 ///
-/// Sem redesenho (o documento comercial é outra tarefa, prompt §1). Nunca
-/// mostra o custo das peças nem dos materiais (D-39).
+/// Nunca mostra o custo das peças nem dos materiais (D-39).
 Future<Uint8List> gerarOrcamentoPdf(Orcamento orcamento) async {
   final logo = pw.MemoryImage(
     (await rootBundle.load(_logoAsset)).buffer.asUint8List(),
   );
-  final tema = pw.ThemeData.withFont(
+  final fontes = pw.ThemeData.withFont(
     base: await _carregarFonte(fontePdfRegular),
     bold: await _carregarFonte(fontePdfNegrito),
+  );
+  final tema = fontes.copyWith(
+    defaultTextStyle: fontes.defaultTextStyle.copyWith(
+      fontSize: 10,
+      color: PdfTema.texto,
+    ),
   );
   final documento =
       pw.Document(
@@ -100,185 +116,319 @@ Future<Uint8List> gerarOrcamentoPdf(Orcamento orcamento) async {
       )..addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(40),
+          margin: const pw.EdgeInsets.all(_margem),
+          footer: (context) => _rodape(orcamento, context),
           build: (context) => [
             _cabecalho(orcamento, logo),
-            pw.SizedBox(height: 24),
-            _secao('EMISSOR', _linhasEmitente(orcamento)),
-            pw.SizedBox(height: 16),
-            _secao('CLIENTE', _linhasCliente(orcamento)),
-            pw.SizedBox(height: 24),
-            _cabecalhoItens(),
-            for (final linha in linhasProdutosPdf(orcamento)) _linhaItem(linha),
-            pw.SizedBox(height: 16),
-            _totais(linhasTotaisPdf(orcamento)),
+            pw.SizedBox(height: 14),
+            pw.Container(height: 1.5, color: PdfTema.laranja),
+            pw.SizedBox(height: 22),
+            _partes(orcamento),
+            pw.SizedBox(height: 26),
+            _tabelaProdutos(linhasProdutosPdf(orcamento)),
+            pw.SizedBox(height: 20),
+            // Inteiros: os totais, as observações e as assinaturas não se
+            // dividem entre páginas.
+            pw.Inseparable(child: _totais(linhasTotaisPdf(orcamento))),
             ..._observacoes(orcamento),
+            pw.SizedBox(height: 64),
+            pw.Inseparable(child: _assinaturas(orcamento)),
           ],
         ),
       );
   return await documento.save();
 }
 
-pw.Widget _cabecalho(Orcamento orcamento, pw.ImageProvider logo) => pw.Center(
-  child: pw.Column(
+/// Logo à esquerda; "ORÇAMENTO", código, emissão e validade à direita.
+pw.Widget _cabecalho(Orcamento orcamento, pw.ImageProvider logo) {
+  final validade = orcamento.dataValidade;
+  // A emissão é a da revisão atual, de onde conta a validade (D-30).
+  final datas = [
+    'Emissão ${formatarData(orcamento.atualizadoEm)}',
+    if (validade != null) 'Validade ${formatarData(validade)}',
+  ].join(' · ');
+  return pw.Row(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
     children: [
-      pw.Image(logo, height: 48),
-      pw.SizedBox(height: 12),
-      pw.Text(
-        'ORÇAMENTO',
-        style: const pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
-      ),
-      pw.SizedBox(height: 4),
-      pw.Text(
-        'Nº ${orcamento.codigoExibicao}',
-        style: const pw.TextStyle(fontSize: 13, color: PdfColors.grey700),
-      ),
-      pw.SizedBox(height: 8),
-      // A emissão é a da revisão atual, de onde conta a validade (D-30).
-      _pequeno('Emissão: ${formatarData(orcamento.atualizadoEm)}'),
-      if (orcamento.dataValidade case final validade?)
-        _pequeno('Validade: até ${formatarData(validade)}'),
-    ],
-  ),
-);
-
-String _rotuloDocumento(Documento documento) =>
-    documento.ehPessoaJuridica ? 'CNPJ' : 'CPF';
-
-List<pw.Widget> _linhasEmitente(Orcamento orcamento) {
-  final emitente = orcamento.emitente;
-  final email = emitente.email;
-  return [
-    _negrito(emitente.nomeRazaoSocial),
-    pw.Text(
-      '${_rotuloDocumento(emitente.documento)}: '
-      '${emitente.documento.formatado}',
-    ),
-    pw.Text(emitente.endereco.formatado),
-    pw.Text(emitente.telefone),
-    if (email != null && email.isNotEmpty) pw.Text(email),
-  ];
-}
-
-List<pw.Widget> _linhasCliente(Orcamento orcamento) {
-  final cliente = orcamento.cliente;
-  return [
-    _negrito(cliente.nome),
-    pw.Text(
-      '${_rotuloDocumento(cliente.documento)}: ${cliente.documento.formatado}',
-    ),
-    pw.Text(cliente.celular),
-    pw.Text(cliente.endereco.formatado),
-  ];
-}
-
-pw.Widget _secao(String titulo, List<pw.Widget> linhas) => pw.Column(
-  crossAxisAlignment: pw.CrossAxisAlignment.start,
-  children: [
-    _rotulo(titulo),
-    pw.Divider(color: PdfColors.grey300, height: 8),
-    ...linhas,
-  ],
-);
-
-/// Larguras das colunas de quantidade, preço unitário e total.
-const double _colunaQtd = 40;
-const double _colunaValor = 90;
-
-pw.Widget _colunas(
-  pw.Widget descricao,
-  pw.Widget quantidade,
-  pw.Widget unitario,
-  pw.Widget total,
-) => pw.Row(
-  crossAxisAlignment: pw.CrossAxisAlignment.start,
-  children: [
-    pw.Expanded(child: descricao),
-    pw.SizedBox(width: 8),
-    pw.SizedBox(
-      width: _colunaQtd,
-      child: pw.Align(alignment: pw.Alignment.topRight, child: quantidade),
-    ),
-    pw.SizedBox(
-      width: _colunaValor,
-      child: pw.Align(alignment: pw.Alignment.topRight, child: unitario),
-    ),
-    pw.SizedBox(
-      width: _colunaValor,
-      child: pw.Align(alignment: pw.Alignment.topRight, child: total),
-    ),
-  ],
-);
-
-pw.Widget _cabecalhoItens() => pw.Container(
-  padding: const pw.EdgeInsets.only(bottom: 6),
-  decoration: const pw.BoxDecoration(
-    border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey400)),
-  ),
-  child: _colunas(
-    _rotulo('PRODUTO'),
-    _rotulo('QTD'),
-    _rotulo('UNITÁRIO'),
-    _rotulo('TOTAL'),
-  ),
-);
-
-/// Produto: descrição, observações, quantidade, preço unitário e total.
-pw.Widget _linhaItem(LinhaProdutoPdf linha) {
-  final observacoes = linha.observacoes;
-  return pw.Container(
-    padding: const pw.EdgeInsets.symmetric(vertical: 10),
-    decoration: const pw.BoxDecoration(
-      border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey200)),
-    ),
-    child: _colunas(
+      _logo(logo),
       pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        crossAxisAlignment: pw.CrossAxisAlignment.end,
         children: [
-          pw.Text(linha.descricao, style: const pw.TextStyle(fontSize: 12)),
-          if (observacoes != null) _pequeno(observacoes),
+          pw.Text(
+            'ORÇAMENTO',
+            style: const pw.TextStyle(
+              fontSize: 22,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfTema.marrom,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            'Nº ${orcamento.codigoExibicao}',
+            style: const pw.TextStyle(
+              fontSize: 11,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfTema.laranja,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          _secundario(datas, tamanho: 9),
         ],
       ),
-      pw.Text(linha.quantidade),
-      pw.Text(linha.precoUnitario),
-      pw.Text(linha.total),
-    ),
+    ],
   );
 }
 
-const pw.TextStyle _estiloDestaque = pw.TextStyle(
-  fontSize: 13,
-  fontWeight: pw.FontWeight.bold,
+/// A marca do app: o "F" da logo, "ERA" em marrom com o ponto laranja e
+/// "METALÚRGICA" embaixo, como no app (`AppLogo`) e no protótipo.
+pw.Widget _logo(pw.ImageProvider logo) => pw.Column(
+  crossAxisAlignment: pw.CrossAxisAlignment.start,
+  children: [
+    pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.end,
+      children: [
+        // A caixa do texto inclui o espaço abaixo da linha de base: sem
+        // este recuo, o "F" fica mais baixo que "ERA".
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 3),
+          child: pw.Image(logo, height: 24),
+        ),
+        pw.RichText(
+          text: const pw.TextSpan(
+            text: 'ERA',
+            style: pw.TextStyle(
+              fontSize: 24,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfTema.marrom,
+              lineSpacing: 0,
+            ),
+            children: [
+              pw.TextSpan(
+                text: '.',
+                style: pw.TextStyle(color: PdfTema.laranja),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+    pw.SizedBox(height: 4),
+    _rotulo('METALÚRGICA'),
+  ],
 );
 
-/// Totais gravados (D-39), sem recalcular.
-pw.Widget _totais(List<LinhaTotalPdf> linhas) => pw.Column(
+/// "CNPJ 00.000.000/0000-00" ou "CPF 000.000.000-00".
+String _documentoComRotulo(Documento documento) =>
+    '${documento.ehPessoaJuridica ? 'CNPJ' : 'CPF'} ${documento.formatado}';
+
+/// Endereço em até três linhas: logradouro, número e complemento; bairro,
+/// cidade e UF; CEP, se houver.
+List<String> _linhasEndereco(Endereco endereco) {
+  final complemento = endereco.complemento?.trim() ?? '';
+  final cep = endereco.cep?.trim() ?? '';
+  return [
+    [
+      '${endereco.logradouro}, ${endereco.numero}',
+      if (complemento.isNotEmpty) complemento,
+    ].join(' – '),
+    '${endereco.bairro}, ${endereco.cidade} – ${endereco.uf}',
+    if (cep.isNotEmpty) 'CEP ${formatarCep(cep)}',
+  ];
+}
+
+/// Emitente e cliente lado a lado, das cópias gravadas no orçamento.
+pw.Widget _partes(Orcamento orcamento) {
+  final emitente = orcamento.emitente;
+  final cliente = orcamento.cliente;
+  final email = emitente.email?.trim() ?? '';
+  return pw.Row(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      pw.Expanded(
+        child: _parte('EMISSOR', emitente.nomeRazaoSocial, [
+          _documentoComRotulo(emitente.documento),
+          ..._linhasEndereco(emitente.endereco),
+          formatarTelefone(emitente.telefone),
+          if (email.isNotEmpty) email,
+        ]),
+      ),
+      pw.SizedBox(width: 24),
+      pw.Expanded(
+        child: _parte('CLIENTE', cliente.nome, [
+          _documentoComRotulo(cliente.documento),
+          ..._linhasEndereco(cliente.endereco),
+          formatarTelefone(cliente.celular),
+        ]),
+      ),
+    ],
+  );
+}
+
+pw.Widget _parte(String titulo, String nome, List<String> linhas) => pw.Column(
+  crossAxisAlignment: pw.CrossAxisAlignment.start,
   children: [
+    _rotulo(titulo),
+    pw.SizedBox(height: 8),
+    pw.Text(
+      nome,
+      style: const pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold),
+    ),
+    pw.SizedBox(height: 3),
     for (final linha in linhas)
-      pw.Container(
-        padding: pw.EdgeInsets.only(top: linha.destaque ? 10 : 4),
-        margin: pw.EdgeInsets.only(top: linha.destaque ? 6 : 0),
-        decoration: linha.destaque
-            ? const pw.BoxDecoration(
-                border: pw.Border(top: pw.BorderSide(color: PdfColors.grey400)),
-              )
-            : null,
-        child: pw.Row(
-          children: [
-            pw.Expanded(
-              child: pw.Text(
-                linha.rotulo,
-                style: linha.destaque ? _estiloDestaque : null,
-              ),
-            ),
-            pw.Text(
-              linha.valor,
-              style: linha.destaque ? _estiloDestaque : null,
-            ),
-          ],
-        ),
+      pw.Padding(
+        padding: const pw.EdgeInsets.only(top: 2),
+        child: _secundario(linha, tamanho: 9.5),
       ),
   ],
+);
+
+/// Tabela de produtos. Como `pw.Table`, repete o cabeçalho em cada página e
+/// não corta uma linha ao meio.
+pw.Widget _tabelaProdutos(List<LinhaProdutoPdf> linhas) {
+  const forte = pw.BorderSide(color: PdfTema.marrom, width: 1.5);
+  return pw.Table(
+    columnWidths: const {
+      0: pw.FixedColumnWidth(26),
+      1: pw.FlexColumnWidth(),
+      2: pw.FixedColumnWidth(40),
+      3: pw.FixedColumnWidth(84),
+      4: pw.FixedColumnWidth(84),
+    },
+    children: [
+      pw.TableRow(
+        repeat: true,
+        decoration: const pw.BoxDecoration(
+          border: pw.Border(top: forte, bottom: forte),
+        ),
+        children: [
+          _celulaCabecalho('#'),
+          _celulaCabecalho('DESCRIÇÃO DO PRODUTO'),
+          _celulaCabecalho('QTD', alinhamento: pw.Alignment.center),
+          _celulaCabecalho(
+            'VALOR UNIT.',
+            alinhamento: pw.Alignment.centerRight,
+          ),
+          _celulaCabecalho('TOTAL', alinhamento: pw.Alignment.centerRight),
+        ],
+      ),
+      for (final (i, linha) in linhas.indexed)
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(
+            border: pw.Border(bottom: pw.BorderSide(color: PdfTema.linha)),
+          ),
+          children: [
+            _celula(_secundario('${i + 1}'.padLeft(2, '0'), tamanho: 10.5)),
+            _celula(
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    linha.descricao,
+                    style: const pw.TextStyle(fontSize: 10.5),
+                  ),
+                  if (linha.observacoes case final observacoes?) ...[
+                    pw.SizedBox(height: 2),
+                    _secundario(observacoes, tamanho: 9),
+                  ],
+                ],
+              ),
+            ),
+            _celula(
+              pw.Text(linha.quantidade),
+              alinhamento: pw.Alignment.topCenter,
+            ),
+            _celula(
+              pw.Text(linha.precoUnitario),
+              alinhamento: pw.Alignment.topRight,
+            ),
+            _celula(pw.Text(linha.total), alinhamento: pw.Alignment.topRight),
+          ],
+        ),
+    ],
+  );
+}
+
+pw.Widget _celulaCabecalho(
+  String texto, {
+  pw.Alignment alinhamento = pw.Alignment.centerLeft,
+}) => pw.Container(
+  alignment: alinhamento,
+  padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+  child: pw.Text(
+    texto,
+    style: const pw.TextStyle(
+      fontSize: 8,
+      fontWeight: pw.FontWeight.bold,
+      letterSpacing: 1,
+      color: PdfTema.marrom,
+    ),
+  ),
+);
+
+pw.Widget _celula(
+  pw.Widget conteudo, {
+  pw.Alignment alinhamento = pw.Alignment.topLeft,
+}) => pw.Container(
+  alignment: alinhamento,
+  padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+  child: conteudo,
+);
+
+/// Totais gravados (D-39), sem recalcular, alinhados à direita. O total
+/// geral vem depois de uma linha marrom, com o valor em laranja.
+pw.Widget _totais(List<LinhaTotalPdf> linhas) => pw.Align(
+  alignment: pw.Alignment.centerRight,
+  child: pw.SizedBox(
+    width: _larguraTotais,
+    child: pw.Column(
+      children: [
+        for (final linha in linhas)
+          if (linha.destaque)
+            pw.Container(
+              margin: const pw.EdgeInsets.only(top: 8),
+              padding: const pw.EdgeInsets.only(top: 10, left: 4, right: 4),
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(top: pw.BorderSide(color: PdfTema.marrom)),
+              ),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      linha.rotulo,
+                      style: const pw.TextStyle(
+                        fontSize: 12,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  pw.Text(
+                    linha.valor,
+                    style: const pw.TextStyle(
+                      fontSize: 15,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfTema.laranja,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 4,
+                vertical: 4,
+              ),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(child: pw.Text(linha.rotulo)),
+                  pw.Text(linha.valor),
+                ],
+              ),
+            ),
+      ],
+    ),
+  ),
 );
 
 /// Observações gerais do orçamento, só se houver.
@@ -286,24 +436,79 @@ List<pw.Widget> _observacoes(Orcamento orcamento) {
   final texto = orcamento.observacoes?.trim() ?? '';
   if (texto.isEmpty) return const [];
   return [
-    pw.SizedBox(height: 24),
-    _secao('OBSERVAÇÕES', [pw.Text(texto)]),
+    pw.SizedBox(height: 28),
+    pw.Inseparable(
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          _rotulo('OBSERVAÇÕES'),
+          pw.SizedBox(height: 6),
+          _secundario(texto, tamanho: 9.5),
+        ],
+      ),
+    ),
   ];
 }
 
+/// Linhas de assinatura do emitente e do cliente.
+pw.Widget _assinaturas(Orcamento orcamento) => pw.Row(
+  children: [
+    pw.Expanded(child: _assinatura(orcamento.emitente.nomeRazaoSocial)),
+    pw.SizedBox(width: 28),
+    pw.Expanded(child: _assinatura(orcamento.cliente.nome)),
+  ],
+);
+
+pw.Widget _assinatura(String nome) => pw.Container(
+  padding: const pw.EdgeInsets.only(top: 8),
+  decoration: const pw.BoxDecoration(
+    border: pw.Border(top: pw.BorderSide(color: PdfTema.texto)),
+  ),
+  child: pw.Center(child: _secundario(nome, tamanho: 9.5)),
+);
+
+/// Rodapé de cada página: emitente à esquerda, código à direita e o número
+/// da página só quando há mais de uma.
+pw.Widget _rodape(Orcamento orcamento, pw.Context context) {
+  final emitente = orcamento.emitente;
+  final pagina = context.pagesCount > 1
+      ? ' · Página ${context.pageNumber} de ${context.pagesCount}'
+      : '';
+  return pw.Container(
+    margin: const pw.EdgeInsets.only(top: 16),
+    padding: const pw.EdgeInsets.only(top: 8),
+    decoration: const pw.BoxDecoration(
+      border: pw.Border(top: pw.BorderSide(color: PdfTema.linha)),
+    ),
+    child: pw.Row(
+      children: [
+        pw.Expanded(
+          child: _secundario(
+            '${emitente.nomeRazaoSocial} · '
+            '${_documentoComRotulo(emitente.documento)}',
+            tamanho: 8,
+          ),
+        ),
+        _secundario(
+          'Orçamento Nº ${orcamento.codigoExibicao}$pagina',
+          tamanho: 8,
+        ),
+      ],
+    ),
+  );
+}
+
+/// Rótulo em caixa alta, pequeno e espaçado (ex: "EMISSOR").
 pw.Widget _rotulo(String texto) => pw.Text(
   texto,
   style: const pw.TextStyle(
-    fontSize: 9,
-    letterSpacing: 1,
-    color: PdfColors.grey700,
+    fontSize: 8,
+    letterSpacing: 1.5,
+    color: PdfTema.cinza,
   ),
 );
 
-pw.Widget _negrito(String texto) =>
-    pw.Text(texto, style: const pw.TextStyle(fontWeight: pw.FontWeight.bold));
-
-pw.Widget _pequeno(String texto) => pw.Text(
+pw.Widget _secundario(String texto, {required double tamanho}) => pw.Text(
   texto,
-  style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
+  style: pw.TextStyle(fontSize: tamanho, color: PdfTema.cinza),
 );

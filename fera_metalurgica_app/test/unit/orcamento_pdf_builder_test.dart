@@ -94,6 +94,29 @@ void main() {
 
       expect(bytes, isNotEmpty);
     });
+
+    test('30 produtos quebram em mais de uma página (D-44)', () async {
+      final c = orcamentoExemploC;
+      final muitos = c.copyWith(
+        itens: [
+          for (var i = 0; i < 15; i++)
+            for (final item in c.itens) item.copyWith(id: '${item.id}-$i'),
+        ],
+        totais: c.totais.copyWith(
+          itens: [
+            for (var i = 0; i < 15; i++)
+              for (final r in c.totais.itens)
+                r.copyWith(itemId: '${r.itemId}-$i'),
+          ],
+        ),
+      );
+      expect(linhasProdutosPdf(muitos), hasLength(30));
+
+      final texto = latin1.decode(await gerarOrcamentoPdf(muitos));
+      final paginas = RegExp(r'/Type\s*/Page(?![s\w])').allMatches(texto);
+
+      expect(paginas.length, greaterThan(1));
+    });
   });
 
   group('conteúdo do PDF (D-39)', () {

@@ -17,7 +17,7 @@ import 'package:sqflite/sqflite.dart';
 // `migrarEsquema`.
 
 /// Versão atual do esquema.
-const int versaoEsquema = 1;
+const int versaoEsquema = 2;
 
 /// Liga as chaves estrangeiras, que o SQLite deixa desligadas por padrão.
 /// Sem isso, excluir um orçamento não exclui itens e peças.
@@ -27,15 +27,28 @@ Future<void> configurarConexao(Database banco) =>
 /// Cria o esquema completo na [versao] atual (banco novo).
 Future<void> criarEsquema(Database banco, int versao) async {
   final lote = banco.batch();
-  _tabelasV1.forEach(lote.execute);
+  [..._tabelasV1, ..._tabelasV2].forEach(lote.execute);
   await lote.commit(noResult: true);
 }
 
 /// Migra o esquema de [de] para [para]. Cada versão nova acrescenta um
 /// passo aqui.
 Future<void> migrarEsquema(Database banco, int de, int para) async {
-  // Só existe a versão 1.
+  if (de < 2) {
+    final lote = banco.batch();
+    _tabelasV2.forEach(lote.execute);
+    await lote.commit(noResult: true);
+  }
 }
+
+/// Versão 2: preferências do aparelho, como o tema escolhido (D-45).
+const List<String> _tabelasV2 = [
+  '''
+CREATE TABLE preferencias (
+  chave TEXT PRIMARY KEY,
+  valor TEXT NOT NULL
+)''',
+];
 
 const String _colunasEndereco = '''
   logradouro TEXT NOT NULL,

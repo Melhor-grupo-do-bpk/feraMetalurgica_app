@@ -60,6 +60,13 @@ abstract final class AppTextStyles {
     fontWeight: FontWeight.w700,
   );
 
+  /// Rótulo da barra de navegação, como na tab bar do iOS — 10/12 medium.
+  static const TextStyle tabLabel = TextStyle(
+    fontSize: 10,
+    height: 12 / 10,
+    fontWeight: FontWeight.w500,
+  );
+
   /// Rótulos, chips e abas — 14/20 regular, tracking 0.7.
   static const TextStyle label = TextStyle(
     fontSize: 14,

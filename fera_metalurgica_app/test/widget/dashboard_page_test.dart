@@ -321,4 +321,24 @@ void main() {
     expect(cards.map((c) => c.tamanhoValor).toSet(), hasLength(1));
     expect(cards.first.tamanhoValor, lessThan(32));
   });
+
+  testWidgets('gráfico mostra o mês atual e troca ao tocar na barra (D-45)', (
+    tester,
+  ) async {
+    await abrirDashboard(tester);
+
+    expect(find.text('ENVIADOS POR MÊS'), findsOneWidget);
+    // Outubro: os 2 enviados no mês; setembro: 1.
+    expect(find.text('Outubro 2023'), findsOneWidget);
+    expect(find.text('2 orçamentos'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('grafico-mes-2023-9')),
+    );
+    await tester.tap(find.byKey(const ValueKey('grafico-mes-2023-9')));
+    await tester.pump();
+
+    expect(find.text('Setembro 2023'), findsOneWidget);
+    expect(find.text('1 orçamento'), findsOneWidget);
+  });
 }

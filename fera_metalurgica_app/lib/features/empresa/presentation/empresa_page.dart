@@ -329,7 +329,12 @@ class _EmpresaFormState extends ConsumerState<_EmpresaForm> {
     final colors = context.colors;
     final completa = widget.inicial?.estaCompleta ?? false;
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         Text(
           'Dados da empresa',

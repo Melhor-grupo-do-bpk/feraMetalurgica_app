@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
+import 'package:fera_metalurgica_app/core/theme/tema_app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Top bar padrão das telas: voltar (opcional) e logo FERA.
-class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
+/// Top bar padrão das telas: voltar (opcional), logo FERA e a troca de
+/// tema claro/escuro (D-45).
+class AppTopBar extends ConsumerWidget implements PreferredSizeWidget {
   /// Cria a top bar. O botão voltar só aparece quando [onBack] é informado.
   const AppTopBar({this.onBack, super.key});
 
@@ -15,8 +20,9 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(AppSpacing.topBarHeight);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: colors.background,
       child: SafeArea(
@@ -37,6 +43,23 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                     onPressed: onBack,
                   ),
                 ),
+              Positioned(
+                right: AppSpacing.xs,
+                child: IconButton(
+                  tooltip: escuro ? 'Usar tema claro' : 'Usar tema escuro',
+                  icon: Icon(
+                    escuro
+                        ? Icons.light_mode_outlined
+                        : Icons.dark_mode_outlined,
+                  ),
+                  color: colors.textPrimary,
+                  onPressed: () => unawaited(
+                    ref
+                        .read(temaAppProvider.notifier)
+                        .alternar(atual: Theme.of(context).brightness),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

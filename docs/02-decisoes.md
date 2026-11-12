@@ -645,6 +645,15 @@ continua só com o total geral.
   ficam para o operador, e o endereço é aproximado. Só funciona no celular.
   Entram os pacotes `geolocator` e `geocoding` (complementa a D-33) e a
   permissão de localização, pedida só em uso.
+- **Barra de navegação:** no estilo da tab bar clássica do iOS. Ela fica
+  fixa embaixo, com fundo translúcido com blur, linha fina no topo, 49 dp e
+  abas de largura igual. A aba ativa usa o ícone preenchido em `navActive`,
+  escurecido no claro para 4,5:1, e as inativas o contorno em `navInactive`: o cinza `#8E8E93` do iOS não
+  passa na D-25. Os ícones são os `CupertinoIcons`, e entra o pacote
+  `cupertino_icons`. Não há ripple: o toque esmaece a aba e dá um retorno
+  háptico. Tocar de novo na aba ativa volta à raiz e rola as listas ao
+  topo. O conteúdo rola por baixo da barra, e as telas das abas somam a
+  altura dela ao fim da lista.
 - **Máscaras:** todo campo de dinheiro usa o `DinheiroInputFormatter`: os
   dígitos entram pela direita, como centavos (`123456` vira `1.234,56`).
   Isso vale sobre a leitura livre da D-35 nesses campos. As medidas em cm
@@ -652,4 +661,46 @@ continua só com o total geral.
   os dígitos.
 - **Sino:** saiu da `AppTopBar`, porque não tinha função (D-19). O app não
   tem notificações.
+
+### D-44
+**Layout do PDF do orçamento** (pedido do responsável, 11/11/2026).
+
+O protótipo `docs/referencias/prototipo-orcamento-fera.pdf` serve só de
+inspiração visual. Os dados continuam os do modelo da v2 (D-30, D-39): sem
+rateio, sem imposto fixo e com os totais gravados.
+
+- **Layout A4, margem de 20 mm:**
+  - cabeçalho com a marca à esquerda e "ORÇAMENTO", código, emissão e
+    validade à direita, seguido de uma linha laranja;
+  - emissor e cliente em duas colunas;
+  - tabela de produtos (#, descrição com as observações do produto,
+    quantidade, valor unitário e total), com o cabeçalho entre linhas
+    marrons e sem fundo colorido;
+  - totais à direita, com o total geral em laranja;
+  - observações, se houver;
+  - duas linhas de assinatura (emitente e cliente);
+  - rodapé com o emitente e o código.
+- **Ficam de fora**, por acordo com emissor e cliente: condições
+  comerciais (prazo e pagamento) e a mensagem de agradecimento.
+- **Várias páginas:** o cabeçalho da tabela se repete, nenhuma linha de
+  produto é cortada, e totais, observações e assinaturas não se dividem.
+  O número da página só aparece com mais de uma página.
+- **Cores:** ficam em `orcamentos/data/pdf/pdf_tema.dart` (`PdfTema`). São
+  `PdfColor` do pacote `pdf`, fora do tema do app (regra 6), porque o
+  documento não muda com o modo claro ou escuro.
+- **Fonte:** a Inter já empacotada, regular e negrito. As versões SemiBold
+  e ExtraBold do protótipo não estão no projeto, e o negrito as substitui.
+
+### D-45
+**Troca de tema e gráfico do Início** (pedido do responsável, 11/11/2026).
+
+- **Tema:** o botão no topo das telas (`AppTopBar`, onde ficava o sino)
+  alterna entre claro e escuro. Sem escolha, o app segue o sistema, como
+  antes. A escolha fica na tabela `preferencias` (esquema versão 2, com
+  migração da 1), e o `main` a lê antes de abrir a primeira tela.
+- **Gráfico "Enviados por mês":** fica no Início, abaixo dos indicadores.
+  Mostra o valor enviado em cada um dos últimos 6 meses, contado pelo
+  `enviadoEm` como os cards (D-32, D-37). Começa no mês atual, e tocar
+  numa barra mostra o valor exato e a quantidade daquele mês. É feito com
+  widgets do Flutter, sem pacote de gráfico.
 

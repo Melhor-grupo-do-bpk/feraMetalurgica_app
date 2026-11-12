@@ -37,18 +37,23 @@ class CronogramaPage extends ConsumerWidget {
     return Scaffold(
       // Raiz da aba "Agenda" (D-31): sem voltar.
       appBar: const AppTopBar(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push(AppRoutes.tarefa()),
-        tooltip: 'Nova tarefa',
-        child: const Icon(Icons.add),
+      // Acima da barra de navegação translúcida, que fica por cima do
+      // conteúdo das abas (D-43).
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+        child: FloatingActionButton(
+          onPressed: () => context.push(AppRoutes.tarefa()),
+          tooltip: 'Nova tarefa',
+          child: const Icon(Icons.add),
+        ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           AppSpacing.md,
           AppSpacing.md,
           AppSpacing.md,
-          // Espaço para o FAB não cobrir a última tarefa.
-          AppSpacing.xl * 3,
+          // Espaço para o FAB não cobrir a última tarefa, acima da barra.
+          AppSpacing.xl * 3 + MediaQuery.paddingOf(context).bottom,
         ),
         children: [
           Text(

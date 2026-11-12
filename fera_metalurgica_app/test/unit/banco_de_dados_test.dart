@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:fera_metalurgica_app/core/di/banco_de_dados.dart';
 import 'package:fera_metalurgica_app/core/di/esquema_banco.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -73,8 +76,38 @@ void main() {
         'pecas_orcamento',
         'sequencias',
         'tarefas',
+        'preferencias',
       ]),
     );
+  });
+
+  test('migra da versão 1 para a 2 sem perder dados (D-45)', () async {
+    final pasta = await Directory.systemTemp.createTemp('fera_migracao');
+    addTearDown(() => pasta.delete(recursive: true));
+    final caminho = '${pasta.path}${Platform.pathSeparator}v1.db';
+    final antigo = await databaseFactoryFfiNoIsolate.openDatabase(
+      caminho,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (db, _) => db.execute(
+          'CREATE TABLE sequencias (dia TEXT PRIMARY KEY, ultima INTEGER)',
+        ),
+      ),
+    );
+    await antigo.insert('sequencias', {'dia': '2026-11-11', 'ultima': 3});
+    await antigo.close();
+
+    final (:banco, :novo) = await abrirBancoDeDados(
+      databaseFactoryFfiNoIsolate,
+      caminho,
+      instanciaUnica: false,
+    );
+    addTearDown(banco.close);
+
+    expect(novo, isFalse);
+    expect(await banco.getVersion(), versaoEsquema);
+    expect(await _contar(banco, 'sequencias'), 1);
+    expect(await _contar(banco, 'preferencias'), 0);
   });
 
   test('liga as chaves estrangeiras', () async {

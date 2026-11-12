@@ -7,6 +7,7 @@ import 'package:fera_metalurgica_app/core/widgets/app_top_bar.dart';
 import 'package:fera_metalurgica_app/core/widgets/stat_card.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/dashboard/presentation/dashboard_indicadores.dart';
+import 'package:fera_metalurgica_app/features/dashboard/presentation/grafico_envios.dart';
 import 'package:fera_metalurgica_app/features/dashboard/presentation/orcamento_recente_card.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,12 @@ class DashboardPage extends ConsumerWidget {
     return Scaffold(
       appBar: const AppTopBar(),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           PrimaryButton(
             label: 'Criar orçamento',
@@ -70,6 +76,8 @@ class _Conteudo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Indicadores(indicadores: indicadores),
+        const SizedBox(height: AppSpacing.md),
+        const GraficoEnvios(),
         const SizedBox(height: AppSpacing.xl),
         Row(
           children: [

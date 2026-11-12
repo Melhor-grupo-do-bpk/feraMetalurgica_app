@@ -43,6 +43,10 @@ String formatarDiaCurto(DateTime data) =>
     '${_diasCurtos[data.weekday % 7]}, ${data.day} '
     '${_meses[data.month - 1].substring(0, 3)}';
 
+/// Mês abreviado (ex: `Out`).
+String formatarMesCurto(DateTime data) =>
+    _meses[data.month - 1].substring(0, 3);
+
 /// Mês por extenso e ano (ex: `Outubro 2023`).
 String formatarMesAno(DateTime data) =>
     '${_meses[data.month - 1]} ${data.year}';

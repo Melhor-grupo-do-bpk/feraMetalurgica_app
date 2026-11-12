@@ -1,16 +1,28 @@
-import 'dart:math';
+import 'dart:async';
+import 'dart:ui';
 
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
-import 'package:fera_metalurgica_app/core/theme/app_spacing.dart';
 import 'package:fera_metalurgica_app/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-const double _tamanhoIcone = 20;
+/// Altura da barra sem a área do sistema, como a tab bar do iOS.
+const double _alturaBarra = 49;
 
-/// Uma aba da [AppBottomNavBar].
-typedef AppNavItem = ({IconData icone, String label});
+const double _tamanhoIcone = 26;
 
-/// Navegação inferior do app: aba ativa em "pill" laranja.
+/// Uma aba da [AppBottomNavBar]: ícone em contorno (inativa), ícone
+/// preenchido (ativa) e rótulo.
+typedef AppNavItem = ({IconData icone, IconData iconeAtivo, String label});
+
+/// Navegação inferior no estilo da tab bar clássica do iOS (D-43): fixa
+/// embaixo, fundo translúcido com blur e linha fina no topo. A aba ativa
+/// usa o ícone preenchido na cor de destaque; as outras, o contorno em
+/// cinza. Sem ripple: o toque só esmaece a aba.
+///
+/// O shell usa `Scaffold.extendBody`, então o conteúdo rola por baixo da
+/// barra; as telas das abas somam `MediaQuery.paddingOf(context).bottom` ao
+/// espaço do fim da lista.
 class AppBottomNavBar extends StatelessWidget {
   /// Cria a navegação com [itens], destacando [indiceAtual].
   const AppBottomNavBar({
@@ -26,127 +38,107 @@ class AppBottomNavBar extends StatelessWidget {
   /// Índice da aba ativa.
   final int indiceAtual;
 
-  /// Chamado com o índice da aba tocada.
+  /// Chamado com o índice da aba tocada, inclusive a que já está ativa.
   final ValueChanged<int> onSelecionado;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.background,
-        border: Border(top: BorderSide(color: colors.border)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.background.withValues(alpha: 0.9),
+            border: Border(
+              top: BorderSide(
+                color: colors.border.withValues(alpha: 0.6),
+                width: 0.5,
+              ),
+            ),
           ),
-          // As abas ficam no tamanho natural, espalhadas pela largura. Se
-          // não couberem (tela estreita ou fonte grande do sistema), cada
-          // uma recebe uma fatia igual e o rótulo é cortado com reticências.
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final cabem = _larguraNatural(context) <= constraints.maxWidth;
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: _alturaBarra,
+              child: Row(
                 children: [
                   for (var i = 0; i < itens.length; i++)
-                    if (cabem)
-                      _botao(i, colors)
-                    else
-                      Expanded(
-                        // `heightFactor: 1`: sem ele, o `Center` ocupa toda
-                        // a altura que o Scaffold oferece à barra.
-                        child: Center(
-                          heightFactor: 1,
-                          child: _botao(i, colors),
-                        ),
+                    Expanded(
+                      child: _Aba(
+                        item: itens[i],
+                        ativa: i == indiceAtual,
+                        onTap: () {
+                          if (i != indiceAtual) {
+                            unawaited(HapticFeedback.selectionClick());
+                          }
+                          onSelecionado(i);
+                        },
                       ),
+                    ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
         ),
       ),
     );
   }
-
-  Widget _botao(int i, AppColors colors) => _NavButton(
-    item: itens[i],
-    ativo: i == indiceAtual,
-    colors: colors,
-    onTap: () => onSelecionado(i),
-  );
-
-  /// Soma das larguras das abas sem corte: rótulo (ou ícone, se maior)
-  /// mais o padding horizontal do [_NavButton].
-  double _larguraNatural(BuildContext context) {
-    final estilo = DefaultTextStyle.of(
-      context,
-    ).style.merge(AppTextStyles.label);
-    final escala = MediaQuery.textScalerOf(context);
-    var total = 0.0;
-    for (final item in itens) {
-      final texto = TextPainter(
-        text: TextSpan(text: item.label, style: estilo),
-        textDirection: Directionality.of(context),
-        textScaler: escala,
-        maxLines: 1,
-      )..layout();
-      total += max(texto.width, _tamanhoIcone) + 2 * AppSpacing.sm;
-      texto.dispose();
-    }
-    return total;
-  }
 }
 
-class _NavButton extends StatelessWidget {
-  const _NavButton({
-    required this.item,
-    required this.ativo,
-    required this.colors,
-    required this.onTap,
-  });
+/// Uma aba: ocupa toda a largura e a altura da sua fatia.
+class _Aba extends StatefulWidget {
+  const _Aba({required this.item, required this.ativa, required this.onTap});
 
   final AppNavItem item;
-  final bool ativo;
-  final AppColors colors;
+  final bool ativa;
   final VoidCallback onTap;
 
   @override
+  State<_Aba> createState() => _AbaState();
+}
+
+class _AbaState extends State<_Aba> {
+  bool _pressionada = false;
+
+  void _pressionar({required bool pressionada}) {
+    if (_pressionada != pressionada) {
+      setState(() => _pressionada = pressionada);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final foreground = ativo ? colors.onNavActive : colors.navInactive;
-    final radius = BorderRadius.circular(AppSpacing.radiusMd);
+    final colors = context.colors;
+    final cor = widget.ativa ? colors.navActive : colors.navInactive;
     return Semantics(
-      selected: ativo,
       button: true,
-      child: Material(
-        color: ativo ? colors.navActive : Colors.transparent,
-        borderRadius: radius,
-        child: InkWell(
-          borderRadius: radius,
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(item.icone, size: _tamanhoIcone, color: foreground),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.label.copyWith(color: foreground),
-                ),
-              ],
-            ),
+      selected: widget.ativa,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => _pressionar(pressionada: true),
+        onTapUp: (_) => _pressionar(pressionada: false),
+        onTapCancel: () => _pressionar(pressionada: false),
+        onTap: widget.onTap,
+        child: AnimatedOpacity(
+          opacity: _pressionada ? 0.5 : 1,
+          duration: const Duration(milliseconds: 100),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                widget.ativa ? widget.item.iconeAtivo : widget.item.icone,
+                size: _tamanhoIcone,
+                color: cor,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                widget.item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.tabLabel.copyWith(color: cor),
+              ),
+            ],
           ),
         ),
       ),

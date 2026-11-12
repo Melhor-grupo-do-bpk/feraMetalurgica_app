@@ -27,7 +27,6 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.darkSurface,
     required this.onDarkSurface,
     required this.navActive,
-    required this.onNavActive,
     required this.navInactive,
     required this.progressTrack,
     required this.timelineLine,
@@ -99,12 +98,10 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Conteúdo sobre [darkSurface].
   final Color onDarkSurface;
 
-  /// Fundo da aba ativa da navegação inferior (#D56D22).
+  /// Ícone e rótulo da aba ativa da navegação inferior. No claro, mais
+  /// escuro que o `#D56D22` do Figma: o rótulo de 10 pt sobre o fundo
+  /// translúcido precisa de 4,5:1 (D-25, D-43).
   final Color navActive;
-
-  /// Ícone/rótulo da aba ativa. O Figma usa branco, com contraste de 3,5:1
-  /// sobre [navActive]; o quase preto passa de 5:1 (D-25).
-  final Color onNavActive;
 
   /// Ícone/rótulo das abas inativas (#575F67).
   final Color navInactive;
@@ -178,8 +175,7 @@ class AppColors extends ThemeExtension<AppColors> {
     accent: Color(0xFFC25316),
     darkSurface: Color(0xFF000000),
     onDarkSurface: Color(0xFFFFFFFF),
-    navActive: Color(0xFFD56D22),
-    onNavActive: Color(0xFF141312),
+    navActive: Color(0xFFA3501A),
     navInactive: Color(0xFF575F67),
     progressTrack: Color(0xFFDDD9D8),
     timelineLine: Color(0xFFE9ECEF),
@@ -226,7 +222,6 @@ class AppColors extends ThemeExtension<AppColors> {
     darkSurface: Color(0xFFF2EFED), // derivado (invertido para contraste)
     onDarkSurface: Color(0xFF141312), // derivado
     navActive: Color(0xFFD56D22),
-    onNavActive: Color(0xFF141312),
     // #575F67 no Figma, com contraste de 2,9:1 sobre o fundo (D-25).
     navInactive: Color(0xFFA3A6A6),
     progressTrack: Color(0xFF3C3835), // derivado
@@ -267,7 +262,6 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? darkSurface,
     Color? onDarkSurface,
     Color? navActive,
-    Color? onNavActive,
     Color? navInactive,
     Color? progressTrack,
     Color? timelineLine,
@@ -305,7 +299,6 @@ class AppColors extends ThemeExtension<AppColors> {
       darkSurface: darkSurface ?? this.darkSurface,
       onDarkSurface: onDarkSurface ?? this.onDarkSurface,
       navActive: navActive ?? this.navActive,
-      onNavActive: onNavActive ?? this.onNavActive,
       navInactive: navInactive ?? this.navInactive,
       progressTrack: progressTrack ?? this.progressTrack,
       timelineLine: timelineLine ?? this.timelineLine,
@@ -349,7 +342,6 @@ class AppColors extends ThemeExtension<AppColors> {
       darkSurface: l(darkSurface, other.darkSurface),
       onDarkSurface: l(onDarkSurface, other.onDarkSurface),
       navActive: l(navActive, other.navActive),
-      onNavActive: l(onNavActive, other.onNavActive),
       navInactive: l(navInactive, other.navInactive),
       progressTrack: l(progressTrack, other.progressTrack),
       timelineLine: l(timelineLine, other.timelineLine),

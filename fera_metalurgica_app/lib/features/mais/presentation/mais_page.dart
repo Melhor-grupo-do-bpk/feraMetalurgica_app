@@ -17,7 +17,12 @@ class MaisPage extends StatelessWidget {
     return Scaffold(
       appBar: const AppTopBar(),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           Text(
             'Mais',

@@ -55,4 +55,37 @@ void main() {
       expect(find.byType(DashboardPage), findsOneWidget);
     });
   }
+
+  testWidgets('tocar de novo na aba ativa leva a lista ao topo', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(360, 640)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    appRouter.go(AppRoutes.dashboard);
+    await tester.pumpWidget(await feraAppDeTeste());
+    await tester.pumpAndSettle();
+
+    final lista = find.descendant(
+      of: find.byType(DashboardPage),
+      matching: find.byType(Scrollable),
+    );
+    double posicao() =>
+        tester.state<ScrollableState>(lista.first).position.pixels;
+    await tester.drag(lista.first, const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(posicao(), greaterThan(0));
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppBottomNavBar),
+        matching: find.text('Início'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(posicao(), 0);
+    expect(find.byType(DashboardPage), findsOneWidget);
+  });
 }

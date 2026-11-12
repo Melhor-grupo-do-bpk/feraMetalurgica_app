@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:fera_metalurgica_app/core/router/app_routes.dart';
 import 'package:fera_metalurgica_app/core/widgets/app_bottom_nav_bar.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/dashboard/dashboard.dart';
 import 'package:fera_metalurgica_app/features/mais/mais.dart';
 import 'package:fera_metalurgica_app/features/orcamentos/orcamentos.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,10 +15,26 @@ export 'app_routes.dart';
 /// Abas da navegação inferior (D-31), na mesma ordem dos branches do
 /// shell.
 const List<AppNavItem> _abas = [
-  (icone: Icons.home_outlined, label: 'Início'),
-  (icone: Icons.request_quote_outlined, label: 'Orçamentos'),
-  (icone: Icons.calendar_month_outlined, label: 'Agenda'),
-  (icone: Icons.menu, label: 'Mais'),
+  (
+    icone: CupertinoIcons.house,
+    iconeAtivo: CupertinoIcons.house_fill,
+    label: 'Início',
+  ),
+  (
+    icone: CupertinoIcons.doc_text,
+    iconeAtivo: CupertinoIcons.doc_text_fill,
+    label: 'Orçamentos',
+  ),
+  (
+    icone: CupertinoIcons.calendar_circle,
+    iconeAtivo: CupertinoIcons.calendar_circle_fill,
+    label: 'Agenda',
+  ),
+  (
+    icone: CupertinoIcons.ellipsis_circle,
+    iconeAtivo: CupertinoIcons.ellipsis_circle_fill,
+    label: 'Mais',
+  ),
 ];
 
 /// Instância única de roteamento do app, usada por `MaterialApp.router`.
@@ -50,15 +69,42 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // O conteúdo rola por baixo da barra translúcida (D-43).
+      extendBody: true,
       body: navigationShell,
       bottomNavigationBar: AppBottomNavBar(
         itens: _abas,
         indiceAtual: navigationShell.currentIndex,
-        onSelecionado: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
+        onSelecionado: (index) {
+          if (index == navigationShell.currentIndex) _rolarAoTopo(index);
+          navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          );
+        },
       ),
     );
+  }
+
+  /// Tocar de novo na aba ativa leva as listas dela ao topo, como no iOS
+  /// (a volta à raiz da aba é o `initialLocation` do `goBranch`).
+  void _rolarAoTopo(int index) {
+    final navegador = navigationShell.route.branches[index].navigatorKey;
+    void visitar(Element elemento) {
+      if (elemento case StatefulElement(
+        state: final ScrollableState rolavel,
+      ) when rolavel.position.axis == Axis.vertical) {
+        unawaited(
+          rolavel.position.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          ),
+        );
+      }
+      elemento.visitChildElements(visitar);
+    }
+
+    navegador.currentContext?.visitChildElements(visitar);
   }
 }

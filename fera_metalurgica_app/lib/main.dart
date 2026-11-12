@@ -3,6 +3,7 @@ import 'package:fera_metalurgica_app/core/di/relogio_provider.dart';
 import 'package:fera_metalurgica_app/core/router/app_router.dart';
 import 'package:fera_metalurgica_app/core/theme/app_colors.dart';
 import 'package:fera_metalurgica_app/core/theme/app_theme.dart';
+import 'package:fera_metalurgica_app/core/theme/tema_app.dart';
 import 'package:fera_metalurgica_app/core/utils/id_generator.dart';
 import 'package:fera_metalurgica_app/features/cronograma/cronograma.dart';
 import 'package:fera_metalurgica_app/features/empresa/empresa.dart';
@@ -18,7 +19,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final (:banco, :novo) = await abrirBancoDoApp();
   final container = ProviderContainer(
-    overrides: [bancoDeDadosProvider.overrideWithValue(banco)],
+    overrides: [
+      bancoDeDadosProvider.overrideWithValue(banco),
+      temaInicialProvider.overrideWithValue(await lerTemaSalvo(banco)),
+    ],
   );
   await popularDadosIniciais(
     container,
@@ -78,20 +82,21 @@ Future<void> popularDadosIniciais(
 }
 
 /// Widget raiz do app FERA.
-class FeraApp extends StatelessWidget {
+class FeraApp extends ConsumerWidget {
   /// Cria o widget raiz do app.
-  const FeraApp({this.themeMode = ThemeMode.system, super.key});
+  const FeraApp({this.themeMode, super.key});
 
-  /// Tema claro/escuro; por padrão segue o sistema.
-  final ThemeMode themeMode;
+  /// Tema fixo (nos testes). Sem ele, vale o escolhido no botão da
+  /// `AppTopBar` ou, sem escolha, o do sistema (D-45).
+  final ThemeMode? themeMode;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'FERA',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: themeMode,
+      themeMode: themeMode ?? ref.watch(temaAppProvider),
       locale: const Locale('pt', 'BR'),
       supportedLocales: const [Locale('pt', 'BR')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,

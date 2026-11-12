@@ -44,6 +44,36 @@ IndicadoresDashboard calcularIndicadores(
   );
 }
 
+/// Valor e quantidade de orçamentos enviados em um mês.
+typedef EnvioDoMes = ({DateTime mes, Dinheiro valor, int quantidade});
+
+/// Os [meses] últimos meses até o de [agora], do mais antigo ao atual, com
+/// o valor e a quantidade dos orçamentos `enviado` cujo `enviadoEm` cai em
+/// cada mês (D-37, D-45). Mês sem envio vem com zero.
+List<EnvioDoMes> calcularEnviosPorMes(
+  List<Orcamento> orcamentos,
+  DateTime agora, {
+  int meses = 6,
+}) => [
+  for (var i = meses - 1; i >= 0; i--)
+    _envioDoMes(orcamentos, DateTime(agora.year, agora.month - i)),
+];
+
+EnvioDoMes _envioDoMes(List<Orcamento> orcamentos, DateTime mes) {
+  final enviados = [
+    for (final o in orcamentos)
+      if (o.status == StatusOrcamento.enviado &&
+          o.enviadoEm?.year == mes.year &&
+          o.enviadoEm?.month == mes.month)
+        o,
+  ];
+  return (
+    mes: mes,
+    valor: enviados.fold(Dinheiro.zero, (soma, o) => soma + o.totalGeral),
+    quantidade: enviados.length,
+  );
+}
+
 /// Os [limite] primeiros de [orcamentos] (que já vêm do `atualizadoEm` mais
 /// recente para o mais antigo), D-32.
 List<Orcamento> selecionarRecentes(
@@ -75,6 +105,15 @@ AsyncValue<IndicadoresDashboard> indicadoresDashboard(Ref ref) {
     ),
     _ => const AsyncLoading(),
   };
+}
+
+/// Enviados nos últimos 6 meses, para o gráfico do Início (D-45).
+@riverpod
+AsyncValue<List<EnvioDoMes>> enviosPorMes(Ref ref) {
+  final agora = ref.watch(agoraProvider);
+  return ref
+      .watch(orcamentosProvider)
+      .whenData((orcamentos) => calcularEnviosPorMes(orcamentos, agora));
 }
 
 /// Os 2 orçamentos de `atualizadoEm` mais recente (D-32).
